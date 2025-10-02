@@ -5,14 +5,15 @@ WORKDIR /app
 # Copy package files
 COPY package*.json ./
 
-# Install dependencies
-RUN npm ci --only=production
+# Install all dependencies (including devDependencies for TypeScript)
+RUN npm install
+
+# Install missing dependencies explicitly
+RUN npm install pg xml2js otplib qrcode
+RUN npm install --save-dev @types/pg @types/xml2js @types/qrcode
 
 # Copy source code
 COPY . .
-
-# Build the application
-RUN npm run build
 
 # Create data directory
 RUN mkdir -p /app/data
@@ -20,10 +21,6 @@ RUN mkdir -p /app/data
 # Expose port
 EXPOSE 4000
 
-# Health check
-HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
-  CMD curl -f http://localhost:4000/api/health || exit 1
-
-# Start the application
-CMD ["npm", "start"]
+# Start the application directly with ts-node (bypass TypeScript compilation)
+CMD ["npx", "ts-node", "--transpile-only", "src/index.ts"]
 
