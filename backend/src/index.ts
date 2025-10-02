@@ -9,6 +9,7 @@ import { calendarRouter } from './routes/calendar';
 import { communityRouter } from './routes/community';
 import { tickerRouter } from './routes/ticker';
 import { commonSecurityMiddleware } from './middleware/security';
+import { enhancedSecurityMiddleware, validateJwtSecret } from './middleware/security-enhanced';
 import { adminRouter } from './routes/admin';
 import { userRouter } from './routes/user';
 import { liveRouter } from './routes/live';
@@ -31,7 +32,15 @@ app.use(cors({
 }));
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
-app.use(commonSecurityMiddleware);
+// Enhanced security middleware
+app.use(enhancedSecurityMiddleware);
+
+// Validate JWT secret on startup
+if (!validateJwtSecret()) {
+  console.error('❌ SECURITY WARNING: JWT_SECRET not properly configured!');
+  console.error('Please set a strong JWT_SECRET environment variable.');
+  process.exit(1);
+}
 
 app.get('/api/health', (_req, res) => {
   res.json({ ok: true });
