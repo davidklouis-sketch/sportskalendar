@@ -58,6 +58,18 @@ app.get('/api/health', (_req, res) => {
   res.json({ ok: true });
 });
 
+// Debug endpoint to check users
+app.get('/api/debug/users', (_req, res) => {
+  const { db } = require('./store/memory');
+  const users = Array.from(db.users.values()).map(u => ({ 
+    id: u.id, 
+    email: u.email, 
+    displayName: u.displayName, 
+    role: u.role 
+  }));
+  res.json({ users, count: users.length });
+});
+
 // API Routes
 app.use('/api/auth', authRouter);
 app.use('/api/scores', scoresRouter);
