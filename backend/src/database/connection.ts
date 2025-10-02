@@ -164,3 +164,4 @@ export async function closeDatabase(): Promise<void> {
   await pool.end();
   console.log('✅ Database connection pool closed');
 }
+

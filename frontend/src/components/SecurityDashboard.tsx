@@ -402,3 +402,4 @@ export function SecurityDashboard() {
     </div>
   );
 }
+

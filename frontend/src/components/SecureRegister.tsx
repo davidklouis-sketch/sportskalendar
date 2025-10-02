@@ -354,3 +354,4 @@ export function SecureRegister() {
     </div>
   );
 }
+

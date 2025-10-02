@@ -38,3 +38,4 @@ const authLimiter = rateLimit({
 ## Sicherheits-Score: 4/10 ⚠️
 
 **NICHT PRODUKTIONSREIF** ohne diese Fixes!
+

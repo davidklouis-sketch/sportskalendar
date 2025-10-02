@@ -282,3 +282,4 @@ NEWS_API_KEY=your_key
 5. **Produktions-Deployment**: Docker-Compose verwenden
 
 Die Anwendung ist jetzt **enterprise-ready** mit modernsten Sicherheitsstandards! 🎉
+

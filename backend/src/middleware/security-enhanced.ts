@@ -67,7 +67,14 @@ export const enhancedSecurityMiddleware = [
     };
     
     req.body = sanitize(req.body);
-    req.query = sanitize(req.query);
+    // req.query is read-only, so we sanitize individual properties
+    if (req.query) {
+      Object.keys(req.query).forEach(key => {
+        if (typeof req.query[key] === 'string') {
+          req.query[key] = sanitize(req.query[key]);
+        }
+      });
+    }
     req.params = sanitize(req.params);
     next();
   }

@@ -2,19 +2,23 @@ import express from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
 
+// Router imports
 import { authRouter } from './routes/auth';
-import { authEnhancedRouter } from './routes/auth-enhanced';
 import { scoresRouter } from './routes/scores';
 import { highlightsRouter } from './routes/highlights';
 import { calendarRouter } from './routes/calendar';
 import { communityRouter } from './routes/community';
 import { tickerRouter } from './routes/ticker';
-import { commonSecurityMiddleware } from './middleware/security';
-import { enhancedSecurityMiddleware, validateJwtSecret } from './middleware/security-enhanced';
 import { adminRouter } from './routes/admin';
 import { userRouter } from './routes/user';
 import { liveRouter } from './routes/live';
+
+// Middleware imports
+import { commonSecurityMiddleware } from './middleware/security';
+import { enhancedSecurityMiddleware, validateJwtSecret } from './middleware/security-enhanced';
 import { requireAuth } from './middleware/auth';
+
+// Store and database imports
 import { seedDevUser, seedHighlights } from './store/memory';
 import { testConnection, initializeDatabase, closeDatabase } from './database/connection';
 
@@ -22,18 +26,23 @@ dotenv.config();
 
 const app = express();
 
-app.use(cors({
-  origin: (origin, cb) => {
-    const allowed = ['http://localhost:5173'];
-    if (!origin || allowed.includes(origin) || /^(http:\/\/)?(192\.168\.|10\.|172\.(1[6-9]|2\d|3[0-1]))\:[0-9]+$/.test(origin)) {
-      return cb(null, true);
-    }
-    return cb(new Error('Not allowed by CORS'));
-  },
+// CORS-Konfiguration
+const corsOptions = {
+  origin: [
+    'https://sportskalender.dlouis.ddnss.de',
+    'https://dlouis.ddnss.de',
+    'http://localhost:3000',
+    'http://localhost:5173'
+  ],
   credentials: true,
-}));
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'X-CSRF-Token']
+};
+
+app.use(cors(corsOptions));
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
+
 // Enhanced security middleware
 app.use(enhancedSecurityMiddleware);
 
@@ -44,12 +53,13 @@ if (!validateJwtSecret()) {
   process.exit(1);
 }
 
+// Health check endpoint
 app.get('/api/health', (_req, res) => {
   res.json({ ok: true });
 });
 
+// API Routes
 app.use('/api/auth', authRouter);
-app.use('/api/auth', authEnhancedRouter);
 app.use('/api/scores', scoresRouter);
 app.use('/api/highlights', highlightsRouter);
 app.use('/api/calendar', calendarRouter);

@@ -209,3 +209,4 @@ export class TwoFactorService {
     return code.length === this.BACKUP_CODE_LENGTH && /^[A-Z0-9]+$/.test(code);
   }
 }
+

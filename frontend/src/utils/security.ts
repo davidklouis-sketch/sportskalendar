@@ -245,3 +245,4 @@ export function initializeSecurity(): void {
     window.location.href = '/login?timeout=true';
   });
 }
+
