@@ -1,8 +1,178 @@
 import { Router } from 'express';
+import { parseString } from 'xml2js';
 
 export const tickerRouter = Router();
 
-type TickerEvent = { type: 'highlight' | 'score' | 'info'; message: string; ts: number; url?: string | null; source?: string | null };
+type TickerEvent = { 
+  type: 'highlight' | 'score' | 'info' | 'news' | 'goal' | 'update'; 
+  message: string; 
+  ts: number; 
+  url?: string | null; 
+  source?: string | null;
+  sport?: string;
+  priority?: 'high' | 'medium' | 'low';
+};
+
+// Cache for RSS feeds to avoid rate limiting
+const rssCache = new Map<string, { data: any[]; timestamp: number }>();
+const CACHE_DURATION = 5 * 60 * 1000; // 5 minutes
+
+// RSS Feed sources
+const RSS_FEEDS = [
+  {
+    name: 'Kicker.de',
+    url: 'https://newsfeed.kicker.de/news/aktuell',
+    sport: 'Fußball',
+    priority: 'high'
+  },
+  {
+    name: 'ESPN',
+    url: 'https://www.espn.com/espn/rss/news',
+    sport: 'Allgemein',
+    priority: 'medium'
+  },
+  {
+    name: 'Sky Sports',
+    url: 'https://feeds.skynews.com/feeds/rss/sports.xml',
+    sport: 'Allgemein',
+    priority: 'medium'
+  }
+];
+
+// News API configuration
+const NEWS_API_KEY = process.env.NEWS_API_KEY;
+const NEWS_API_URL = 'https://newsapi.org/v2/everything';
+
+async function fetchRSSFeed(feed: typeof RSS_FEEDS[0]): Promise<TickerEvent[]> {
+  try {
+    // Check cache first
+    const cached = rssCache.get(feed.url);
+    if (cached && Date.now() - cached.timestamp < CACHE_DURATION) {
+      return cached.data;
+    }
+
+    const response = await fetch(feed.url, {
+      headers: {
+        'User-Agent': 'SportsKalender/1.0 (https://sportskalendar.com)'
+      }
+    });
+    
+    if (!response.ok) {
+      throw new Error(`RSS feed ${feed.name} returned ${response.status}`);
+    }
+
+    const xml = await response.text();
+    const result = await new Promise<any>((resolve, reject) => {
+      parseString(xml, (err, result) => {
+        if (err) reject(err);
+        else resolve(result);
+      });
+    });
+
+    const items = result.rss?.channel?.[0]?.item || [];
+    const events: TickerEvent[] = items.slice(0, 10).map((item: any) => {
+      const title = item.title?.[0] || '';
+      const description = item.description?.[0] || '';
+      const link = item.link?.[0] || '';
+      const pubDate = item.pubDate?.[0] || new Date().toISOString();
+      
+      // Detect sport type from title/description
+      let detectedSport = feed.sport;
+      const text = (title + ' ' + description).toLowerCase();
+      if (text.includes('fußball') || text.includes('soccer') || text.includes('tor') || text.includes('goal')) {
+        detectedSport = 'Fußball';
+      } else if (text.includes('f1') || text.includes('formel') || text.includes('rennen')) {
+        detectedSport = 'F1';
+      } else if (text.includes('nfl') || text.includes('touchdown') || text.includes('super bowl')) {
+        detectedSport = 'NFL';
+      } else if (text.includes('basketball') || text.includes('nba')) {
+        detectedSport = 'Basketball';
+      } else if (text.includes('tennis') || text.includes('wimbledon')) {
+        detectedSport = 'Tennis';
+      }
+
+      // Determine event type and priority
+      let type: TickerEvent['type'] = 'news';
+      let priority: TickerEvent['priority'] = feed.priority;
+      
+      if (text.includes('tor') || text.includes('goal') || text.includes('score')) {
+        type = 'goal';
+        priority = 'high';
+      } else if (text.includes('live') || text.includes('update') || text.includes('breaking')) {
+        type = 'update';
+        priority = 'high';
+      } else if (text.includes('transfer') || text.includes('verletzung') || text.includes('injury')) {
+        type = 'info';
+        priority = 'medium';
+      }
+
+      return {
+        type,
+        message: title,
+        ts: new Date(pubDate).getTime(),
+        url: link || null,
+        source: feed.name,
+        sport: detectedSport,
+        priority
+      };
+    });
+
+    // Cache the result
+    rssCache.set(feed.url, { data: events, timestamp: Date.now() });
+    return events;
+  } catch (error) {
+    console.error(`Error fetching RSS feed ${feed.name}:`, error);
+    return [];
+  }
+}
+
+async function fetchNewsAPI(): Promise<TickerEvent[]> {
+  if (!NEWS_API_KEY) return [];
+
+  try {
+    const response = await fetch(`${NEWS_API_URL}?q=sport&apiKey=${NEWS_API_KEY}&language=de&sortBy=publishedAt&pageSize=20`);
+    const data = await response.json();
+    
+    if (data.status !== 'ok') return [];
+
+    return data.articles.slice(0, 10).map((article: any) => {
+      const title = article.title || '';
+      const description = article.description || '';
+      const text = (title + ' ' + description).toLowerCase();
+      
+      let sport = 'Allgemein';
+      if (text.includes('fußball') || text.includes('soccer')) sport = 'Fußball';
+      else if (text.includes('f1') || text.includes('formel')) sport = 'F1';
+      else if (text.includes('nfl')) sport = 'NFL';
+      else if (text.includes('basketball')) sport = 'Basketball';
+      else if (text.includes('tennis')) sport = 'Tennis';
+
+      let type: TickerEvent['type'] = 'news';
+      let priority: TickerEvent['priority'] = 'medium';
+      
+      if (text.includes('tor') || text.includes('goal')) {
+        type = 'goal';
+        priority = 'high';
+      } else if (text.includes('live') || text.includes('breaking')) {
+        type = 'update';
+        priority = 'high';
+      }
+
+      return {
+        type,
+        message: title,
+        ts: new Date(article.publishedAt).getTime(),
+        url: article.url || null,
+        source: 'NewsAPI',
+        sport,
+        priority
+      };
+    });
+  } catch (error) {
+    console.error('Error fetching NewsAPI:', error);
+    return [];
+  }
+}
 
 // SSE stream that aggregates from our Highlights API (F1/NFL) and Scores API
 tickerRouter.get('/stream', async (req, res) => {
@@ -72,8 +242,55 @@ tickerRouter.get('/stream', async (req, res) => {
     }
   }
 
+  async function fetchNewsFeeds() {
+    try {
+      // Fetch all RSS feeds in parallel
+      const rssPromises = RSS_FEEDS.map(feed => fetchRSSFeed(feed));
+      const newsApiPromise = fetchNewsAPI();
+      
+      const [rssResults, newsApiResults] = await Promise.all([
+        Promise.all(rssPromises),
+        newsApiPromise
+      ]);
+
+      // Flatten and process all news events
+      const allNewsEvents = [
+        ...rssResults.flat(),
+        ...newsApiResults
+      ];
+
+      // Sort by timestamp (newest first) and priority
+      allNewsEvents.sort((a, b) => {
+        const priorityOrder = { high: 3, medium: 2, low: 1 };
+        const aPriority = priorityOrder[a.priority || 'low'];
+        const bPriority = priorityOrder[b.priority || 'low'];
+        
+        if (aPriority !== bPriority) {
+          return bPriority - aPriority;
+        }
+        return b.ts - a.ts;
+      });
+
+      // Send new events
+      for (const event of allNewsEvents.slice(0, 15)) {
+        const id = `news:${event.source}:${event.ts}:${event.message}`;
+        if (sentIds.has(id)) continue;
+        sentIds.add(id);
+        send(event);
+      }
+    } catch (error) {
+      console.error('Error fetching news feeds:', error);
+    }
+  }
+
   const pump = async () => {
-    await Promise.all([fetchHighlights('F1'), fetchHighlights('NFL'), fetchScores()]);
+    await Promise.all([
+      fetchHighlights('F1'), 
+      fetchHighlights('NFL'), 
+      fetchScores(),
+      fetchNewsFeeds()
+    ]);
+    
     // Refresh the collection window every 2 minutes: allow items erneut zu kommen
     if (Date.now() - windowStart >= 120000) {
       sentIds.clear();

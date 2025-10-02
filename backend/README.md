@@ -27,6 +27,12 @@ Server runs at `http://localhost:4000`.
 
 ### API-FOOTBALL (Fallback)
 - **Environment Variable**: `API_FOOTBALL_KEY`
+
+### News API (Optional)
+- **Free Tier**: 1000 requests/month
+- **Registration**: https://newsapi.org/register
+- **Environment Variable**: `NEWS_API_KEY`
+- **Purpose**: Additional sport news from various sources
 - Used as fallback if Football Data API is not available
 
 ## Auth

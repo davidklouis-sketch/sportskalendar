@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test Ticker Stream</title>
+</head>
+<body>
+    <h1>Test Ticker Stream</h1>
+    <div id="status">Connecting...</div>
+    <div id="messages"></div>
+
+    <script>
+        const status = document.getElementById('status');
+        const messages = document.getElementById('messages');
+        
+        const url = 'http://localhost:4000/api/ticker/stream';
+        const ev = new EventSource(url);
+        
+        ev.onopen = () => {
+            status.textContent = 'Connected!';
+            status.style.color = 'green';
+        };
+        
+        ev.onmessage = (e) => {
+            try {
+                const data = JSON.parse(e.data);
+                const div = document.createElement('div');
+                div.innerHTML = `
+                    <strong>${data.type}</strong> - ${data.message} 
+                    <small>(${data.source || 'Unknown'})</small>
+                    <br>
+                `;
+                messages.appendChild(div);
+            } catch (error) {
+                console.error('Error parsing:', error);
+            }
+        };
+        
+        ev.onerror = (error) => {
+            status.textContent = 'Error: ' + error;
+            status.style.color = 'red';
+        };
+    </script>
+</body>
+</html>
