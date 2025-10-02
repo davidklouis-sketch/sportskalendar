@@ -3,6 +3,7 @@ import cors from 'cors';
 import dotenv from 'dotenv';
 
 import { authRouter } from './routes/auth';
+import { authEnhancedRouter } from './routes/auth-enhanced';
 import { scoresRouter } from './routes/scores';
 import { highlightsRouter } from './routes/highlights';
 import { calendarRouter } from './routes/calendar';
@@ -15,6 +16,7 @@ import { userRouter } from './routes/user';
 import { liveRouter } from './routes/live';
 import { requireAuth } from './middleware/auth';
 import { seedDevUser, seedHighlights } from './store/memory';
+import { testConnection, initializeDatabase, closeDatabase } from './database/connection';
 
 dotenv.config();
 
@@ -47,6 +49,7 @@ app.get('/api/health', (_req, res) => {
 });
 
 app.use('/api/auth', authRouter);
+app.use('/api/auth', authEnhancedRouter);
 app.use('/api/scores', scoresRouter);
 app.use('/api/highlights', highlightsRouter);
 app.use('/api/calendar', calendarRouter);
@@ -71,11 +74,48 @@ app.get('/api/user/me', requireAuth, (req, res) => {
 });
 
 const PORT = process.env.PORT || 4000;
-seedDevUser().catch(() => {});
-seedHighlights();
-app.listen(PORT, () => {
-  // eslint-disable-next-line no-console
-  console.log(`Backend listening on http://localhost:${PORT}`);
+
+// Initialize database and start server
+async function startServer() {
+  try {
+    // Test database connection
+    const dbConnected = await testConnection();
+    if (!dbConnected) {
+      console.error('❌ Database connection failed. Starting with in-memory storage only.');
+    } else {
+      // Initialize database schema
+      await initializeDatabase();
+      console.log('✅ Database initialized successfully');
+    }
+
+    // Seed development data
+    await seedDevUser().catch(() => {});
+    seedHighlights();
+
+    // Start server
+    app.listen(PORT, () => {
+      console.log(`✅ Backend listening on http://localhost:${PORT}`);
+      console.log(`📊 Database: ${dbConnected ? 'Connected' : 'In-Memory Only'}`);
+    });
+  } catch (error) {
+    console.error('❌ Failed to start server:', error);
+    process.exit(1);
+  }
+}
+
+// Graceful shutdown
+process.on('SIGINT', async () => {
+  console.log('\n🛑 Shutting down server...');
+  await closeDatabase();
+  process.exit(0);
 });
+
+process.on('SIGTERM', async () => {
+  console.log('\n🛑 Shutting down server...');
+  await closeDatabase();
+  process.exit(0);
+});
+
+startServer();
 
 
