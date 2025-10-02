@@ -31,13 +31,17 @@ export const enhancedSecurityMiddleware = [
   // Cookie parser
   cookieParser(),
   
-  // General rate limiting
+  // General rate limiting (relaxed for development)
   rateLimit({ 
     windowMs: 60_000, 
-    max: 100,
+    max: 500, // Increased from 100 to 500
     message: 'Too many requests from this IP, please try again later.',
     standardHeaders: true,
     legacyHeaders: false,
+    skip: (req) => {
+      // Skip rate limiting for health checks and static assets
+      return req.path === '/api/health' || req.path.startsWith('/static');
+    }
   }),
   
   // Request size limiting
@@ -80,14 +84,18 @@ export const enhancedSecurityMiddleware = [
   }
 ];
 
-// Auth-specific rate limiting
+// Auth-specific rate limiting (relaxed for development)
 export const authRateLimit = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 5, // 5 attempts per IP
+  max: 20, // Increased from 5 to 20 attempts per IP
   message: 'Too many authentication attempts, please try again later.',
   standardHeaders: true,
   legacyHeaders: false,
   skipSuccessfulRequests: true,
+  skip: (req) => {
+    // Skip rate limiting for development environment
+    return process.env.NODE_ENV !== 'production';
+  }
 });
 
 // Password validation
