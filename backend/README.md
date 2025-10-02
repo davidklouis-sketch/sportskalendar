@@ -2,7 +2,12 @@
 
 ## Setup
 
-- Create a `.env` file (see `.env.example`)
+- Create a `.env` file with the following variables:
+  ```
+  PORT=4000
+  JWT_SECRET=your-super-secret-jwt-key-here
+  FOOTBALL_DATA_KEY=your-football-data-api-key-here
+  ```
 - Install deps and run dev server:
 
 ```bash
@@ -11,6 +16,18 @@ npm run dev
 ```
 
 Server runs at `http://localhost:4000`.
+
+## API Keys
+
+### Football Data API (Recommended)
+- **Free Tier**: 10 requests/minute, access to major European leagues
+- **Registration**: https://www.football-data.org/client/register
+- **Environment Variable**: `FOOTBALL_DATA_KEY`
+- **Supported Leagues**: Premier League, Bundesliga, Champions League, European Championship
+
+### API-FOOTBALL (Fallback)
+- **Environment Variable**: `API_FOOTBALL_KEY`
+- Used as fallback if Football Data API is not available
 
 ## Auth
 - POST `/api/auth/register` { email, password, displayName }

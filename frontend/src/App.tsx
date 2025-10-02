@@ -1,5 +1,5 @@
 import { BrowserRouter, Routes, Route, Navigate, Link } from 'react-router-dom';
-import { useEffect, useState, type ReactNode, type FormEvent } from 'react';
+import { useEffect, type ReactNode, type FormEvent } from 'react';
 import './App.css';
 import { useAuth } from './store/auth';
 import Scoreboard from './components/Scoreboard';
@@ -188,22 +188,13 @@ function Layout({ children }: { children: React.ReactNode }) {
 }
 
 function Home() {
-  const [focus, setFocus] = useState<'all' | 'scoreboard' | 'ticker' | 'highlights' | 'calendar' | 'community'>('all');
   return (
     <div id="top" className="container" style={{ padding: '16px 0', display: 'grid', gap: 16 }}>
-      <div className="card scroller" style={{ padding: 12 }}>
-        <button className="btn secondary" onClick={() => setFocus('all')}>Alle</button>
-        <button className="btn secondary" onClick={() => setFocus('scoreboard')}>Scoreboard</button>
-        <button className="btn secondary" onClick={() => setFocus('ticker')}>Ticker</button>
-        <button className="btn secondary" onClick={() => setFocus('highlights')}>Highlights</button>
-        <button className="btn secondary" onClick={() => setFocus('calendar')}>Kalender</button>
-        <button className="btn secondary" onClick={() => setFocus('community')}>Community</button>
-      </div>
-      {(focus === 'all' || focus === 'scoreboard') && <HeaderScoreboard />}
-      {(focus === 'all' || focus === 'ticker') && <LiveTicker />}
-      {(focus === 'all' || focus === 'highlights') && <HighlightsSection />}
-      {(focus === 'all' || focus === 'calendar') && <Calendar />}
-      {(focus === 'all' || focus === 'community') && <Community />}
+      <HeaderScoreboard />
+      <LiveTicker />
+      <HighlightsSection />
+      <Calendar />
+      <Community />
     </div>
   );
 }
