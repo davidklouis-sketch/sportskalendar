@@ -1,0 +1,26 @@
+# Node
+**/node_modules/
+npm-debug.log*
+yarn-error.log*
+
+# Env
+.env
+.env.*
+
+# OS/Editor
+.DS_Store
+
+# Cache
+**/.turbo/
+**/.cache/
+**/.vite/
+**/coverage/
+
+# Build artifacts
+# NOTE: We intentionally keep dist in the repo per request to upload build
+# frontend/dist and backend/dist are NOT ignored
+
+# Local data files
+backend/data/*.json
+
+
