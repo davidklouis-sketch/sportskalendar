@@ -241,7 +241,7 @@ function TopNav() {
                 Profil
               </Link>
               
-              {/* Admin Link */}
+              {/* Admin Link - Nur für Admins sichtbar */}
               {user.role === 'admin' && (
                 <Link
                   to="/admin"
@@ -252,21 +252,27 @@ function TopNav() {
                     padding: '10px 16px',
                     borderRadius: '10px',
                     textDecoration: 'none',
-                    color: isDarkMode ? '#f9fafb' : '#374151',
+                    color: '#ffffff',
                     fontSize: '14px',
                     fontWeight: '600',
                     transition: 'all 0.3s ease',
-                    background: 'transparent'
+                    background: 'linear-gradient(135deg, #dc2626, #b91c1c)',
+                    border: '1px solid #dc2626',
+                    boxShadow: '0 2px 4px rgba(220, 38, 38, 0.2)'
                   }}
                   onMouseEnter={(e) => {
-                    e.currentTarget.style.background = isDarkMode ? '#374151' : '#f3f4f6';
+                    e.currentTarget.style.background = 'linear-gradient(135deg, #b91c1c, #991b1b)';
+                    e.currentTarget.style.transform = 'translateY(-1px)';
+                    e.currentTarget.style.boxShadow = '0 4px 8px rgba(220, 38, 38, 0.3)';
                   }}
                   onMouseLeave={(e) => {
-                    e.currentTarget.style.background = 'transparent';
+                    e.currentTarget.style.background = 'linear-gradient(135deg, #dc2626, #b91c1c)';
+                    e.currentTarget.style.transform = 'translateY(0)';
+                    e.currentTarget.style.boxShadow = '0 2px 4px rgba(220, 38, 38, 0.2)';
                   }}
                 >
-                  <span style={{ fontSize: '16px' }}>⚙️</span>
-                  Admin
+                  <span style={{ fontSize: '16px' }}>🛡️</span>
+                  Admin Portal
                 </Link>
               )}
               
