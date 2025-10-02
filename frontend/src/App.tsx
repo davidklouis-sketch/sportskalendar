@@ -470,23 +470,92 @@ function Footer() {
 
 function LoginPage() {
   const { login } = useAuth();
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState('');
+  const [success, setSuccess] = useState('');
+
   async function onSubmit(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
-    const form = new FormData(e.currentTarget);
-    const email = String(form.get('email'));
-    const password = String(form.get('password'));
-    await login(email, password);
-    window.location.href = '/';
+    setIsLoading(true);
+    setError('');
+    setSuccess('');
+
+    try {
+      const form = new FormData(e.currentTarget);
+      const email = String(form.get('email'));
+      const password = String(form.get('password'));
+      
+      await login(email, password);
+      
+      setSuccess('✅ Login erfolgreich! Weiterleitung...');
+      setTimeout(() => {
+        window.location.href = '/';
+      }, 1000);
+    } catch (err: any) {
+      console.error('Login error:', err);
+      setError(err.response?.data?.message || err.message || 'Login fehlgeschlagen. Bitte prüfen Sie Ihre Anmeldedaten.');
+    } finally {
+      setIsLoading(false);
+    }
   }
+
   return (
     <div className="auth-page">
       <h2>Login</h2>
+      
+      {error && (
+        <div style={{
+          background: '#fee2e2',
+          color: '#dc2626',
+          padding: '12px',
+          borderRadius: '8px',
+          marginBottom: '16px',
+          border: '1px solid #fecaca'
+        }}>
+          ⚠️ {error}
+        </div>
+      )}
+
+      {success && (
+        <div style={{
+          background: '#d1fae5',
+          color: '#059669',
+          padding: '12px',
+          borderRadius: '8px',
+          marginBottom: '16px',
+          border: '1px solid #a7f3d0'
+        }}>
+          {success}
+        </div>
+      )}
+
       <form onSubmit={onSubmit}>
-        <input name="email" type="email" placeholder="E-Mail" required />
-        <input name="password" type="password" placeholder="Passwort" required />
-        <button type="submit">Einloggen</button>
+        <input 
+          name="email" 
+          type="email" 
+          placeholder="E-Mail" 
+          required 
+          disabled={isLoading}
+        />
+        <input 
+          name="password" 
+          type="password" 
+          placeholder="Passwort" 
+          required 
+          disabled={isLoading}
+        />
+        <button type="submit" disabled={isLoading}>
+          {isLoading ? 'Wird eingeloggt...' : 'Einloggen'}
+        </button>
       </form>
-      <p>
+      
+      <div style={{ marginTop: '16px', fontSize: '14px', color: '#6b7280' }}>
+        <strong>Demo-Benutzer:</strong><br />
+        <strong>Admin:</strong> admin@sportskalender.local / admin123<br />
+        <strong>User:</strong> demo@sportskalender.local / password
+      </div>
+
+      <p style={{ marginTop: '20px' }}>
         Kein Konto? <Link to="/register">Registrieren</Link>
       </p>
     </div>
@@ -495,25 +564,93 @@ function LoginPage() {
 
 function RegisterPage() {
   const { register } = useAuth();
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState('');
+  const [success, setSuccess] = useState('');
+
   async function onSubmit(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
-    const form = new FormData(e.currentTarget);
-    const email = String(form.get('email'));
-    const password = String(form.get('password'));
-    const displayName = String(form.get('displayName'));
-    await register(email, password, displayName);
-    window.location.href = '/login';
+    setIsLoading(true);
+    setError('');
+    setSuccess('');
+
+    try {
+      const form = new FormData(e.currentTarget);
+      const email = String(form.get('email'));
+      const password = String(form.get('password'));
+      const displayName = String(form.get('displayName'));
+      
+      await register(email, password, displayName);
+      
+      setSuccess('✅ Registrierung erfolgreich! Weiterleitung zum Login...');
+      setTimeout(() => {
+        window.location.href = '/login';
+      }, 1500);
+    } catch (err: any) {
+      console.error('Registration error:', err);
+      setError(err.response?.data?.message || err.message || 'Registrierung fehlgeschlagen. Bitte versuchen Sie es erneut.');
+    } finally {
+      setIsLoading(false);
+    }
   }
+
   return (
     <div className="auth-page">
       <h2>Registrieren</h2>
+      
+      {error && (
+        <div style={{
+          background: '#fee2e2',
+          color: '#dc2626',
+          padding: '12px',
+          borderRadius: '8px',
+          marginBottom: '16px',
+          border: '1px solid #fecaca'
+        }}>
+          ⚠️ {error}
+        </div>
+      )}
+
+      {success && (
+        <div style={{
+          background: '#d1fae5',
+          color: '#059669',
+          padding: '12px',
+          borderRadius: '8px',
+          marginBottom: '16px',
+          border: '1px solid #a7f3d0'
+        }}>
+          {success}
+        </div>
+      )}
+
       <form onSubmit={onSubmit}>
-        <input name="displayName" placeholder="Anzeigename" required />
-        <input name="email" type="email" placeholder="E-Mail" required />
-        <input name="password" type="password" placeholder="Passwort" required />
-        <button type="submit">Account erstellen</button>
+        <input 
+          name="displayName" 
+          placeholder="Anzeigename" 
+          required 
+          disabled={isLoading}
+        />
+        <input 
+          name="email" 
+          type="email" 
+          placeholder="E-Mail" 
+          required 
+          disabled={isLoading}
+        />
+        <input 
+          name="password" 
+          type="password" 
+          placeholder="Passwort (mindestens 8 Zeichen)" 
+          required 
+          disabled={isLoading}
+        />
+        <button type="submit" disabled={isLoading}>
+          {isLoading ? 'Wird registriert...' : 'Account erstellen'}
+        </button>
       </form>
-      <p>
+      
+      <p style={{ marginTop: '20px' }}>
         Bereits Konto? <Link to="/login">Login</Link>
       </p>
     </div>
