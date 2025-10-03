@@ -9,6 +9,7 @@ import CalendarWidget from './components/Calendar';
 import CommunityStream from './components/Community';
 import AdminPage from './pages/Admin';
 import ProfilePage from './pages/Profile';
+import logoImage from './assets/logo.png';
 
 function RequireAuth({ children }: { children: ReactNode }) {
   const { user, isHydrating } = useAuth();
@@ -103,16 +104,12 @@ function TopNav() {
             color: 'inherit',
             fontSize: '26px',
             fontWeight: '900',
-            background: 'linear-gradient(135deg, #3b82f6, #8b5cf6, #ec4899)',
-            WebkitBackgroundClip: 'text',
-            WebkitTextFillColor: 'transparent',
-            backgroundClip: 'text',
             transition: 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
             position: 'relative'
           }}
           onMouseEnter={(e) => {
             e.currentTarget.style.transform = 'scale(1.05) translateY(-2px)';
-            e.currentTarget.style.filter = 'brightness(1.2)';
+            e.currentTarget.style.filter = 'brightness(1.1)';
           }}
           onMouseLeave={(e) => {
             e.currentTarget.style.transform = 'scale(1) translateY(0)';
@@ -123,19 +120,57 @@ function TopNav() {
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
-            width: '48px',
-            height: '48px',
-            borderRadius: '16px',
-            background: 'linear-gradient(135deg, #3b82f6, #8b5cf6)',
-            boxShadow: '0 8px 24px rgba(59, 130, 246, 0.3)',
-            fontSize: '24px',
-            transition: 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)'
+            width: '56px',
+            height: '56px',
+            borderRadius: '18px',
+            background: isDarkMode 
+              ? 'linear-gradient(135deg, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.05))'
+              : 'linear-gradient(135deg, rgba(59, 130, 246, 0.1), rgba(139, 92, 246, 0.05))',
+            boxShadow: isDarkMode 
+              ? '0 8px 32px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.1)'
+              : '0 8px 32px rgba(59, 130, 246, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.8)',
+            border: `1px solid ${isDarkMode ? 'rgba(255, 255, 255, 0.1)' : 'rgba(59, 130, 246, 0.2)'}`,
+            transition: 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
+            overflow: 'hidden',
+            position: 'relative'
           }}>
-            🏆
+            <img 
+              src={logoImage} 
+              alt="SportsKalender Logo"
+              style={{
+                width: '40px',
+                height: '40px',
+                objectFit: 'contain',
+                filter: isDarkMode ? 'brightness(1.2) contrast(1.1)' : 'none',
+                transition: 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)'
+              }}
+            />
+            {/* Subtle glow effect */}
+            <div style={{
+              position: 'absolute',
+              top: '0',
+              left: '0',
+              right: '0',
+              bottom: '0',
+              background: isDarkMode 
+                ? 'radial-gradient(circle at center, rgba(59, 130, 246, 0.1) 0%, transparent 70%)'
+                : 'radial-gradient(circle at center, rgba(59, 130, 246, 0.05) 0%, transparent 70%)',
+              borderRadius: '18px',
+              pointerEvents: 'none'
+            }} />
           </div>
           <span style={{
             letterSpacing: '-0.02em',
-            position: 'relative'
+            position: 'relative',
+            background: isDarkMode 
+              ? 'linear-gradient(135deg, #f8fafc, #e2e8f0, #cbd5e1)'
+              : 'linear-gradient(135deg, #1e293b, #334155, #475569)',
+            WebkitBackgroundClip: 'text',
+            WebkitTextFillColor: 'transparent',
+            backgroundClip: 'text',
+            textShadow: isDarkMode 
+              ? '0 2px 4px rgba(0, 0, 0, 0.3)'
+              : '0 1px 2px rgba(0, 0, 0, 0.1)'
           }}>
             SportsKalender
           </span>
@@ -161,7 +196,7 @@ function TopNav() {
               href={item.href}
               onClick={(e) => {
                 e.preventDefault();
-                const element = document.querySelector(item.href);
+                const element = document.querySelector(item.href) as HTMLElement;
                 if (element) {
                   const offsetTop = element.offsetTop - 80; // Account for sticky nav height
                   window.scrollTo({
@@ -489,7 +524,7 @@ function TopNav() {
               onClick={(e) => {
                 e.preventDefault();
                 setIsMobileMenuOpen(false);
-                const element = document.querySelector(item.href);
+                const element = document.querySelector(item.href) as HTMLElement;
                 if (element) {
                   const offsetTop = element.offsetTop - 80; // Account for sticky nav height
                   window.scrollTo({
@@ -637,11 +672,200 @@ function Community() {
 }
 
 function Footer() {
+  const [isDarkMode, setIsDarkMode] = useState(false);
+  
+  useEffect(() => {
+    if (typeof document !== 'undefined') {
+      const stored = localStorage.getItem('theme');
+      const isDark = stored === 'dark';
+      setIsDarkMode(isDark);
+    }
+  }, []);
+
   return (
-    <footer className="footer container">
-      <div>Partner</div>
-      <div>
-        <Link to="/datenschutz">Datenschutz</Link> | <Link to="/impressum">Impressum</Link> | <Link to="/faq">FAQ</Link>
+    <footer className="footer container" style={{
+      background: isDarkMode 
+        ? 'linear-gradient(135deg, rgba(15, 23, 42, 0.95), rgba(30, 41, 59, 0.95))'
+        : 'linear-gradient(135deg, rgba(248, 250, 252, 0.95), rgba(241, 245, 249, 0.95))',
+      borderTop: `1px solid ${isDarkMode ? 'rgba(71, 85, 105, 0.3)' : 'rgba(229, 231, 235, 0.5)'}`,
+      padding: '48px 32px',
+      marginTop: '64px',
+      backdropFilter: 'blur(20px)',
+      WebkitBackdropFilter: 'blur(20px)'
+    }}>
+      <div style={{
+        maxWidth: '1400px',
+        margin: '0 auto',
+        display: 'grid',
+        gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))',
+        gap: '32px',
+        alignItems: 'center'
+      }}>
+        {/* Logo Section */}
+        <div style={{
+          display: 'flex',
+          alignItems: 'center',
+          gap: '16px'
+        }}>
+          <div style={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            width: '48px',
+            height: '48px',
+            borderRadius: '14px',
+            background: isDarkMode 
+              ? 'linear-gradient(135deg, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.05))'
+              : 'linear-gradient(135deg, rgba(59, 130, 246, 0.1), rgba(139, 92, 246, 0.05))',
+            boxShadow: isDarkMode 
+              ? '0 4px 16px rgba(0, 0, 0, 0.2)'
+              : '0 4px 16px rgba(59, 130, 246, 0.15)',
+            border: `1px solid ${isDarkMode ? 'rgba(255, 255, 255, 0.1)' : 'rgba(59, 130, 246, 0.2)'}`
+          }}>
+            <img 
+              src={logoImage} 
+              alt="SportsKalender Logo"
+              style={{
+                width: '32px',
+                height: '32px',
+                objectFit: 'contain',
+                filter: isDarkMode ? 'brightness(1.1)' : 'none'
+              }}
+            />
+          </div>
+          <div>
+            <h3 style={{
+              margin: '0',
+              fontSize: '18px',
+              fontWeight: '700',
+              color: isDarkMode ? '#f8fafc' : '#1e293b',
+              letterSpacing: '-0.01em'
+            }}>
+              SportsKalender
+            </h3>
+            <p style={{
+              margin: '4px 0 0 0',
+              fontSize: '14px',
+              color: isDarkMode ? '#94a3b8' : '#64748b',
+              lineHeight: '1.4'
+            }}>
+              Dein digitaler Sportkalender
+            </p>
+          </div>
+        </div>
+
+        {/* Links Section */}
+        <div style={{
+          display: 'flex',
+          flexDirection: 'column',
+          gap: '12px'
+        }}>
+          <h4 style={{
+            margin: '0 0 8px 0',
+            fontSize: '16px',
+            fontWeight: '600',
+            color: isDarkMode ? '#e2e8f0' : '#475569'
+          }}>
+            Rechtliches
+          </h4>
+          <div style={{
+            display: 'flex',
+            flexDirection: 'column',
+            gap: '8px'
+          }}>
+            <Link 
+              to="/datenschutz" 
+              style={{
+                color: isDarkMode ? '#94a3b8' : '#64748b',
+                textDecoration: 'none',
+                fontSize: '14px',
+                transition: 'color 0.2s ease'
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.color = isDarkMode ? '#e2e8f0' : '#475569';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.color = isDarkMode ? '#94a3b8' : '#64748b';
+              }}
+            >
+              Datenschutz
+            </Link>
+            <Link 
+              to="/impressum" 
+              style={{
+                color: isDarkMode ? '#94a3b8' : '#64748b',
+                textDecoration: 'none',
+                fontSize: '14px',
+                transition: 'color 0.2s ease'
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.color = isDarkMode ? '#e2e8f0' : '#475569';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.color = isDarkMode ? '#94a3b8' : '#64748b';
+              }}
+            >
+              Impressum
+            </Link>
+            <Link 
+              to="/faq" 
+              style={{
+                color: isDarkMode ? '#94a3b8' : '#64748b',
+                textDecoration: 'none',
+                fontSize: '14px',
+                transition: 'color 0.2s ease'
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.color = isDarkMode ? '#e2e8f0' : '#475569';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.color = isDarkMode ? '#94a3b8' : '#64748b';
+              }}
+            >
+              FAQ
+            </Link>
+          </div>
+        </div>
+
+        {/* Partner Section */}
+        <div style={{
+          display: 'flex',
+          flexDirection: 'column',
+          gap: '12px'
+        }}>
+          <h4 style={{
+            margin: '0 0 8px 0',
+            fontSize: '16px',
+            fontWeight: '600',
+            color: isDarkMode ? '#e2e8f0' : '#475569'
+          }}>
+            Partner
+          </h4>
+          <p style={{
+            margin: '0',
+            fontSize: '14px',
+            color: isDarkMode ? '#94a3b8' : '#64748b',
+            lineHeight: '1.4'
+          }}>
+            Werde Partner und erweitere deine Reichweite im Sportbereich.
+          </p>
+        </div>
+      </div>
+      
+      {/* Copyright */}
+      <div style={{
+        marginTop: '32px',
+        paddingTop: '24px',
+        borderTop: `1px solid ${isDarkMode ? 'rgba(71, 85, 105, 0.3)' : 'rgba(229, 231, 235, 0.5)'}`,
+        textAlign: 'center'
+      }}>
+        <p style={{
+          margin: '0',
+          fontSize: '14px',
+          color: isDarkMode ? '#64748b' : '#94a3b8'
+        }}>
+          © 2025 SportsKalender. Alle Rechte vorbehalten.
+        </p>
       </div>
     </footer>
   );
@@ -680,6 +904,57 @@ function LoginPage() {
 
   return (
     <div className="auth-page">
+      {/* Logo Section */}
+      <div style={{
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        marginBottom: '32px'
+      }}>
+        <div style={{
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          width: '80px',
+          height: '80px',
+          borderRadius: '24px',
+          background: 'linear-gradient(135deg, rgba(59, 130, 246, 0.1), rgba(139, 92, 246, 0.05))',
+          boxShadow: '0 8px 32px rgba(59, 130, 246, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.8)',
+          border: '1px solid rgba(59, 130, 246, 0.2)',
+          marginBottom: '16px'
+        }}>
+          <img 
+            src="/logo.png" 
+            alt="SportsKalender Logo"
+            style={{
+              width: '56px',
+              height: '56px',
+              objectFit: 'contain'
+            }}
+          />
+        </div>
+        <h1 style={{
+          margin: '0',
+          fontSize: '28px',
+          fontWeight: '800',
+          background: 'linear-gradient(135deg, #3b82f6, #8b5cf6, #ec4899)',
+          WebkitBackgroundClip: 'text',
+          WebkitTextFillColor: 'transparent',
+          backgroundClip: 'text',
+          letterSpacing: '-0.02em'
+        }}>
+          SportsKalender
+        </h1>
+        <p style={{
+          margin: '8px 0 0 0',
+          fontSize: '16px',
+          color: '#64748b',
+          textAlign: 'center'
+        }}>
+          Dein digitaler Sportkalender
+        </p>
+      </div>
+      
       <h2>Login</h2>
       
       {error && (
@@ -775,6 +1050,57 @@ function RegisterPage() {
 
   return (
     <div className="auth-page">
+      {/* Logo Section */}
+      <div style={{
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        marginBottom: '32px'
+      }}>
+        <div style={{
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          width: '80px',
+          height: '80px',
+          borderRadius: '24px',
+          background: 'linear-gradient(135deg, rgba(59, 130, 246, 0.1), rgba(139, 92, 246, 0.05))',
+          boxShadow: '0 8px 32px rgba(59, 130, 246, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.8)',
+          border: '1px solid rgba(59, 130, 246, 0.2)',
+          marginBottom: '16px'
+        }}>
+          <img 
+            src="/logo.png" 
+            alt="SportsKalender Logo"
+            style={{
+              width: '56px',
+              height: '56px',
+              objectFit: 'contain'
+            }}
+          />
+        </div>
+        <h1 style={{
+          margin: '0',
+          fontSize: '28px',
+          fontWeight: '800',
+          background: 'linear-gradient(135deg, #3b82f6, #8b5cf6, #ec4899)',
+          WebkitBackgroundClip: 'text',
+          WebkitTextFillColor: 'transparent',
+          backgroundClip: 'text',
+          letterSpacing: '-0.02em'
+        }}>
+          SportsKalender
+        </h1>
+        <p style={{
+          margin: '8px 0 0 0',
+          fontSize: '16px',
+          color: '#64748b',
+          textAlign: 'center'
+        }}>
+          Dein digitaler Sportkalender
+        </p>
+      </div>
+      
       <h2>Registrieren</h2>
       
       {error && (
