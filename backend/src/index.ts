@@ -26,6 +26,9 @@ dotenv.config();
 
 const app = express();
 
+// Trust proxy for rate limiting behind reverse proxy (NPM)
+app.set('trust proxy', true);
+
 // CORS-Konfiguration
 const corsOptions = {
   origin: [
