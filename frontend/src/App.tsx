@@ -60,36 +60,36 @@ function TopNav() {
   }, []);
   
   const navItems = [
-    { href: '#scoreboard', label: 'Scoreboard', icon: '🏆' },
-    { href: '#ticker', label: 'Ticker', icon: '📰' },
-    { href: '#highlights', label: 'Highlights', icon: '🎥' },
-    { href: '#calendar', label: 'Kalender', icon: '📅' },
-    { href: '#community', label: 'Community', icon: '💬' }
+    { href: '#scoreboard', label: 'Scoreboard', icon: '🏆', priority: 'high' },
+    { href: '#calendar', label: 'Kalender', icon: '📅', priority: 'high' },
+    { href: '#ticker', label: 'Live Ticker', icon: '📰', priority: 'medium' },
+    { href: '#highlights', label: 'Highlights', icon: '🎥', priority: 'medium' },
+    { href: '#community', label: 'Community', icon: '💬', priority: 'low' }
   ];
   
   return (
     <nav style={{
       background: isDarkMode 
-        ? 'linear-gradient(135deg, #1f2937, #111827)'
-        : 'linear-gradient(135deg, #ffffff, #f8fafc)',
-      borderBottom: `1px solid ${isDarkMode ? '#374151' : '#e5e7eb'}`,
+        ? 'linear-gradient(135deg, rgba(15, 23, 42, 0.95), rgba(30, 41, 59, 0.95))'
+        : 'linear-gradient(135deg, rgba(255, 255, 255, 0.95), rgba(248, 250, 252, 0.95))',
+      borderBottom: `1px solid ${isDarkMode ? 'rgba(71, 85, 105, 0.3)' : 'rgba(229, 231, 235, 0.5)'}`,
       boxShadow: isDarkMode 
-        ? '0 4px 20px rgba(0,0,0,0.3)'
-        : '0 4px 20px rgba(0,0,0,0.1)',
+        ? '0 8px 32px rgba(0, 0, 0, 0.4), 0 0 0 1px rgba(71, 85, 105, 0.1)'
+        : '0 8px 32px rgba(0, 0, 0, 0.1), 0 0 0 1px rgba(229, 231, 235, 0.5)',
       position: 'sticky',
       top: 0,
       zIndex: 1000,
-      backdropFilter: 'blur(10px)',
-      WebkitBackdropFilter: 'blur(10px)'
+      backdropFilter: 'blur(20px)',
+      WebkitBackdropFilter: 'blur(20px)'
     }}>
       <div style={{
-        maxWidth: '1200px',
+        maxWidth: '1400px',
         margin: '0 auto',
-        padding: '0 24px',
+        padding: '0 32px',
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'space-between',
-        height: '70px'
+        height: '80px'
       }}>
         {/* Logo */}
         <a 
@@ -98,33 +98,62 @@ function TopNav() {
           style={{
             display: 'flex',
             alignItems: 'center',
-            gap: '12px',
+            gap: '16px',
             textDecoration: 'none',
             color: 'inherit',
-            fontSize: '24px',
-            fontWeight: '800',
-            background: 'linear-gradient(135deg, #3b82f6, #8b5cf6)',
+            fontSize: '26px',
+            fontWeight: '900',
+            background: 'linear-gradient(135deg, #3b82f6, #8b5cf6, #ec4899)',
             WebkitBackgroundClip: 'text',
             WebkitTextFillColor: 'transparent',
             backgroundClip: 'text',
-            transition: 'all 0.3s ease'
+            transition: 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
+            position: 'relative'
           }}
           onMouseEnter={(e) => {
-            e.currentTarget.style.transform = 'scale(1.05)';
+            e.currentTarget.style.transform = 'scale(1.05) translateY(-2px)';
+            e.currentTarget.style.filter = 'brightness(1.2)';
           }}
           onMouseLeave={(e) => {
-            e.currentTarget.style.transform = 'scale(1)';
+            e.currentTarget.style.transform = 'scale(1) translateY(0)';
+            e.currentTarget.style.filter = 'brightness(1)';
           }}
         >
-          <span style={{ fontSize: '28px' }}>🏆</span>
-          SportsKalender
+          <div style={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            width: '48px',
+            height: '48px',
+            borderRadius: '16px',
+            background: 'linear-gradient(135deg, #3b82f6, #8b5cf6)',
+            boxShadow: '0 8px 24px rgba(59, 130, 246, 0.3)',
+            fontSize: '24px',
+            transition: 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)'
+          }}>
+            🏆
+          </div>
+          <span style={{
+            letterSpacing: '-0.02em',
+            position: 'relative'
+          }}>
+            SportsKalender
+          </span>
         </a>
         
         {/* Desktop Navigation */}
         <div className="desktop-nav" style={{
           display: 'flex',
           alignItems: 'center',
-          gap: '8px'
+          gap: '4px',
+          background: isDarkMode 
+            ? 'rgba(71, 85, 105, 0.1)' 
+            : 'rgba(243, 244, 246, 0.5)',
+          padding: '8px',
+          borderRadius: '20px',
+          border: `1px solid ${isDarkMode ? 'rgba(71, 85, 105, 0.2)' : 'rgba(229, 231, 235, 0.5)'}`,
+          backdropFilter: 'blur(10px)',
+          WebkitBackdropFilter: 'blur(10px)'
         }}>
           {navItems.map((item) => (
             <a
@@ -144,31 +173,54 @@ function TopNav() {
               style={{
                 display: 'flex',
                 alignItems: 'center',
-                gap: '8px',
-                padding: '12px 16px',
-                borderRadius: '10px',
+                gap: '10px',
+                padding: '14px 20px',
+                borderRadius: '16px',
                 textDecoration: 'none',
-                color: isDarkMode ? '#f9fafb' : '#374151',
-                fontSize: '14px',
+                color: isDarkMode ? '#e2e8f0' : '#475569',
+                fontSize: '15px',
                 fontWeight: '600',
-                transition: 'all 0.3s ease',
+                transition: 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
                 position: 'relative',
                 overflow: 'hidden',
-                cursor: 'pointer'
+                cursor: 'pointer',
+                background: 'transparent',
+                border: '1px solid transparent'
               }}
               onMouseEnter={(e) => {
-                e.currentTarget.style.background = isDarkMode ? '#374151' : '#f3f4f6';
-                e.currentTarget.style.transform = 'translateY(-2px)';
-                e.currentTarget.style.boxShadow = '0 4px 12px rgba(0,0,0,0.15)';
+                e.currentTarget.style.background = isDarkMode 
+                  ? 'linear-gradient(135deg, rgba(59, 130, 246, 0.1), rgba(139, 92, 246, 0.1))'
+                  : 'linear-gradient(135deg, rgba(59, 130, 246, 0.05), rgba(139, 92, 246, 0.05))';
+                e.currentTarget.style.borderColor = isDarkMode 
+                  ? 'rgba(59, 130, 246, 0.3)' 
+                  : 'rgba(59, 130, 246, 0.2)';
+                e.currentTarget.style.transform = 'translateY(-3px) scale(1.02)';
+                e.currentTarget.style.boxShadow = isDarkMode 
+                  ? '0 12px 24px rgba(59, 130, 246, 0.15), 0 0 0 1px rgba(59, 130, 246, 0.1)'
+                  : '0 12px 24px rgba(59, 130, 246, 0.1), 0 0 0 1px rgba(59, 130, 246, 0.05)';
+                e.currentTarget.style.color = isDarkMode ? '#f1f5f9' : '#334155';
               }}
               onMouseLeave={(e) => {
                 e.currentTarget.style.background = 'transparent';
-                e.currentTarget.style.transform = 'translateY(0)';
+                e.currentTarget.style.borderColor = 'transparent';
+                e.currentTarget.style.transform = 'translateY(0) scale(1)';
                 e.currentTarget.style.boxShadow = 'none';
+                e.currentTarget.style.color = isDarkMode ? '#e2e8f0' : '#475569';
               }}
             >
-              <span style={{ fontSize: '16px' }}>{item.icon}</span>
-              {item.label}
+              <span style={{ 
+                fontSize: '18px',
+                transition: 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
+                filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.1))'
+              }}>
+                {item.icon}
+              </span>
+              <span style={{
+                letterSpacing: '-0.01em',
+                whiteSpace: 'nowrap'
+              }}>
+                {item.label}
+              </span>
             </a>
           ))}
         </div>
@@ -177,7 +229,15 @@ function TopNav() {
         <div className="user-actions" style={{
           display: 'flex',
           alignItems: 'center',
-          gap: '12px'
+          gap: '8px',
+          background: isDarkMode 
+            ? 'rgba(71, 85, 105, 0.1)' 
+            : 'rgba(243, 244, 246, 0.5)',
+          padding: '8px',
+          borderRadius: '20px',
+          border: `1px solid ${isDarkMode ? 'rgba(71, 85, 105, 0.2)' : 'rgba(229, 231, 235, 0.5)'}`,
+          backdropFilter: 'blur(10px)',
+          WebkitBackdropFilter: 'blur(10px)'
         }}>
           {/* Theme Toggle */}
           <button
@@ -186,23 +246,38 @@ function TopNav() {
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
-              width: '44px',
-              height: '44px',
-              borderRadius: '12px',
+              width: '48px',
+              height: '48px',
+              borderRadius: '16px',
               border: 'none',
-              background: isDarkMode ? '#374151' : '#f3f4f6',
+              background: isDarkMode 
+                ? 'linear-gradient(135deg, rgba(71, 85, 105, 0.8), rgba(55, 65, 81, 0.8))'
+                : 'linear-gradient(135deg, rgba(243, 244, 246, 0.8), rgba(229, 231, 235, 0.8))',
               color: isDarkMode ? '#f9fafb' : '#374151',
               cursor: 'pointer',
-              transition: 'all 0.3s ease',
-              fontSize: '18px'
+              transition: 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
+              fontSize: '20px',
+              boxShadow: isDarkMode 
+                ? '0 4px 12px rgba(0, 0, 0, 0.2)'
+                : '0 4px 12px rgba(0, 0, 0, 0.1)'
             }}
             onMouseEnter={(e) => {
-              e.currentTarget.style.background = isDarkMode ? '#4b5563' : '#e5e7eb';
-              e.currentTarget.style.transform = 'scale(1.1)';
+              e.currentTarget.style.background = isDarkMode 
+                ? 'linear-gradient(135deg, rgba(59, 130, 246, 0.2), rgba(139, 92, 246, 0.2))'
+                : 'linear-gradient(135deg, rgba(59, 130, 246, 0.1), rgba(139, 92, 246, 0.1))';
+              e.currentTarget.style.transform = 'scale(1.1) rotate(15deg)';
+              e.currentTarget.style.boxShadow = isDarkMode 
+                ? '0 8px 20px rgba(59, 130, 246, 0.3)'
+                : '0 8px 20px rgba(59, 130, 246, 0.2)';
             }}
             onMouseLeave={(e) => {
-              e.currentTarget.style.background = isDarkMode ? '#374151' : '#f3f4f6';
-              e.currentTarget.style.transform = 'scale(1)';
+              e.currentTarget.style.background = isDarkMode 
+                ? 'linear-gradient(135deg, rgba(71, 85, 105, 0.8), rgba(55, 65, 81, 0.8))'
+                : 'linear-gradient(135deg, rgba(243, 244, 246, 0.8), rgba(229, 231, 235, 0.8))';
+              e.currentTarget.style.transform = 'scale(1) rotate(0deg)';
+              e.currentTarget.style.boxShadow = isDarkMode 
+                ? '0 4px 12px rgba(0, 0, 0, 0.2)'
+                : '0 4px 12px rgba(0, 0, 0, 0.1)';
             }}
             title={isDarkMode ? 'Zu Light Mode wechseln' : 'Zu Dark Mode wechseln'}
           >
@@ -214,7 +289,7 @@ function TopNav() {
             <div style={{
               display: 'flex',
               alignItems: 'center',
-              gap: '8px'
+              gap: '6px'
             }}>
               {/* Profile Link */}
               <Link
@@ -222,25 +297,43 @@ function TopNav() {
                 style={{
                   display: 'flex',
                   alignItems: 'center',
-                  gap: '8px',
-                  padding: '10px 16px',
-                  borderRadius: '10px',
+                  gap: '10px',
+                  padding: '12px 18px',
+                  borderRadius: '16px',
                   textDecoration: 'none',
-                  color: isDarkMode ? '#f9fafb' : '#374151',
-                  fontSize: '14px',
+                  color: isDarkMode ? '#e2e8f0' : '#475569',
+                  fontSize: '15px',
                   fontWeight: '600',
-                  transition: 'all 0.3s ease',
-                  background: 'transparent'
+                  transition: 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
+                  background: 'transparent',
+                  border: '1px solid transparent'
                 }}
                 onMouseEnter={(e) => {
-                  e.currentTarget.style.background = isDarkMode ? '#374151' : '#f3f4f6';
+                  e.currentTarget.style.background = isDarkMode 
+                    ? 'linear-gradient(135deg, rgba(59, 130, 246, 0.1), rgba(139, 92, 246, 0.1))'
+                    : 'linear-gradient(135deg, rgba(59, 130, 246, 0.05), rgba(139, 92, 246, 0.05))';
+                  e.currentTarget.style.borderColor = isDarkMode 
+                    ? 'rgba(59, 130, 246, 0.3)' 
+                    : 'rgba(59, 130, 246, 0.2)';
+                  e.currentTarget.style.transform = 'translateY(-2px) scale(1.02)';
+                  e.currentTarget.style.boxShadow = isDarkMode 
+                    ? '0 8px 16px rgba(59, 130, 246, 0.15)'
+                    : '0 8px 16px rgba(59, 130, 246, 0.1)';
+                  e.currentTarget.style.color = isDarkMode ? '#f1f5f9' : '#334155';
                 }}
                 onMouseLeave={(e) => {
                   e.currentTarget.style.background = 'transparent';
+                  e.currentTarget.style.borderColor = 'transparent';
+                  e.currentTarget.style.transform = 'translateY(0) scale(1)';
+                  e.currentTarget.style.boxShadow = 'none';
+                  e.currentTarget.style.color = isDarkMode ? '#e2e8f0' : '#475569';
                 }}
               >
-                <span style={{ fontSize: '16px' }}>👤</span>
-                Profil
+                <span style={{ 
+                  fontSize: '18px',
+                  filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.1))'
+                }}>👤</span>
+                <span style={{ letterSpacing: '-0.01em' }}>Profil</span>
               </Link>
               
               {/* Admin Link - Nur für Admins sichtbar */}
@@ -250,31 +343,36 @@ function TopNav() {
                   style={{
                     display: 'flex',
                     alignItems: 'center',
-                    gap: '8px',
-                    padding: '10px 16px',
-                    borderRadius: '10px',
+                    gap: '10px',
+                    padding: '12px 18px',
+                    borderRadius: '16px',
                     textDecoration: 'none',
                     color: '#ffffff',
-                    fontSize: '14px',
+                    fontSize: '15px',
                     fontWeight: '600',
-                    transition: 'all 0.3s ease',
-                    background: 'linear-gradient(135deg, #dc2626, #b91c1c)',
-                    border: '1px solid #dc2626',
-                    boxShadow: '0 2px 4px rgba(220, 38, 38, 0.2)'
+                    transition: 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
+                    background: 'linear-gradient(135deg, #dc2626, #b91c1c, #991b1b)',
+                    border: '1px solid rgba(220, 38, 38, 0.3)',
+                    boxShadow: '0 4px 12px rgba(220, 38, 38, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.1)'
                   }}
                   onMouseEnter={(e) => {
-                    e.currentTarget.style.background = 'linear-gradient(135deg, #b91c1c, #991b1b)';
-                    e.currentTarget.style.transform = 'translateY(-1px)';
-                    e.currentTarget.style.boxShadow = '0 4px 8px rgba(220, 38, 38, 0.3)';
+                    e.currentTarget.style.background = 'linear-gradient(135deg, #b91c1c, #991b1b, #7f1d1d)';
+                    e.currentTarget.style.transform = 'translateY(-3px) scale(1.02)';
+                    e.currentTarget.style.boxShadow = '0 8px 20px rgba(220, 38, 38, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.1)';
+                    e.currentTarget.style.borderColor = 'rgba(220, 38, 38, 0.5)';
                   }}
                   onMouseLeave={(e) => {
-                    e.currentTarget.style.background = 'linear-gradient(135deg, #dc2626, #b91c1c)';
-                    e.currentTarget.style.transform = 'translateY(0)';
-                    e.currentTarget.style.boxShadow = '0 2px 4px rgba(220, 38, 38, 0.2)';
+                    e.currentTarget.style.background = 'linear-gradient(135deg, #dc2626, #b91c1c, #991b1b)';
+                    e.currentTarget.style.transform = 'translateY(0) scale(1)';
+                    e.currentTarget.style.boxShadow = '0 4px 12px rgba(220, 38, 38, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.1)';
+                    e.currentTarget.style.borderColor = 'rgba(220, 38, 38, 0.3)';
                   }}
                 >
-                  <span style={{ fontSize: '16px' }}>🛡️</span>
-                  Admin Portal
+                  <span style={{ 
+                    fontSize: '18px',
+                    filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.3))'
+                  }}>🛡️</span>
+                  <span style={{ letterSpacing: '-0.01em' }}>Admin Portal</span>
                 </Link>
               )}
               
@@ -284,28 +382,34 @@ function TopNav() {
                 style={{
                   display: 'flex',
                   alignItems: 'center',
-                  gap: '8px',
-                  padding: '10px 16px',
-                  borderRadius: '10px',
+                  gap: '10px',
+                  padding: '12px 18px',
+                  borderRadius: '16px',
                   border: 'none',
-                  background: 'linear-gradient(135deg, #ef4444, #dc2626)',
+                  background: 'linear-gradient(135deg, #ef4444, #dc2626, #b91c1c)',
                   color: 'white',
-                  fontSize: '14px',
+                  fontSize: '15px',
                   fontWeight: '600',
                   cursor: 'pointer',
-                  transition: 'all 0.3s ease'
+                  transition: 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
+                  boxShadow: '0 4px 12px rgba(239, 68, 68, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.1)'
                 }}
                 onMouseEnter={(e) => {
-                  e.currentTarget.style.transform = 'translateY(-2px)';
-                  e.currentTarget.style.boxShadow = '0 4px 12px rgba(239, 68, 68, 0.4)';
+                  e.currentTarget.style.background = 'linear-gradient(135deg, #dc2626, #b91c1c, #991b1b)';
+                  e.currentTarget.style.transform = 'translateY(-3px) scale(1.02)';
+                  e.currentTarget.style.boxShadow = '0 8px 20px rgba(239, 68, 68, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.1)';
                 }}
                 onMouseLeave={(e) => {
-                  e.currentTarget.style.transform = 'translateY(0)';
-                  e.currentTarget.style.boxShadow = 'none';
+                  e.currentTarget.style.background = 'linear-gradient(135deg, #ef4444, #dc2626, #b91c1c)';
+                  e.currentTarget.style.transform = 'translateY(0) scale(1)';
+                  e.currentTarget.style.boxShadow = '0 4px 12px rgba(239, 68, 68, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.1)';
                 }}
               >
-                <span style={{ fontSize: '16px' }}>🚪</span>
-                Logout
+                <span style={{ 
+                  fontSize: '18px',
+                  filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.3))'
+                }}>🚪</span>
+                <span style={{ letterSpacing: '-0.01em' }}>Logout</span>
               </button>
             </div>
           ) : (
@@ -428,7 +532,23 @@ function TopNav() {
 
 function LiveTicker() {
   return (
-    <section id="ticker" className="ticker container">
+    <section id="ticker" className="ticker container" style={{
+      background: 'rgba(59, 130, 246, 0.02)',
+      borderRadius: '24px',
+      padding: '32px',
+      border: '1px solid rgba(59, 130, 246, 0.1)',
+      position: 'relative',
+      overflow: 'hidden'
+    }}>
+      <div style={{
+        position: 'absolute',
+        top: '0',
+        left: '0',
+        right: '0',
+        height: '4px',
+        background: 'linear-gradient(90deg, #3b82f6, #8b5cf6, #ec4899)',
+        borderRadius: '24px 24px 0 0'
+      }} />
       <LiveTickerWidget />
     </section>
   );
@@ -436,7 +556,23 @@ function LiveTicker() {
 
 function HighlightsSection() {
   return (
-    <section id="highlights" className="highlights container">
+    <section id="highlights" className="highlights container" style={{
+      background: 'rgba(236, 72, 153, 0.02)',
+      borderRadius: '24px',
+      padding: '32px',
+      border: '1px solid rgba(236, 72, 153, 0.1)',
+      position: 'relative',
+      overflow: 'hidden'
+    }}>
+      <div style={{
+        position: 'absolute',
+        top: '0',
+        left: '0',
+        right: '0',
+        height: '4px',
+        background: 'linear-gradient(90deg, #ec4899, #f97316, #eab308)',
+        borderRadius: '24px 24px 0 0'
+      }} />
       <Highlights />
     </section>
   );
@@ -444,8 +580,33 @@ function HighlightsSection() {
 
 function Calendar() {
   return (
-    <section id="calendar" className="calendar container">
-      <h2>Interaktiver Kalender</h2>
+    <section id="calendar" className="calendar container" style={{
+      background: 'rgba(34, 197, 94, 0.02)',
+      borderRadius: '24px',
+      padding: '32px',
+      border: '1px solid rgba(34, 197, 94, 0.1)',
+      position: 'relative',
+      overflow: 'hidden'
+    }}>
+      <div style={{
+        position: 'absolute',
+        top: '0',
+        left: '0',
+        right: '0',
+        height: '4px',
+        background: 'linear-gradient(90deg, #22c55e, #10b981, #059669)',
+        borderRadius: '24px 24px 0 0'
+      }} />
+      <h2 style={{
+        fontSize: '28px',
+        fontWeight: '800',
+        color: '#22c55e',
+        marginBottom: '24px',
+        textAlign: 'center',
+        letterSpacing: '-0.02em'
+      }}>
+        📅 Interaktiver Kalender
+      </h2>
       <CalendarWidget />
     </section>
   );
@@ -453,7 +614,23 @@ function Calendar() {
 
 function Community() {
   return (
-    <section id="community" className="community container">
+    <section id="community" className="community container" style={{
+      background: 'rgba(168, 85, 247, 0.02)',
+      borderRadius: '24px',
+      padding: '32px',
+      border: '1px solid rgba(168, 85, 247, 0.1)',
+      position: 'relative',
+      overflow: 'hidden'
+    }}>
+      <div style={{
+        position: 'absolute',
+        top: '0',
+        left: '0',
+        right: '0',
+        height: '4px',
+        background: 'linear-gradient(90deg, #a855f7, #8b5cf6, #7c3aed)',
+        borderRadius: '24px 24px 0 0'
+      }} />
       <CommunityStream />
     </section>
   );
@@ -771,13 +948,48 @@ function Layout({ children }: { children: React.ReactNode }) {
   );
 }
 
+function ScoreboardSection() {
+  return (
+    <section id="scoreboard" className="scoreboard container" style={{
+      background: 'rgba(220, 38, 38, 0.02)',
+      borderRadius: '24px',
+      padding: '32px',
+      border: '1px solid rgba(220, 38, 38, 0.1)',
+      position: 'relative',
+      overflow: 'hidden'
+    }}>
+      <div style={{
+        position: 'absolute',
+        top: '0',
+        left: '0',
+        right: '0',
+        height: '4px',
+        background: 'linear-gradient(90deg, #dc2626, #ef4444, #f97316)',
+        borderRadius: '24px 24px 0 0'
+      }} />
+      <HeaderScoreboard />
+    </section>
+  );
+}
+
 function Home() {
   return (
-    <div id="top" className="container" style={{ padding: '16px 0', display: 'grid', gap: 16 }}>
-      <HeaderScoreboard />
+    <div id="top" className="container" style={{ 
+      padding: '24px 0', 
+      display: 'grid', 
+      gap: '32px',
+      maxWidth: '1400px',
+      margin: '0 auto'
+    }}>
+      {/* High Priority - Core Sports Data */}
+      <ScoreboardSection />
+      <Calendar />
+      
+      {/* Medium Priority - Live Updates & Media */}
       <LiveTicker />
       <HighlightsSection />
-      <Calendar />
+      
+      {/* Low Priority - Social Features */}
       <Community />
     </div>
   );
