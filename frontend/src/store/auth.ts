@@ -18,9 +18,11 @@ export const useAuth = create<AuthState>((set) => ({
   token: null,
   isHydrating: true,
   async login(email, password) {
+    console.log('🔐 Attempting login for:', email);
     const body = new URLSearchParams({ email, password });
     const res = await api.post('/auth/login', body.toString(), { headers: { 'Content-Type': 'application/x-www-form-urlencoded' } });
     const { user } = res.data;
+    console.log('✅ Login successful:', user);
     set({ user });
   },
   async register(email, password, displayName) {
@@ -33,11 +35,14 @@ export const useAuth = create<AuthState>((set) => ({
     set({ token: null, user: null });
   },
   async hydrate() {
+    console.log('🔄 Hydrating auth state...');
     set({ isHydrating: true });
     try {
       const res = await api.get('/user/me');
+      console.log('✅ Auth hydrate successful:', res.data);
       set({ user: res.data.user, isHydrating: false });
-    } catch {
+    } catch (error) {
+      console.log('❌ Auth hydrate failed:', error);
       set({ token: null, user: null, isHydrating: false });
     }
   },

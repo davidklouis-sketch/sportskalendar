@@ -28,6 +28,8 @@ function RequireAdmin({ children }: { children: ReactNode }) {
 function TopNav() {
   const { user, logout } = useAuth();
   const [isDarkMode, setIsDarkMode] = useState(false);
+  
+  console.log('🔍 TopNav - User state:', user);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   
   async function handleLogout() {
