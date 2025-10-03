@@ -204,7 +204,7 @@ export default function LiveTickerWidget() {
   const windowStartRef = useRef<number>(Date.now());
 
   useEffect(() => {
-    const url = (import.meta.env.VITE_API_URL || 'http://localhost:4000/api') + '/ticker/stream';
+    const url = (import.meta.env.VITE_API_URL || 'https://api.dlouis.ddnss.de/api') + '/ticker/stream';
     let ev: EventSource | null = null;
 
     const attach = () => {
