@@ -32,6 +32,7 @@ services:
     environment:
       NODE_ENV: production
       PORT: 4000
+      FORCE_HTTPS: true
       DB_HOST: postgres
       DB_PORT: 5432
       DB_NAME: sportskalendar
