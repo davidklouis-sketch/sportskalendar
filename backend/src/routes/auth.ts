@@ -44,17 +44,18 @@ export function signRefresh(user: { id: string; email: string; role?: 'user' | '
 }
 
 export function setAuthCookies(res: Response, tokens: { access: string; refresh: string }) {
-  const isProd = process.env.NODE_ENV === 'production';
+  // Always use secure cookies for HTTPS environments
+  const isHttps = process.env.NODE_ENV === 'production' || process.env.FORCE_HTTPS === 'true';
   res.cookie('access_token', tokens.access, {
     httpOnly: true,
-    secure: isProd,
+    secure: isHttps,
     sameSite: 'lax',
     path: '/',
     maxAge: 15 * 60 * 1000,
   });
   res.cookie('refresh_token', tokens.refresh, {
     httpOnly: true,
-    secure: isProd,
+    secure: isHttps,
     sameSite: 'lax',
     path: '/',
     maxAge: 7 * 24 * 60 * 60 * 1000,
