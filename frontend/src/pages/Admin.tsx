@@ -38,6 +38,36 @@ export default function AdminPage() {
     }
   }
 
+  async function promoteUser(id: string, email: string) {
+    if (!confirm(`Sind Sie sicher, dass Sie ${email} zu einem Administrator befördern möchten?`)) {
+      return;
+    }
+    
+    try {
+      const res = await api.post('/admin/promote-user', { userId: id });
+      setUsers((prev) => prev.map((u) => u.id === id ? { ...u, role: 'admin' } : u));
+      alert(res.data.message);
+    } catch (err: any) {
+      alert(err.response?.data?.error || 'Fehler beim Befördern des Benutzers');
+      console.error('Error promoting user:', err);
+    }
+  }
+
+  async function demoteUser(id: string, email: string) {
+    if (!confirm(`Sind Sie sicher, dass Sie ${email} zu einem normalen Benutzer degradieren möchten?`)) {
+      return;
+    }
+    
+    try {
+      const res = await api.post('/admin/demote-user', { userId: id });
+      setUsers((prev) => prev.map((u) => u.id === id ? { ...u, role: 'user' } : u));
+      alert(res.data.message);
+    } catch (err: any) {
+      alert(err.response?.data?.error || 'Fehler beim Degradieren des Benutzers');
+      console.error('Error demoting user:', err);
+    }
+  }
+
   if (loading) {
     return (
       <div className="container" style={{ padding: '16px 0', textAlign: 'center' }}>
@@ -167,32 +197,66 @@ export default function AdminPage() {
                 {u.role === 'admin' ? 'Administrator' : 'Benutzer'}
               </div>
               
-              <div style={{ marginTop: '12px', display: 'flex', gap: '8px' }}>
+              <div style={{ marginTop: '12px', display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
                 {u.role !== 'admin' && (
-                  <button 
-                    className="btn secondary" 
-                    onClick={() => removeUser(u.id)}
-                    style={{ 
-                      background: '#fee2e2', 
-                      color: '#dc2626', 
-                      border: '1px solid #fecaca' 
-                    }}
-                  >
-                    🗑️ Löschen
-                  </button>
+                  <>
+                    <button 
+                      className="btn secondary" 
+                      onClick={() => promoteUser(u.id, u.email)}
+                      style={{ 
+                        background: 'linear-gradient(135deg, #059669, #047857)', 
+                        color: 'white', 
+                        border: '1px solid #059669',
+                        fontSize: '12px',
+                        padding: '6px 12px'
+                      }}
+                    >
+                      ⬆️ Zu Admin befördern
+                    </button>
+                    <button 
+                      className="btn secondary" 
+                      onClick={() => removeUser(u.id)}
+                      style={{ 
+                        background: '#fee2e2', 
+                        color: '#dc2626', 
+                        border: '1px solid #fecaca',
+                        fontSize: '12px',
+                        padding: '6px 12px'
+                      }}
+                    >
+                      🗑️ Löschen
+                    </button>
+                  </>
                 )}
                 {u.role === 'admin' && (
-                  <div style={{ 
-                    color: '#dc2626', 
-                    fontSize: '12px', 
-                    fontStyle: 'italic',
-                    padding: '8px',
-                    background: '#fef2f2',
-                    borderRadius: '6px',
-                    border: '1px solid #fecaca'
-                  }}>
-                    Admin-Benutzer können nicht gelöscht werden
-                  </div>
+                  <>
+                    <button 
+                      className="btn secondary" 
+                      onClick={() => demoteUser(u.id, u.email)}
+                      style={{ 
+                        background: 'linear-gradient(135deg, #dc2626, #b91c1c)', 
+                        color: 'white', 
+                        border: '1px solid #dc2626',
+                        fontSize: '12px',
+                        padding: '6px 12px'
+                      }}
+                    >
+                      ⬇️ Zu User degradieren
+                    </button>
+                    <div style={{ 
+                      color: '#dc2626', 
+                      fontSize: '12px', 
+                      fontStyle: 'italic',
+                      padding: '8px',
+                      background: '#fef2f2',
+                      borderRadius: '6px',
+                      border: '1px solid #fecaca',
+                      flex: '1',
+                      minWidth: '200px'
+                    }}>
+                      Admin-Benutzer können nicht gelöscht werden
+                    </div>
+                  </>
                 )}
               </div>
             </div>
