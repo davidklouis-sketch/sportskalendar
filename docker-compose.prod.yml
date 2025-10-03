@@ -63,7 +63,7 @@ services:
       dockerfile: Dockerfile
     container_name: sportskalendar-frontend
     environment:
-      VITE_API_URL: http://localhost:4000/api
+      VITE_API_URL: https://api.dlouis.ddnss.de/api
     ports:
       - "80:80"
       - "443:443"
