@@ -659,6 +659,108 @@ function RegisterPage() {
   );
 }
 
+function DebugPage() {
+  const { user, isHydrating, login, logout, hydrate } = useAuth();
+  const [testEmail, setTestEmail] = useState('admin@sportskalender.local');
+  const [testPassword, setTestPassword] = useState('admin123');
+
+  const handleTestLogin = async () => {
+    try {
+      await login(testEmail, testPassword);
+    } catch (error) {
+      console.error('Test login failed:', error);
+    }
+  };
+
+  const handleTestLogout = async () => {
+    try {
+      await logout();
+    } catch (error) {
+      console.error('Test logout failed:', error);
+    }
+  };
+
+  const handleTestHydrate = async () => {
+    try {
+      await hydrate();
+    } catch (error) {
+      console.error('Test hydrate failed:', error);
+    }
+  };
+
+  return (
+    <div className="container" style={{ padding: '20px' }}>
+      <h1>🔧 Debug Auth System</h1>
+      
+      <div style={{ marginBottom: '20px', padding: '16px', background: '#f3f4f6', borderRadius: '8px' }}>
+        <h3>Auth State:</h3>
+        <pre>{JSON.stringify({ user, isHydrating }, null, 2)}</pre>
+      </div>
+
+      <div style={{ marginBottom: '20px', padding: '16px', background: '#e5f3ff', borderRadius: '8px' }}>
+        <h3>Test Login:</h3>
+        <div style={{ display: 'flex', gap: '10px', marginBottom: '10px' }}>
+          <input
+            type="email"
+            value={testEmail}
+            onChange={(e) => setTestEmail(e.target.value)}
+            placeholder="Email"
+            style={{ padding: '8px', borderRadius: '4px', border: '1px solid #ccc' }}
+          />
+          <input
+            type="password"
+            value={testPassword}
+            onChange={(e) => setTestPassword(e.target.value)}
+            placeholder="Password"
+            style={{ padding: '8px', borderRadius: '4px', border: '1px solid #ccc' }}
+          />
+        </div>
+        <div style={{ display: 'flex', gap: '10px' }}>
+          <button onClick={handleTestLogin} style={{ padding: '8px 16px', background: '#3b82f6', color: 'white', border: 'none', borderRadius: '4px' }}>
+            Test Login
+          </button>
+          <button onClick={handleTestLogout} style={{ padding: '8px 16px', background: '#ef4444', color: 'white', border: 'none', borderRadius: '4px' }}>
+            Test Logout
+          </button>
+          <button onClick={handleTestHydrate} style={{ padding: '8px 16px', background: '#10b981', color: 'white', border: 'none', borderRadius: '4px' }}>
+            Test Hydrate
+          </button>
+        </div>
+      </div>
+
+      <div style={{ marginBottom: '20px', padding: '16px', background: '#fef3c7', borderRadius: '8px' }}>
+        <h3>API Test:</h3>
+        <button 
+          onClick={async () => {
+            try {
+              const response = await fetch('https://api.dlouis.ddnss.de/api/debug/users');
+              const data = await response.json();
+              console.log('API Debug Users:', data);
+              alert('Check console for API response');
+            } catch (error) {
+              console.error('API Test failed:', error);
+              alert('API Test failed - check console');
+            }
+          }}
+          style={{ padding: '8px 16px', background: '#f59e0b', color: 'white', border: 'none', borderRadius: '4px' }}
+        >
+          Test API Connection
+        </button>
+      </div>
+
+      <div style={{ padding: '16px', background: '#d1fae5', borderRadius: '8px' }}>
+        <h3>Instructions:</h3>
+        <ol>
+          <li>Check browser console for debug logs</li>
+          <li>Try "Test Login" with admin credentials</li>
+          <li>Check if user state updates</li>
+          <li>Try "Test API Connection" to verify backend</li>
+        </ol>
+      </div>
+    </div>
+  );
+}
+
 function Layout({ children }: { children: React.ReactNode }) {
   return (
     <div className="layout">
@@ -692,6 +794,7 @@ export default function App() {
       <Routes>
         <Route path="/login" element={<LoginPage />} />
         <Route path="/register" element={<RegisterPage />} />
+        <Route path="/debug" element={<DebugPage />} />
         <Route path="/" element={<Layout><Home /></Layout>} />
         <Route path="/community" element={<Layout><Community /></Layout>} />
         <Route path="/stats" element={<Layout><div className="page">Statistik</div></Layout>} />
