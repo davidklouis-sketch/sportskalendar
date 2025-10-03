@@ -1,0 +1,67 @@
+version: '3.8'
+
+services:
+  # PostgreSQL Database
+  postgres:
+    image: postgres:15-alpine
+    container_name: sportskalendar-db
+    environment:
+      POSTGRES_DB: sportskalendar
+      POSTGRES_USER: sportskalendar
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    networks:
+      - sportskalendar-network
+    restart: unless-stopped
+    command: postgres -c ssl=off
+
+  # Backend API
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: sportskalendar-backend
+    environment:
+      NODE_ENV: production
+      PORT: 4000
+      FORCE_HTTPS: true
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_NAME: sportskalendar
+      DB_USER: sportskalendar
+      DB_PASSWORD: ${DB_PASSWORD}
+      JWT_SECRET: ${JWT_SECRET}
+    ports:
+      - "4000:4000"  # API auf Port 4000
+    networks:
+      - sportskalendar-network
+    depends_on:
+      - postgres
+    restart: unless-stopped
+
+  # Frontend
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: sportskalendar-frontend
+    environment:
+      VITE_API_URL: https://api.dlouis.ddnss.de
+    ports:
+      - "80:80"  # Frontend auf Port 80
+    networks:
+      - sportskalendar-network
+    depends_on:
+      - backend
+    restart: unless-stopped
+
+volumes:
+  postgres_data:
+    driver: local
+
+networks:
+  sportskalendar-network:
+    driver: bridge
