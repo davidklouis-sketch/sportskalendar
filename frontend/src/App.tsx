@@ -67,7 +67,7 @@ function TopNav() {
     { href: '#highlights', label: 'Highlights', icon: '🎥', priority: 'medium' },
     { href: '#community', label: 'Community', icon: '💬', priority: 'low' }
   ];
-  
+
   return (
     <nav style={{
       background: isDarkMode 
@@ -96,6 +96,14 @@ function TopNav() {
         <a 
           href="#top" 
           className="logo"
+          onClick={(e) => {
+            e.preventDefault();
+            if (window.location.pathname !== '/') {
+              window.location.href = '/';
+            } else {
+              window.scrollTo({ top: 0, behavior: 'smooth' });
+            }
+          }}
           style={{
             display: 'flex',
             alignItems: 'center',
@@ -162,7 +170,7 @@ function TopNav() {
           <span style={{
             letterSpacing: '-0.02em',
             position: 'relative',
-            background: isDarkMode 
+            backgroundImage: isDarkMode 
               ? 'linear-gradient(135deg, #f8fafc, #e2e8f0, #cbd5e1)'
               : 'linear-gradient(135deg, #1e293b, #334155, #475569)',
             WebkitBackgroundClip: 'text',
@@ -196,13 +204,18 @@ function TopNav() {
               href={item.href}
               onClick={(e) => {
                 e.preventDefault();
-                const element = document.querySelector(item.href) as HTMLElement;
-                if (element) {
-                  const offsetTop = element.offsetTop - 80; // Account for sticky nav height
-                  window.scrollTo({
-                    top: offsetTop,
-                    behavior: 'smooth'
-                  });
+                // Always go to main page first, then scroll to section
+                if (window.location.pathname !== '/') {
+                  window.location.href = `/${item.href}`;
+                } else {
+                  const element = document.querySelector(item.href) as HTMLElement;
+                  if (element) {
+                    const offsetTop = element.offsetTop - 80; // Account for sticky nav height
+                    window.scrollTo({
+                      top: offsetTop,
+                      behavior: 'smooth'
+                    });
+                  }
                 }
               }}
               style={{
@@ -319,133 +332,196 @@ function TopNav() {
             {isDarkMode ? '☀️' : '🌙'}
           </button>
           
-          {/* User Menu */}
+          {/* User Actions */}
           {user ? (
             <div style={{
               display: 'flex',
               alignItems: 'center',
-              gap: '6px'
+              gap: '12px',
+              padding: '8px',
+              borderRadius: '20px',
+              background: isDarkMode 
+                ? 'linear-gradient(135deg, rgba(30, 41, 59, 0.8), rgba(51, 65, 85, 0.6))'
+                : 'linear-gradient(135deg, rgba(248, 250, 252, 0.8), rgba(241, 245, 249, 0.6))',
+              border: `1px solid ${isDarkMode ? 'rgba(71, 85, 105, 0.3)' : 'rgba(226, 232, 240, 0.5)'}`,
+              backdropFilter: 'blur(10px)',
+              boxShadow: isDarkMode 
+                ? '0 8px 32px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.1)'
+                : '0 8px 32px rgba(0, 0, 0, 0.1), inset 0 1px 0 rgba(255, 255, 255, 0.8)'
             }}>
-              {/* Profile Link */}
-              <Link
-                to="/profile"
-                style={{
+              {/* User Info */}
+              <div style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '8px',
+                padding: '8px 12px',
+                borderRadius: '12px',
+                background: isDarkMode 
+                  ? 'rgba(59, 130, 246, 0.1)'
+                  : 'rgba(59, 130, 246, 0.05)',
+                border: `1px solid ${isDarkMode ? 'rgba(59, 130, 246, 0.2)' : 'rgba(59, 130, 246, 0.1)'}`
+              }}>
+                <div style={{
+                  width: '32px',
+                  height: '32px',
+                  borderRadius: '50%',
+                  background: 'linear-gradient(135deg, #3b82f6, #8b5cf6)',
                   display: 'flex',
                   alignItems: 'center',
-                  gap: '10px',
-                  padding: '12px 18px',
-                  borderRadius: '16px',
-                  textDecoration: 'none',
-                  color: isDarkMode ? '#e2e8f0' : '#475569',
-                  fontSize: '15px',
+                  justifyContent: 'center',
+                  fontSize: '14px',
                   fontWeight: '600',
-                  transition: 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
-                  background: 'transparent',
-                  border: '1px solid transparent'
-                }}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.background = isDarkMode 
-                    ? 'linear-gradient(135deg, rgba(59, 130, 246, 0.1), rgba(139, 92, 246, 0.1))'
-                    : 'linear-gradient(135deg, rgba(59, 130, 246, 0.05), rgba(139, 92, 246, 0.05))';
-                  e.currentTarget.style.borderColor = isDarkMode 
-                    ? 'rgba(59, 130, 246, 0.3)' 
-                    : 'rgba(59, 130, 246, 0.2)';
-                  e.currentTarget.style.transform = 'translateY(-2px) scale(1.02)';
-                  e.currentTarget.style.boxShadow = isDarkMode 
-                    ? '0 8px 16px rgba(59, 130, 246, 0.15)'
-                    : '0 8px 16px rgba(59, 130, 246, 0.1)';
-                  e.currentTarget.style.color = isDarkMode ? '#f1f5f9' : '#334155';
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.background = 'transparent';
-                  e.currentTarget.style.borderColor = 'transparent';
-                  e.currentTarget.style.transform = 'translateY(0) scale(1)';
-                  e.currentTarget.style.boxShadow = 'none';
-                  e.currentTarget.style.color = isDarkMode ? '#e2e8f0' : '#475569';
-                }}
-              >
-                <span style={{ 
-                  fontSize: '18px',
-                  filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.1))'
-                }}>👤</span>
-                <span style={{ letterSpacing: '-0.01em' }}>Profil</span>
-              </Link>
-              
-              {/* Admin Link - Nur für Admins sichtbar */}
-              {user.role === 'admin' && (
+                  color: 'white',
+                  boxShadow: '0 2px 8px rgba(59, 130, 246, 0.3)'
+                }}>
+                  {user.displayName?.charAt(0).toUpperCase() || 'U'}
+                </div>
+                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start' }}>
+                  <span style={{
+                    fontSize: '13px',
+                    fontWeight: '600',
+                    color: isDarkMode ? '#f1f5f9' : '#334155',
+                    lineHeight: '1.2'
+                  }}>
+                    {user.displayName || 'User'}
+                  </span>
+                  <span style={{
+                    fontSize: '11px',
+                    color: isDarkMode ? '#94a3b8' : '#64748b',
+                    textTransform: 'uppercase',
+                    letterSpacing: '0.5px'
+                  }}>
+                    {user.role === 'admin' ? 'Admin' : 'User'}
+                  </span>
+                </div>
+              </div>
+
+              {/* Action Buttons */}
+              <div style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '8px'
+              }}>
+                {/* Profile Button */}
                 <Link
-                  to="/admin"
+                  to="/profile"
                   style={{
                     display: 'flex',
                     alignItems: 'center',
-                    gap: '10px',
-                    padding: '12px 18px',
-                    borderRadius: '16px',
+                    justifyContent: 'center',
+                    width: '40px',
+                    height: '40px',
+                    borderRadius: '12px',
                     textDecoration: 'none',
-                    color: '#ffffff',
-                    fontSize: '15px',
-                    fontWeight: '600',
-                    transition: 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
-                    background: 'linear-gradient(135deg, #dc2626, #b91c1c, #991b1b)',
-                    border: '1px solid rgba(220, 38, 38, 0.3)',
-                    boxShadow: '0 4px 12px rgba(220, 38, 38, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.1)'
+                    background: isDarkMode 
+                      ? 'rgba(34, 197, 94, 0.1)'
+                      : 'rgba(34, 197, 94, 0.05)',
+                    border: `1px solid ${isDarkMode ? 'rgba(34, 197, 94, 0.2)' : 'rgba(34, 197, 94, 0.1)'}`,
+                    color: isDarkMode ? '#22c55e' : '#16a34a',
+                    transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+                    position: 'relative'
                   }}
                   onMouseEnter={(e) => {
-                    e.currentTarget.style.background = 'linear-gradient(135deg, #b91c1c, #991b1b, #7f1d1d)';
-                    e.currentTarget.style.transform = 'translateY(-3px) scale(1.02)';
-                    e.currentTarget.style.boxShadow = '0 8px 20px rgba(220, 38, 38, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.1)';
-                    e.currentTarget.style.borderColor = 'rgba(220, 38, 38, 0.5)';
+                    e.currentTarget.style.background = isDarkMode 
+                      ? 'rgba(34, 197, 94, 0.2)'
+                      : 'rgba(34, 197, 94, 0.1)';
+                    e.currentTarget.style.transform = 'translateY(-2px) scale(1.05)';
+                    e.currentTarget.style.boxShadow = '0 4px 12px rgba(34, 197, 94, 0.3)';
                   }}
                   onMouseLeave={(e) => {
-                    e.currentTarget.style.background = 'linear-gradient(135deg, #dc2626, #b91c1c, #991b1b)';
+                    e.currentTarget.style.background = isDarkMode 
+                      ? 'rgba(34, 197, 94, 0.1)'
+                      : 'rgba(34, 197, 94, 0.05)';
                     e.currentTarget.style.transform = 'translateY(0) scale(1)';
-                    e.currentTarget.style.boxShadow = '0 4px 12px rgba(220, 38, 38, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.1)';
-                    e.currentTarget.style.borderColor = 'rgba(220, 38, 38, 0.3)';
+                    e.currentTarget.style.boxShadow = 'none';
                   }}
+                  title="Profil"
                 >
-                  <span style={{ 
-                    fontSize: '18px',
-                    filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.3))'
-                  }}>🛡️</span>
-                  <span style={{ letterSpacing: '-0.01em' }}>Admin Portal</span>
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+                    <circle cx="12" cy="7" r="4"/>
+                  </svg>
                 </Link>
-              )}
-              
-              {/* Logout Button */}
-              <button
-                onClick={handleLogout}
-                style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '10px',
-                  padding: '12px 18px',
-                  borderRadius: '16px',
-                  border: 'none',
-                  background: 'linear-gradient(135deg, #ef4444, #dc2626, #b91c1c)',
-                  color: 'white',
-                  fontSize: '15px',
-                  fontWeight: '600',
-                  cursor: 'pointer',
-                  transition: 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
-                  boxShadow: '0 4px 12px rgba(239, 68, 68, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.1)'
-                }}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.background = 'linear-gradient(135deg, #dc2626, #b91c1c, #991b1b)';
-                  e.currentTarget.style.transform = 'translateY(-3px) scale(1.02)';
-                  e.currentTarget.style.boxShadow = '0 8px 20px rgba(239, 68, 68, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.1)';
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.background = 'linear-gradient(135deg, #ef4444, #dc2626, #b91c1c)';
-                  e.currentTarget.style.transform = 'translateY(0) scale(1)';
-                  e.currentTarget.style.boxShadow = '0 4px 12px rgba(239, 68, 68, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.1)';
-                }}
-              >
-                <span style={{ 
-                  fontSize: '18px',
-                  filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.3))'
-                }}>🚪</span>
-                <span style={{ letterSpacing: '-0.01em' }}>Logout</span>
-              </button>
+
+                {/* Admin Button */}
+                {user.role === 'admin' && (
+                  <Link
+                    to="/admin"
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      width: '40px',
+                      height: '40px',
+                      borderRadius: '12px',
+                      textDecoration: 'none',
+                      background: 'linear-gradient(135deg, rgba(220, 38, 38, 0.1), rgba(185, 28, 28, 0.1))',
+                      border: '1px solid rgba(220, 38, 38, 0.2)',
+                      color: '#dc2626',
+                      transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+                      position: 'relative'
+                    }}
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.background = 'linear-gradient(135deg, rgba(220, 38, 38, 0.2), rgba(185, 28, 28, 0.2))';
+                      e.currentTarget.style.transform = 'translateY(-2px) scale(1.05)';
+                      e.currentTarget.style.boxShadow = '0 4px 12px rgba(220, 38, 38, 0.3)';
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.background = 'linear-gradient(135deg, rgba(220, 38, 38, 0.1), rgba(185, 28, 28, 0.1))';
+                      e.currentTarget.style.transform = 'translateY(0) scale(1)';
+                      e.currentTarget.style.boxShadow = 'none';
+                    }}
+                    title="Admin Portal"
+                  >
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                      <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
+                      <path d="M9 9h6v6H9z"/>
+                    </svg>
+                  </Link>
+                )}
+
+                {/* Logout Button */}
+                <button
+                  onClick={handleLogout}
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    width: '40px',
+                    height: '40px',
+                    borderRadius: '12px',
+                    border: `1px solid ${isDarkMode ? 'rgba(239, 68, 68, 0.2)' : 'rgba(239, 68, 68, 0.1)'}`,
+                    background: isDarkMode 
+                      ? 'rgba(239, 68, 68, 0.1)'
+                      : 'rgba(239, 68, 68, 0.05)',
+                    color: isDarkMode ? '#ef4444' : '#dc2626',
+                    cursor: 'pointer',
+                    transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+                    position: 'relative'
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.background = isDarkMode 
+                      ? 'rgba(239, 68, 68, 0.2)'
+                      : 'rgba(239, 68, 68, 0.1)';
+                    e.currentTarget.style.transform = 'translateY(-2px) scale(1.05)';
+                    e.currentTarget.style.boxShadow = '0 4px 12px rgba(239, 68, 68, 0.3)';
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.background = isDarkMode 
+                      ? 'rgba(239, 68, 68, 0.1)'
+                      : 'rgba(239, 68, 68, 0.05)';
+                    e.currentTarget.style.transform = 'translateY(0) scale(1)';
+                    e.currentTarget.style.boxShadow = 'none';
+                  }}
+                  title="Logout"
+                >
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
+                    <polyline points="16,17 21,12 16,7"/>
+                    <line x1="21" y1="12" x2="9" y2="12"/>
+                  </svg>
+                </button>
+              </div>
             </div>
           ) : (
             <Link
@@ -455,28 +531,37 @@ function TopNav() {
                 alignItems: 'center',
                 gap: '8px',
                 padding: '12px 20px',
-                borderRadius: '10px',
+                borderRadius: '12px',
                 textDecoration: 'none',
                 background: 'linear-gradient(135deg, #3b82f6, #1d4ed8)',
                 color: 'white',
                 fontSize: '14px',
                 fontWeight: '600',
-                transition: 'all 0.3s ease'
+                transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+                boxShadow: '0 4px 12px rgba(59, 130, 246, 0.3)',
+                border: '1px solid rgba(59, 130, 246, 0.2)'
               }}
               onMouseEnter={(e) => {
-                e.currentTarget.style.transform = 'translateY(-2px)';
-                e.currentTarget.style.boxShadow = '0 4px 12px rgba(59, 130, 246, 0.4)';
+                e.currentTarget.style.transform = 'translateY(-2px) scale(1.02)';
+                e.currentTarget.style.boxShadow = '0 8px 20px rgba(59, 130, 246, 0.4)';
+                e.currentTarget.style.background = 'linear-gradient(135deg, #2563eb, #1e40af)';
               }}
               onMouseLeave={(e) => {
-                e.currentTarget.style.transform = 'translateY(0)';
-                e.currentTarget.style.boxShadow = 'none';
+                e.currentTarget.style.transform = 'translateY(0) scale(1)';
+                e.currentTarget.style.boxShadow = '0 4px 12px rgba(59, 130, 246, 0.3)';
+                e.currentTarget.style.background = 'linear-gradient(135deg, #3b82f6, #1d4ed8)';
               }}
             >
-              <span style={{ fontSize: '16px' }}>🔑</span>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/>
+                <polyline points="10,17 15,12 10,7"/>
+                <line x1="15" y1="12" x2="3" y2="12"/>
+              </svg>
               Login
             </Link>
           )}
         </div>
+        
         
         {/* Mobile Menu Button */}
         <button
@@ -524,13 +609,18 @@ function TopNav() {
               onClick={(e) => {
                 e.preventDefault();
                 setIsMobileMenuOpen(false);
-                const element = document.querySelector(item.href) as HTMLElement;
-                if (element) {
-                  const offsetTop = element.offsetTop - 80; // Account for sticky nav height
-                  window.scrollTo({
-                    top: offsetTop,
-                    behavior: 'smooth'
-                  });
+                // Always go to main page first, then scroll to section
+                if (window.location.pathname !== '/') {
+                  window.location.href = `/${item.href}`;
+                } else {
+                  const element = document.querySelector(item.href) as HTMLElement;
+                  if (element) {
+                    const offsetTop = element.offsetTop - 80; // Account for sticky nav height
+                    window.scrollTo({
+                      top: offsetTop,
+                      behavior: 'smooth'
+                    });
+                  }
                 }
               }}
               style={{
