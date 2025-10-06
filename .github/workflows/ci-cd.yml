@@ -124,21 +124,9 @@ jobs:
           rsync -avz -e ssh docker-compose.traefik.yml ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}:~/sportskalendar/docker-compose.yml
           rsync -avz -e ssh .env.deploy ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}:~/sportskalendar/.env
 
-      - name: Ensure Docker & Compose installed on server
+      - name: Check Docker & Compose on server
         run: |
-          ssh ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} "\
-            set -euo pipefail; \
-            if ! command -v docker >/dev/null 2>&1; then \
-              curl -fsSL https://get.docker.com | sh; \
-              sudo -n systemctl enable --now docker || sudo -n service docker start || true; \
-            fi; \
-            if ! docker compose version >/dev/null 2>&1; then \
-              DOCKER_CONFIG=\${XDG_CONFIG_HOME:-$HOME/.docker}; \
-              mkdir -p \"$DOCKER_CONFIG/cli-plugins\"; \
-              curl -SL https://github.com/docker/compose/releases/download/v2.29.7/docker-compose-\$(uname -s)-\$(uname -m) -o \"$DOCKER_CONFIG/cli-plugins/docker-compose\"; \
-              chmod +x \"$DOCKER_CONFIG/cli-plugins/docker-compose\"; \
-            fi; \
-          "
+          ssh ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} "docker version && docker compose version"
 
       - name: Deploy stack (Traefik + Postgres + Backend + Frontend)
         env:
@@ -150,12 +138,12 @@ jobs:
             set -euo pipefail;
             cd ~/sportskalendar;
             echo 'Logging in to GHCR';
-            echo ${{ secrets.GITHUB_TOKEN }} | sudo -n docker login ghcr.io -u ${{ github.actor }} --password-stdin;
-            sudo -n docker pull $BACKEND_IMAGE || true;
-            sudo -n docker pull $FRONTEND_IMAGE || true;
-            sudo -n docker compose -f docker-compose.yml pull || true;
-            sudo -n docker compose -f docker-compose.yml up -d --remove-orphans;
-            sudo -n docker system prune -f;
+            echo ${{ secrets.GITHUB_TOKEN }} | docker login ghcr.io -u ${{ github.actor }} --password-stdin;
+            docker pull $BACKEND_IMAGE || true;
+            docker pull $FRONTEND_IMAGE || true;
+            docker compose -f docker-compose.yml pull || true;
+            docker compose -f docker-compose.yml up -d --remove-orphans;
+            docker system prune -f;
           "
 
 
