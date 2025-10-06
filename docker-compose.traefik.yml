@@ -1,0 +1,102 @@
+version: '3.8'
+
+networks:
+  proxy:
+    name: traefik-proxy
+    driver: bridge
+  internal:
+    driver: bridge
+
+volumes:
+  postgres_data:
+  traefik_letsencrypt:
+
+services:
+  traefik:
+    image: traefik:v2.11
+    container_name: traefik
+    command:
+      - --providers.docker=true
+      - --providers.docker.exposedbydefault=false
+      - --entrypoints.web.address=:80
+      # To enable HTTPS with Let's Encrypt later, add websecure and a certresolver
+      # - --entrypoints.websecure.address=:443
+      # - --certificatesresolvers.le.acme.httpchallenge=true
+      # - --certificatesresolvers.le.acme.httpchallenge.entrypoint=web
+      # - --certificatesresolvers.le.acme.email=${LETSENCRYPT_EMAIL}
+      # - --certificatesresolvers.le.acme.storage=/letsencrypt/acme.json
+    ports:
+      - "80:80"
+      # - "443:443"
+    networks:
+      - proxy
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - traefik_letsencrypt:/letsencrypt
+    restart: unless-stopped
+
+  postgres:
+    image: postgres:15-alpine
+    container_name: sportskalendar-db
+    environment:
+      POSTGRES_DB: sportskalendar
+      POSTGRES_USER: sportskalendar
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - internal
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U sportskalendar -d sportskalendar"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+    restart: unless-stopped
+
+  backend:
+    image: ${BACKEND_IMAGE}
+    container_name: sportskalendar-backend
+    environment:
+      NODE_ENV: production
+      PORT: 4000
+      FORCE_HTTPS: "true"
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_NAME: sportskalendar
+      DB_USER: sportskalendar
+      DB_PASSWORD: ${DB_PASSWORD}
+      JWT_SECRET: ${JWT_SECRET}
+      FOOTBALL_DATA_KEY: ${FOOTBALL_DATA_KEY}
+      API_FOOTBALL_KEY: ${API_FOOTBALL_KEY}
+      NEWS_API_KEY: ${NEWS_API_KEY}
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - internal
+      - proxy
+    labels:
+      # Enable routing via Traefik
+      traefik.enable: "true"
+      # Backend API on api.<domain>, keep /api prefix (backend already serves under /api)
+      traefik.http.routers.backend.rule: Host(`${BACKEND_HOST}`) && PathPrefix(`/api`)
+      traefik.http.routers.backend.entrypoints: web
+      traefik.http.services.backend.loadbalancer.server.port: "4000"
+    restart: unless-stopped
+
+  frontend:
+    image: ${FRONTEND_IMAGE}
+    container_name: sportskalendar-frontend
+    depends_on:
+      - backend
+    networks:
+      - proxy
+    labels:
+      traefik.enable: "true"
+      # Frontend on <domain>
+      traefik.http.routers.frontend.rule: Host(`${FRONTEND_HOST}`)
+      traefik.http.routers.frontend.entrypoints: web
+      traefik.http.services.frontend.loadbalancer.server.port: "80"
+    restart: unless-stopped
+
+
