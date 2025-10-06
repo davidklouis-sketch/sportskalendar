@@ -19,15 +19,16 @@ services:
       - --providers.docker=true
       - --providers.docker.exposedbydefault=false
       - --entrypoints.web.address=:80
-      # To enable HTTPS with Let's Encrypt later, add websecure and a certresolver
-      # - --entrypoints.websecure.address=:443
-      # - --certificatesresolvers.le.acme.httpchallenge=true
-      # - --certificatesresolvers.le.acme.httpchallenge.entrypoint=web
-      # - --certificatesresolvers.le.acme.email=${LETSENCRYPT_EMAIL}
-      # - --certificatesresolvers.le.acme.storage=/letsencrypt/acme.json
+      - --entrypoints.web.http.redirections.entrypoint.to=websecure
+      - --entrypoints.web.http.redirections.entrypoint.scheme=https
+      - --entrypoints.websecure.address=:443
+      - --certificatesresolvers.le.acme.httpchallenge=true
+      - --certificatesresolvers.le.acme.httpchallenge.entrypoint=web
+      - --certificatesresolvers.le.acme.email=${LETSENCRYPT_EMAIL}
+      - --certificatesresolvers.le.acme.storage=/letsencrypt/acme.json
     ports:
       - "80:80"
-      # - "443:443"
+      - "443:443"
     networks:
       - proxy
     volumes:
@@ -80,7 +81,9 @@ services:
       traefik.enable: "true"
       # Backend API on api.<domain>, keep /api prefix (backend already serves under /api)
       traefik.http.routers.backend.rule: Host(`${BACKEND_HOST}`) && PathPrefix(`/api`)
-      traefik.http.routers.backend.entrypoints: web
+      traefik.http.routers.backend.entrypoints: websecure
+      traefik.http.routers.backend.tls: "true"
+      traefik.http.routers.backend.tls.certresolver: le
       traefik.http.services.backend.loadbalancer.server.port: "4000"
     restart: unless-stopped
 
@@ -95,7 +98,9 @@ services:
       traefik.enable: "true"
       # Frontend on <domain>
       traefik.http.routers.frontend.rule: Host(`${FRONTEND_HOST}`)
-      traefik.http.routers.frontend.entrypoints: web
+      traefik.http.routers.frontend.entrypoints: websecure
+      traefik.http.routers.frontend.tls: "true"
+      traefik.http.routers.frontend.tls.certresolver: le
       traefik.http.services.frontend.loadbalancer.server.port: "80"
     restart: unless-stopped
 
