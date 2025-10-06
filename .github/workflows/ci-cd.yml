@@ -126,19 +126,19 @@ jobs:
 
       - name: Ensure Docker & Compose installed on server
         run: |
-          ssh ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} 'bash -s' <<'REMOTE'
-          set -euo pipefail
-          if ! command -v docker >/dev/null 2>&1; then
-            curl -fsSL https://get.docker.com | sh
-            sudo -n systemctl enable --now docker || sudo -n service docker start || true
-          fi
-          if ! docker compose version >/dev/null 2>&1; then
-            DOCKER_CONFIG=${XDG_CONFIG_HOME:-$HOME/.docker}
-            mkdir -p "$DOCKER_CONFIG/cli-plugins"
-            curl -SL https://github.com/docker/compose/releases/download/v2.29.7/docker-compose-$(uname -s)-$(uname -m) -o "$DOCKER_CONFIG/cli-plugins/docker-compose"
-            chmod +x "$DOCKER_CONFIG/cli-plugins/docker-compose"
-          fi
-REMOTE
+          ssh ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} "\
+            set -euo pipefail; \
+            if ! command -v docker >/dev/null 2>&1; then \
+              curl -fsSL https://get.docker.com | sh; \
+              sudo -n systemctl enable --now docker || sudo -n service docker start || true; \
+            fi; \
+            if ! docker compose version >/dev/null 2>&1; then \
+              DOCKER_CONFIG=\${XDG_CONFIG_HOME:-$HOME/.docker}; \
+              mkdir -p \"$DOCKER_CONFIG/cli-plugins\"; \
+              curl -SL https://github.com/docker/compose/releases/download/v2.29.7/docker-compose-\$(uname -s)-\$(uname -m) -o \"$DOCKER_CONFIG/cli-plugins/docker-compose\"; \
+              chmod +x \"$DOCKER_CONFIG/cli-plugins/docker-compose\"; \
+            fi; \
+          "
 
       - name: Deploy stack (Traefik + Postgres + Backend + Frontend)
         env:
