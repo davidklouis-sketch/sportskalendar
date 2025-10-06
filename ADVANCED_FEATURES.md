@@ -283,3 +283,6 @@ NEWS_API_KEY=your_key
 
 Die Anwendung ist jetzt **enterprise-ready** mit modernsten Sicherheitsstandards! 🎉
 
+
+
+

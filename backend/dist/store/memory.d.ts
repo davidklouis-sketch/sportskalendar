@@ -16,6 +16,11 @@ export interface HighlightItem {
     sport: string;
     description?: string;
     createdAt: string;
+    thumbnail?: string;
+    duration?: string;
+    views?: number;
+    priority?: 'high' | 'medium' | 'low';
+    source?: string;
 }
 export declare function seedDevUser(): Promise<void>;
 export declare function seedHighlights(): void;

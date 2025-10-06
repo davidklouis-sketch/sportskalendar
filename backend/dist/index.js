@@ -6,36 +6,64 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const express_1 = __importDefault(require("express"));
 const cors_1 = __importDefault(require("cors"));
 const dotenv_1 = __importDefault(require("dotenv"));
+// Router imports
 const auth_1 = require("./routes/auth");
 const scores_1 = require("./routes/scores");
 const highlights_1 = require("./routes/highlights");
 const calendar_1 = require("./routes/calendar");
 const community_1 = require("./routes/community");
 const ticker_1 = require("./routes/ticker");
-const security_1 = require("./middleware/security");
 const admin_1 = require("./routes/admin");
 const user_1 = require("./routes/user");
 const live_1 = require("./routes/live");
+const security_enhanced_1 = require("./middleware/security-enhanced");
 const auth_2 = require("./middleware/auth");
+// Store and database imports
 const memory_1 = require("./store/memory");
+const connection_1 = require("./database/connection");
 dotenv_1.default.config();
 const app = (0, express_1.default)();
-app.use((0, cors_1.default)({
-    origin: (origin, cb) => {
-        const allowed = ['http://localhost:5173'];
-        if (!origin || allowed.includes(origin) || /^(http:\/\/)?(192\.168\.|10\.|172\.(1[6-9]|2\d|3[0-1]))\:[0-9]+$/.test(origin)) {
-            return cb(null, true);
-        }
-        return cb(new Error('Not allowed by CORS'));
-    },
+// Trust proxy for rate limiting behind reverse proxy (NPM)
+app.set('trust proxy', true);
+// CORS-Konfiguration
+const corsOptions = {
+    origin: [
+        'https://sportskalender.dlouis.ddnss.de',
+        'https://dlouis.ddnss.de',
+        'http://localhost:3000',
+        'http://localhost:5173'
+    ],
     credentials: true,
-}));
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'X-CSRF-Token']
+};
+app.use((0, cors_1.default)(corsOptions));
 app.use(express_1.default.urlencoded({ extended: true }));
 app.use(express_1.default.json());
-app.use(security_1.commonSecurityMiddleware);
+// Enhanced security middleware
+app.use(security_enhanced_1.enhancedSecurityMiddleware);
+// Validate JWT secret on startup
+if (!(0, security_enhanced_1.validateJwtSecret)()) {
+    console.error('❌ SECURITY WARNING: JWT_SECRET not properly configured!');
+    console.error('Please set a strong JWT_SECRET environment variable.');
+    process.exit(1);
+}
+// Health check endpoint
 app.get('/api/health', (_req, res) => {
     res.json({ ok: true });
 });
+// Debug endpoint to check users
+app.get('/api/debug/users', (_req, res) => {
+    const { db } = require('./store/memory');
+    const users = Array.from(db.users.values()).map(u => ({
+        id: u.id,
+        email: u.email,
+        displayName: u.displayName,
+        role: u.role
+    }));
+    res.json({ users, count: users.length });
+});
+// API Routes
 app.use('/api/auth', auth_1.authRouter);
 app.use('/api/scores', scores_1.scoresRouter);
 app.use('/api/highlights', highlights_1.highlightsRouter);
@@ -60,10 +88,43 @@ app.get('/api/user/me', auth_2.requireAuth, (req, res) => {
     res.json({ user: tokenUser });
 });
 const PORT = process.env.PORT || 4000;
-(0, memory_1.seedDevUser)().catch(() => { });
-(0, memory_1.seedHighlights)();
-app.listen(PORT, () => {
-    // eslint-disable-next-line no-console
-    console.log(`Backend listening on http://localhost:${PORT}`);
+// Initialize database and start server
+async function startServer() {
+    try {
+        // Test database connection
+        const dbConnected = await (0, connection_1.testConnection)();
+        if (!dbConnected) {
+            console.error('❌ Database connection failed. Starting with in-memory storage only.');
+        }
+        else {
+            // Initialize database schema
+            await (0, connection_1.initializeDatabase)();
+            console.log('✅ Database initialized successfully');
+        }
+        // Seed development data
+        await (0, memory_1.seedDevUser)().catch(() => { });
+        (0, memory_1.seedHighlights)();
+        // Start server
+        app.listen(PORT, () => {
+            console.log(`✅ Backend listening on http://localhost:${PORT}`);
+            console.log(`📊 Database: ${dbConnected ? 'Connected' : 'In-Memory Only'}`);
+        });
+    }
+    catch (error) {
+        console.error('❌ Failed to start server:', error);
+        process.exit(1);
+    }
+}
+// Graceful shutdown
+process.on('SIGINT', async () => {
+    console.log('\n🛑 Shutting down server...');
+    await (0, connection_1.closeDatabase)();
+    process.exit(0);
 });
+process.on('SIGTERM', async () => {
+    console.log('\n🛑 Shutting down server...');
+    await (0, connection_1.closeDatabase)();
+    process.exit(0);
+});
+startServer();
 //# sourceMappingURL=index.js.map
