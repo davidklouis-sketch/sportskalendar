@@ -15,6 +15,7 @@ env:
 jobs:
   build-and-push:
     name: Build and push Docker images
+    environment: prod
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -36,12 +37,19 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
+      - name: Compute frontend API URL
+        run: |
+          if [ "${{ matrix.service }}" = "frontend" ]; then
+            echo "FRONTEND_API_URL=https://${{ secrets.BACKEND_HOST }}/api" >> $GITHUB_ENV
+          fi
+
       - name: Prepare tags
         id: prep
         run: |
           IMAGE_VAR=IMAGE_$(echo "${{ matrix.service }}" | tr '[:lower:]' '[:upper:]')
           IMAGE_NAME=${!IMAGE_VAR}
           echo "IMAGE_NAME=$IMAGE_NAME" >> $GITHUB_OUTPUT
+          # tags: sha and branch-latest
           SHA_TAG=$IMAGE_NAME:sha-${GITHUB_SHA::7}
           if [ "${{ github.ref_name }}" = "main" ]; then
             LATEST_TAG=$IMAGE_NAME:latest
@@ -63,27 +71,57 @@ jobs:
             ${{ steps.prep.outputs.LATEST_TAG }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
+          build-args: |
+            VITE_API_URL=${{ env.FRONTEND_API_URL }}
 
   deploy:
     name: Deploy to server
     needs: build-and-push
     if: github.ref == 'refs/heads/main'
+    environment: prod
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
+      - name: Validate SSH_PRIVATE_KEY is set
+        run: |
+          if [ -z "${{ secrets.SSH_PRIVATE_KEY }}" ]; then
+            echo "SSH_PRIVATE_KEY secret is empty or not configured" >&2
+            exit 1
+          fi
+
       - name: Install SSH key
         uses: webfactory/ssh-agent@v0.9.0
         with:
-          ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
+          ssh-private-key: |
+            ${{ secrets.SSH_PRIVATE_KEY }}
 
       - name: Add known hosts
         run: ssh-keyscan -H ${{ secrets.SSH_HOST }} >> ~/.ssh/known_hosts
 
+      - name: Ensure remote directory exists
+        run: ssh ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} "mkdir -p ~/sportskalendar"
+
       - name: Copy compose files (Traefik stack)
         run: |
           rsync -avz -e ssh docker-compose.traefik.yml ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}:~/sportskalendar/docker-compose.yml
+
+      - name: Ensure Docker & Compose installed on server
+        run: |
+          ssh ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} "\
+            set -euo pipefail; \
+            if ! command -v docker >/dev/null 2>&1; then \
+              curl -fsSL https://get.docker.com | sh; \
+              sudo -n systemctl enable --now docker || sudo -n service docker start || true; \
+            fi; \
+            if ! docker compose version >/dev/null 2>&1; then \
+              DOCKER_CONFIG=\${XDG_CONFIG_HOME:-$HOME/.docker}; \
+              mkdir -p \"$DOCKER_CONFIG/cli-plugins\"; \
+              curl -SL https://github.com/docker/compose/releases/download/v2.29.7/docker-compose-\$(uname -s)-\$(uname -m) -o \"$DOCKER_CONFIG/cli-plugins/docker-compose\"; \
+              chmod +x \"$DOCKER_CONFIG/cli-plugins/docker-compose\"; \
+            fi; \
+          "
 
       - name: Deploy stack (Traefik + Postgres + Backend + Frontend)
         env:
@@ -91,25 +129,30 @@ jobs:
           FRONTEND_IMAGE: ghcr.io/${{ github.repository }}/frontend:latest
           BACKEND_IMAGE: ghcr.io/${{ github.repository }}/backend:latest
         run: |
-          ssh ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} "\
-            set -euo pipefail; \
-            mkdir -p ~/sportskalendar && cd ~/sportskalendar; \
-            echo 'Logging in to GHCR'; \
-            echo ${{ secrets.GITHUB_TOKEN }} | docker login ghcr.io -u ${{ github.actor }} --password-stdin; \
-            docker pull $BACKEND_IMAGE || true; \
-            docker pull $FRONTEND_IMAGE || true; \
-            export DB_PASSWORD='${{ secrets.DB_PASSWORD }}'; \
-            export JWT_SECRET='${{ secrets.JWT_SECRET }}'; \
-            export FOOTBALL_DATA_KEY='${{ secrets.FOOTBALL_DATA_KEY }}'; \
-            export API_FOOTBALL_KEY='${{ secrets.API_FOOTBALL_KEY }}'; \
-            export NEWS_API_KEY='${{ secrets.NEWS_API_KEY }}'; \
-            export FRONTEND_IMAGE='$FRONTEND_IMAGE'; \
-            export BACKEND_IMAGE='$BACKEND_IMAGE'; \
-            export FRONTEND_HOST='${{ secrets.FRONTEND_HOST }}'; \
-            export BACKEND_HOST='${{ secrets.BACKEND_HOST }}'; \
-            docker compose -f docker-compose.yml pull || true; \
-            docker compose -f docker-compose.yml up -d --remove-orphans; \
-            docker system prune -f; \
+          ssh ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} "
+            set -euo pipefail;
+            mkdir -p ~/sportskalendar && cd ~/sportskalendar;
+            echo 'Logging in to GHCR';
+            echo ${{ secrets.GITHUB_TOKEN }} | sudo -n docker login ghcr.io -u ${{ github.actor }} --password-stdin;
+            sudo -n docker pull $BACKEND_IMAGE || true;
+            sudo -n docker pull $FRONTEND_IMAGE || true;
+            # Write .env so docker compose (run via sudo) picks variables correctly
+            cat > .env <<EOF
+DB_PASSWORD=${{ secrets.DB_PASSWORD }}
+JWT_SECRET=${{ secrets.JWT_SECRET }}
+FOOTBALL_DATA_KEY=${{ secrets.FOOTBALL_DATA_KEY }}
+API_FOOTBALL_KEY=${{ secrets.API_FOOTBALL_KEY }}
+NEWS_API_KEY=${{ secrets.NEWS_API_KEY }}
+LETSENCRYPT_EMAIL=${{ secrets.LETSENCRYPT_EMAIL }}
+FRONTEND_IMAGE=$FRONTEND_IMAGE
+BACKEND_IMAGE=$BACKEND_IMAGE
+FRONTEND_HOST=${{ secrets.FRONTEND_HOST }}
+BACKEND_HOST=${{ secrets.BACKEND_HOST }}
+CORS_ORIGIN=https://${{ secrets.FRONTEND_HOST }},https://${{ secrets.BACKEND_HOST }},https://sportskalendar.de,http://localhost:5173,http://localhost:3000
+EOF
+            sudo -n docker compose -f docker-compose.yml pull || true;
+            sudo -n docker compose -f docker-compose.yml up -d --remove-orphans;
+            sudo -n docker system prune -f;
           "
 
 
