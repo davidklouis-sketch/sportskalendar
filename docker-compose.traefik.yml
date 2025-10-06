@@ -70,6 +70,7 @@ services:
       FOOTBALL_DATA_KEY: ${FOOTBALL_DATA_KEY}
       API_FOOTBALL_KEY: ${API_FOOTBALL_KEY}
       NEWS_API_KEY: ${NEWS_API_KEY}
+      CORS_ORIGIN: ${CORS_ORIGIN}
     depends_on:
       postgres:
         condition: service_healthy

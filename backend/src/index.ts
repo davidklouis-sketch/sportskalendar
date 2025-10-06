@@ -29,14 +29,14 @@ const app = express();
 // Trust proxy for rate limiting behind reverse proxy (NPM)
 app.set('trust proxy', true);
 
-// CORS-Konfiguration
+// CORS-Konfiguration (konfigurierbar über CORS_ORIGIN, kommasepariert)
+const configuredOrigins = (process.env.CORS_ORIGIN || 'https://sportskalender.dlouis.ddnss.de,https://dlouis.ddnss.de,http://localhost:3000,http://localhost:5173')
+  .split(',')
+  .map(s => s.trim())
+  .filter(Boolean);
+
 const corsOptions = {
-  origin: [
-    'https://sportskalender.dlouis.ddnss.de',
-    'https://dlouis.ddnss.de',
-    'http://localhost:3000',
-    'http://localhost:5173'
-  ],
+  origin: configuredOrigins,
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'X-CSRF-Token']
