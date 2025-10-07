@@ -73,6 +73,7 @@ export function Calendar() {
       }
       
       setEvents(allEvents);
+      console.log('🔍 Debug - Events state updated:', allEvents.length, 'events');
     } catch (error) {
       console.error('Failed to load events:', error);
       setEvents([]);
@@ -448,6 +449,10 @@ export function Calendar() {
           )}
         </div>
 
+        {(() => {
+          console.log('🔍 Debug - UI Render - isLoading:', isLoading, 'events.length:', events.length, 'events:', events);
+          return null;
+        })()}
         {isLoading ? (
           <div className="text-center py-12">
             <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600"></div>
