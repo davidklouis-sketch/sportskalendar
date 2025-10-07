@@ -140,10 +140,21 @@ jobs:
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           port: ${{ secrets.SSH_PORT || 22 }}
           script: |
-            cd ${{ secrets.DEPLOY_PATH || '/opt/sportskalendar' }}
+            # Set deployment path
+            DEPLOY_PATH="${{ secrets.DEPLOY_PATH || '/opt/sportskalendar' }}"
             
-            # Pull latest code
-            git pull origin main
+            # Create directory if it doesn't exist
+            mkdir -p "$DEPLOY_PATH"
+            cd "$DEPLOY_PATH"
+            
+            # Clone repository if not exists, otherwise pull
+            if [ ! -d ".git" ]; then
+              echo "Cloning repository..."
+              git clone https://github.com/davidklouis-sketch/sportskalendar.git .
+            else
+              echo "Pulling latest changes..."
+              git pull origin main
+            fi
             
             # Create .env if it doesn't exist
             if [ ! -f .env.production ]; then

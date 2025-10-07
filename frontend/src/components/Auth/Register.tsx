@@ -21,8 +21,9 @@ export function Register({ onSwitchToLogin, onSuccess }: RegisterProps) {
     try {
       await authApi.register({ email, password, displayName });
       onSuccess();
-    } catch (err: any) {
-      setError(err.response?.data?.message || 'Registrierung fehlgeschlagen');
+    } catch (err) {
+      const error = err as { response?: { data?: { message?: string } } };
+      setError(error.response?.data?.message || 'Registrierung fehlgeschlagen');
     } finally {
       setIsLoading(false);
     }

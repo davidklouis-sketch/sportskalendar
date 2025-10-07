@@ -44,8 +44,9 @@ export function Admin() {
       await adminApi.promoteUser(userId);
       await loadUsers();
       alert('User wurde zum Admin befördert!');
-    } catch (error: any) {
-      console.error('Failed to promote user:', error);
+    } catch (err) {
+      const error = err as { response?: { data?: { message?: string } } };
+      console.error('Failed to promote user:', err);
       alert('Fehler: ' + (error.response?.data?.message || 'Konnte User nicht befördern'));
     } finally {
       setActionLoading(null);
@@ -58,8 +59,9 @@ export function Admin() {
       await adminApi.demoteUser(userId);
       await loadUsers();
       alert('Admin wurde zum User zurückgestuft!');
-    } catch (error: any) {
-      console.error('Failed to demote user:', error);
+    } catch (err) {
+      const error = err as { response?: { data?: { message?: string } } };
+      console.error('Failed to demote user:', err);
       alert('Fehler: ' + (error.response?.data?.message || 'Konnte User nicht zurückstufen'));
     } finally {
       setActionLoading(null);
@@ -72,8 +74,9 @@ export function Admin() {
       await adminApi.togglePremium(userId);
       await loadUsers();
       alert('Premium-Status wurde geändert!');
-    } catch (error: any) {
-      console.error('Failed to toggle premium:', error);
+    } catch (err) {
+      const error = err as { response?: { data?: { message?: string } } };
+      console.error('Failed to toggle premium:', err);
       alert('Fehler: ' + (error.response?.data?.message || 'Konnte Premium-Status nicht ändern'));
     } finally {
       setActionLoading(null);

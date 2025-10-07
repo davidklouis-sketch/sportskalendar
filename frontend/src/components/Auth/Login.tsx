@@ -26,8 +26,9 @@ export function Login({ onSwitchToRegister, onSuccess }: LoginProps) {
       const { data } = await userApi.getProfile();
       setUser(data.user);
       onSuccess();
-    } catch (err: any) {
-      setError(err.response?.data?.message || 'Login fehlgeschlagen');
+    } catch (err) {
+      const error = err as { response?: { data?: { message?: string } } };
+      setError(error.response?.data?.message || 'Login fehlgeschlagen');
     } finally {
       setIsLoading(false);
     }

@@ -154,7 +154,12 @@ export function Calendar() {
     }
 
     // Build team object - only include defined values
-    const newTeam: any = {
+    const newTeam: {
+      sport: 'football' | 'nfl' | 'f1';
+      teamName: string;
+      teamId?: string;
+      leagueId?: number;
+    } = {
       sport: selectedSport,
       teamName,
     };
@@ -193,13 +198,14 @@ export function Calendar() {
       setSelectedLeague(null);
       setSelectedSport(null);
       loadEvents();
-    } catch (error: any) {
-      if (error.response?.status === 403) {
+    } catch (error) {
+      const err = error as { response?: { status?: number; data?: { message?: string } }; message?: string };
+      if (err.response?.status === 403) {
         alert('Premium erforderlich für mehrere Teams!');
       } else {
         console.error('Error adding team:', error);
-        console.error('Error response:', error.response?.data);
-        alert('Fehler beim Hinzufügen des Teams: ' + (error.response?.data?.message || error.message));
+        console.error('Error response:', err.response?.data);
+        alert('Fehler beim Hinzufügen des Teams: ' + (err.response?.data?.message || err.message));
       }
     }
   };
@@ -210,7 +216,8 @@ export function Calendar() {
       await userApi.updateTeams(updatedTeams);
       updateUser({ selectedTeams: updatedTeams });
       loadEvents();
-    } catch (error) {
+    } catch (err) {
+      console.error('Failed to remove team:', err);
       alert('Fehler beim Entfernen des Teams');
     }
   };
@@ -220,7 +227,8 @@ export function Calendar() {
       await userApi.upgradePremium();
       updateUser({ isPremium: true });
       alert('Erfolgreich zu Premium upgraded! 🎉');
-    } catch (error) {
+    } catch (err) {
+      console.error('Failed to upgrade premium:', err);
       alert('Fehler beim Premium-Upgrade');
     }
   };

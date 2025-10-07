@@ -28,7 +28,7 @@ function App() {
       try {
         const { state } = JSON.parse(savedTheme);
         setTheme(state.isDark);
-      } catch (e) {
+      } catch {
         // Fallback to system preference
         const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
         setTheme(prefersDark);
@@ -81,7 +81,7 @@ function App() {
 
   // Require authentication for all pages
   if (!isAuthenticated || !user) {
-    return (
+  return (
       <div className="min-h-screen flex items-center justify-center p-4">
         <div className="w-full">
           {authView === 'login' ? (
@@ -96,9 +96,9 @@ function App() {
             />
           )}
         </div>
-      </div>
-    );
-  }
+    </div>
+  );
+}
 
   return (
     <div className="min-h-screen">
@@ -116,13 +116,13 @@ function App() {
             <p className="text-gray-600 dark:text-gray-400 mb-6">
               Nur Administratoren können auf diese Seite zugreifen.
             </p>
-            <button
+        <button 
               onClick={() => setCurrentPage('calendar')}
               className="btn btn-primary"
             >
               Zurück zum Kalender
-            </button>
-          </div>
+        </button>
+      </div>
         ) : null}
         {currentPage === 'settings' && <Settings />}
       </main>
@@ -130,7 +130,7 @@ function App() {
       <footer className="mt-16 py-8 border-t border-gray-200 dark:border-gray-700">
         <div className="container mx-auto px-4 text-center text-sm text-gray-500 dark:text-gray-400">
           <p>© 2025 SportsKalender. Alle Rechte vorbehalten.</p>
-        </div>
+      </div>
       </footer>
     </div>
   );
