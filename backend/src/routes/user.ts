@@ -2,8 +2,56 @@ import { Router } from 'express';
 import { z } from 'zod';
 import bcrypt from 'bcryptjs';
 import { requireAuth } from '../middleware/auth';
-import { db } from '../store/memory';
+import { db, User } from '../store/memory';
 import { setAuthCookies, signAccess, signRefresh } from './auth';
+
+// Helper function to get user from either PostgreSQL or in-memory store
+async function getUserByEmail(email: string): Promise<User | null> {
+  // Try PostgreSQL first if available
+  if (process.env.DATABASE_URL) {
+    try {
+      const { UserRepository } = await import('../database/repositories/userRepository');
+      const pgUser = await UserRepository.findByEmail(email);
+      if (pgUser) {
+        return {
+          id: pgUser.id,
+          email: pgUser.email,
+          passwordHash: pgUser.passwordHash,
+          displayName: pgUser.displayName,
+          role: pgUser.role as 'user' | 'admin',
+          isPremium: pgUser.isPremium || false,
+          selectedTeams: pgUser.selectedTeams || []
+        };
+      }
+    } catch (error) {
+      console.log('⚠️ Could not fetch user from PostgreSQL, falling back to in-memory:', error);
+    }
+  }
+  
+  // Fallback to in-memory store
+  return db.users.get(email) || null;
+}
+
+// Helper function to update user in either PostgreSQL or in-memory store
+async function updateUser(email: string, updates: Partial<User>): Promise<void> {
+  // Try PostgreSQL first if available
+  if (process.env.DATABASE_URL) {
+    try {
+      const { UserRepository } = await import('../database/repositories/userRepository');
+      await UserRepository.updateByEmail(email, updates);
+      return;
+    } catch (error) {
+      console.log('⚠️ Could not update user in PostgreSQL, falling back to in-memory:', error);
+    }
+  }
+  
+  // Fallback to in-memory store
+  const user = db.users.get(email);
+  if (user) {
+    Object.assign(user, updates);
+    db.users.set(email, user);
+  }
+}
 
 export const userRouter = Router();
 
@@ -35,18 +83,19 @@ userRouter.post('/change-password', async (req, res) => {
   const parsed = changePasswordSchema.safeParse(req.body);
   if (!parsed.success) return res.status(400).json({ error: parsed.error.flatten() });
   const { currentPassword, newPassword } = parsed.data;
-  const record = db.users.get(user.email);
+  const record = await getUserByEmail(user.email);
   if (!record) return res.status(404).json({ error: 'User not found' });
   const ok = await bcrypt.compare(currentPassword, record.passwordHash);
   if (!ok) return res.status(401).json({ error: 'Invalid current password' });
-  record.passwordHash = await bcrypt.hash(newPassword, 10);
+  const newPasswordHash = await bcrypt.hash(newPassword, 10);
+  await updateUser(user.email, { passwordHash: newPasswordHash });
   res.json({ ok: true });
 });
 
 // Get user profile with premium status and selected teams
-userRouter.get('/profile', (req, res) => {
+userRouter.get('/profile', async (req, res) => {
   const user = (req as any).user as { id: string; email: string };
-  const record = db.users.get(user.email);
+  const record = await getUserByEmail(user.email);
   if (!record) return res.status(404).json({ error: 'User not found' });
   res.json({ 
     user: { 
@@ -103,7 +152,7 @@ userRouter.post('/teams', (req, res) => {
     }
   }
   
-  const record = db.users.get(user.email);
+  const record = await getUserByEmail(user.email);
   if (!record) return res.status(404).json({ error: 'User not found' });
   
   // Free users can only have 1 team
@@ -114,21 +163,21 @@ userRouter.post('/teams', (req, res) => {
     });
   }
   
-  record.selectedTeams = teamsData;
+  await updateUser(user.email, { selectedTeams: teamsData });
   console.log('Teams updated successfully for user:', user.email);
   res.json({ 
     ok: true, 
-    selectedTeams: record.selectedTeams 
+    selectedTeams: teamsData 
   });
 });
 
 // Upgrade to premium (for demo purposes - in production this would be a payment flow)
-userRouter.post('/upgrade-premium', (req, res) => {
+userRouter.post('/upgrade-premium', async (req, res) => {
   const user = (req as any).user as { id: string; email: string };
-  const record = db.users.get(user.email);
+  const record = await getUserByEmail(user.email);
   if (!record) return res.status(404).json({ error: 'User not found' });
   
-  record.isPremium = true;
+  await updateUser(user.email, { isPremium: true });
   res.json({ 
     ok: true, 
     message: 'Successfully upgraded to Premium',

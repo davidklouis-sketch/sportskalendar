@@ -6,6 +6,54 @@ import { Request, Response } from 'express';
 import { db, User } from '../store/memory';
 import { authRateLimit, validatePassword, validateJwtSecret, SessionManager } from '../middleware/security-enhanced';
 
+// Helper function to get user from either PostgreSQL or in-memory store
+async function getUserByEmail(email: string): Promise<User | null> {
+  // Try PostgreSQL first if available
+  if (process.env.DATABASE_URL) {
+    try {
+      const { UserRepository } = await import('../database/repositories/userRepository');
+      const pgUser = await UserRepository.findByEmail(email);
+      if (pgUser) {
+        return {
+          id: pgUser.id,
+          email: pgUser.email,
+          passwordHash: pgUser.passwordHash,
+          displayName: pgUser.displayName,
+          role: pgUser.role as 'user' | 'admin',
+          isPremium: pgUser.isPremium || false,
+          selectedTeams: pgUser.selectedTeams || []
+        };
+      }
+    } catch (error) {
+      console.log('⚠️ Could not fetch user from PostgreSQL, falling back to in-memory:', error);
+    }
+  }
+  
+  // Fallback to in-memory store
+  return db.users.get(email) || null;
+}
+
+// Helper function to update user in either PostgreSQL or in-memory store
+async function updateUser(email: string, updates: Partial<User>): Promise<void> {
+  // Try PostgreSQL first if available
+  if (process.env.DATABASE_URL) {
+    try {
+      const { UserRepository } = await import('../database/repositories/userRepository');
+      await UserRepository.updateByEmail(email, updates);
+      return;
+    } catch (error) {
+      console.log('⚠️ Could not update user in PostgreSQL, falling back to in-memory:', error);
+    }
+  }
+  
+  // Fallback to in-memory store
+  const user = db.users.get(email);
+  if (user) {
+    Object.assign(user, updates);
+    db.users.set(email, user);
+  }
+}
+
 export const authRouter = Router();
 
 export function signAccess(user: { id: string; email: string; role?: 'user' | 'admin' }) {
@@ -166,7 +214,7 @@ authRouter.post('/login', authRateLimit, async (req: Request, res: Response) => 
     const { email, password } = parsed.data;
     
     // Find user
-    const user = db.users.get(email);
+    const user = await getUserByEmail(email);
     if (!user) {
       // Simulate password check to prevent timing attacks
       await bcrypt.compare(password, '$2a$12$dummy.hash.to.prevent.timing.attacks');

@@ -64,15 +64,40 @@ app.get('/api/health', (_req, res) => {
 });
 
 // Debug endpoint to check users
-app.get('/api/debug/users', (_req, res) => {
+app.get('/api/debug/users', async (_req, res) => {
   const { db } = require('./store/memory');
-  const users = Array.from(db.users.values()).map((u: any) => ({ 
+  const inMemoryUsers = Array.from(db.users.values()).map((u: any) => ({ 
     id: u.id, 
     email: u.email, 
     displayName: u.displayName, 
-    role: u.role 
+    role: u.role,
+    source: 'in-memory'
   }));
-  res.json({ users, count: users.length });
+  
+  let postgresUsers: any[] = [];
+  if (process.env.DATABASE_URL) {
+    try {
+      const { UserRepository } = await import('./database/repositories/userRepository');
+      const pgUsers = await UserRepository.findAll();
+      postgresUsers = pgUsers.map((u: any) => ({
+        id: u.id,
+        email: u.email,
+        displayName: u.displayName,
+        role: u.role,
+        source: 'postgresql'
+      }));
+    } catch (error) {
+      console.log('⚠️ Could not fetch PostgreSQL users:', error);
+    }
+  }
+  
+  res.json({ 
+    inMemoryUsers, 
+    postgresUsers,
+    inMemoryCount: inMemoryUsers.length,
+    postgresCount: postgresUsers.length,
+    totalCount: inMemoryUsers.length + postgresUsers.length
+  });
 });
 
 // API Routes
