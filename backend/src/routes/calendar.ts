@@ -327,12 +327,10 @@ async function fetchSoccerApiFootball(debug?: DebugBuffer, leagues: number[] = [
     try {
       const r = await fetchWithLog(url, { headers }, debug, `API-FOOTBALL ${league}`);
       if (!r.ok) {
-        if (r.status === 429) {
-          debug?.logs.push(`API-FOOTBALL ${league}: Rate limit exceeded - using demo data`);
-          // Use demo data when rate limited
-          const demoEvents = generateDemoFootballEvents([league]);
-          items.push(...demoEvents);
-        }
+        debug?.logs.push(`API-FOOTBALL ${league}: API failed (${r.status}) - using demo data`);
+        // Use demo data when API fails (rate limit, invalid token, etc.)
+        const demoEvents = generateDemoFootballEvents([league]);
+        items.push(...demoEvents);
         continue;
       }
       const data = await r.json();
@@ -345,9 +343,9 @@ async function fetchSoccerApiFootball(debug?: DebugBuffer, leagues: number[] = [
         if (r2.ok) {
           const d2 = await r2.json();
           fixtures = d2?.response || [];
-        } else if (r2.status === 429) {
-          debug?.logs.push(`API-FOOTBALL ${league}: Rate limit exceeded - using demo data`);
-          // Use demo data when rate limited
+        } else {
+          debug?.logs.push(`API-FOOTBALL ${league}: Season API failed (${r2.status}) - using demo data`);
+          // Use demo data when API fails
           const demoEvents = generateDemoFootballEvents([league]);
           items.push(...demoEvents);
           continue;
@@ -363,9 +361,9 @@ async function fetchSoccerApiFootball(debug?: DebugBuffer, leagues: number[] = [
         if (r3.ok) {
           const d3 = await r3.json();
           fixtures = d3?.response || [];
-        } else if (r3.status === 429) {
-          debug?.logs.push(`API-FOOTBALL ${league}: Rate limit exceeded - using demo data`);
-          // Use demo data when rate limited
+        } else {
+          debug?.logs.push(`API-FOOTBALL ${league}: Range API failed (${r3.status}) - using demo data`);
+          // Use demo data when API fails
           const demoEvents = generateDemoFootballEvents([league]);
           items.push(...demoEvents);
           continue;
@@ -516,12 +514,10 @@ async function fetchFootballDataOrg(apiKey: string, debug?: DebugBuffer, leagues
       }
       
       if (!r.ok && matches.length === 0) {
-        if (r.status === 429) {
-          debug?.logs.push(`FOOTBALL-DATA ${competition.name}: Rate limit exceeded - using demo data`);
-          // Use demo data when rate limited
-          const demoEvents = generateDemoFootballEvents([competition.id]);
-          items.push(...demoEvents);
-        }
+        debug?.logs.push(`FOOTBALL-DATA ${competition.name}: API failed (${r.status}) - using demo data`);
+        // Use demo data when API fails
+        const demoEvents = generateDemoFootballEvents([competition.id]);
+        items.push(...demoEvents);
         continue;
       }
       
