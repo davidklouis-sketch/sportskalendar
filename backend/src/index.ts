@@ -141,7 +141,12 @@ async function startServer() {
     }
 
     // Seed development data
-    await seedDevUser().catch(() => {});
+    try {
+      await seedDevUser();
+      console.log('✅ Demo users seeded successfully');
+    } catch (error) {
+      console.error('❌ Failed to seed demo users:', error);
+    }
     seedHighlights();
 
     // Start server

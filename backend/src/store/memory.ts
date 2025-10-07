@@ -35,22 +35,31 @@ export interface HighlightItem {
 }
 
 export async function seedDevUser() {
+  console.log('🌱 Starting demo user seeding...');
+  
   // Check if we're using PostgreSQL and if users already exist
   if (process.env.DATABASE_URL) {
+    console.log('📊 Using PostgreSQL database');
     try {
       const { UserRepository } = await import('../database/repositories/userRepository');
       const existingUsers = await UserRepository.findAll();
+      console.log(`📊 Found ${existingUsers.length} existing users in PostgreSQL`);
       if (existingUsers.length > 0) {
         console.log('✅ PostgreSQL database already has users, skipping demo user seeding');
         return;
       }
     } catch (error) {
-      console.log('⚠️ Could not check PostgreSQL users, falling back to in-memory check');
+      console.log('⚠️ Could not check PostgreSQL users, falling back to in-memory check:', error);
     }
+  } else {
+    console.log('📊 Using in-memory storage');
   }
   
   // Fallback to in-memory check
-  if (db.users.size > 0) return;
+  if (db.users.size > 0) {
+    console.log(`✅ In-memory store already has ${db.users.size} users, skipping seeding`);
+    return;
+  }
   const passwordHash = await bcrypt.hash('password', 10);
   const user: User = {
     id: 'u_1',
@@ -73,6 +82,7 @@ export async function seedDevUser() {
 
   // If using PostgreSQL, also create users in database
   if (process.env.DATABASE_URL) {
+    console.log('📊 Creating demo users in PostgreSQL database...');
     try {
       const { UserRepository } = await import('../database/repositories/userRepository');
       await UserRepository.create({
@@ -81,12 +91,15 @@ export async function seedDevUser() {
         displayName: user.displayName,
         role: user.role
       });
+      console.log(`✅ Created demo user: ${user.email}`);
+      
       await UserRepository.create({
         email: admin.email,
         passwordHash: admin.passwordHash,
         displayName: admin.displayName,
         role: admin.role
       });
+      console.log(`✅ Created admin user: ${admin.email}`);
       console.log('✅ Demo users created in PostgreSQL database');
     } catch (error) {
       console.log('⚠️ Could not create demo users in PostgreSQL:', error);
