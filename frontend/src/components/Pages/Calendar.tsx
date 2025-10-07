@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import { useAuthStore } from '../../store/useAuthStore';
 import { calendarApi, userApi, highlightsApi } from '../../lib/api';
 import { format } from 'date-fns';
@@ -40,14 +40,17 @@ export function Calendar() {
     }
   }, [user]);
 
+  // Memoize teams to prevent unnecessary re-renders
+  const memoizedTeams = useMemo(() => user?.selectedTeams || [], [user?.selectedTeams?.length, user?.selectedTeams?.map(t => `${t.sport}-${t.teamName}`).join(',')]);
+
   const loadEvents = useCallback(async () => {
     if (!selectedSport) return;
     
     setIsLoading(true);
     try {
       const leagues = selectedSport === 'football' 
-        ? user?.selectedTeams
-            ?.filter(t => t.sport === 'football' && t.leagueId)
+        ? memoizedTeams
+            .filter(t => t.sport === 'football' && t.leagueId)
             .map(t => t.leagueId!)
         : undefined;
 
@@ -60,7 +63,7 @@ export function Calendar() {
       }
       
       // Filter events by selected team name
-      const currentTeam = user?.selectedTeams?.find(t => t.sport === selectedSport);
+      const currentTeam = memoizedTeams.find(t => t.sport === selectedSport);
       
       if (currentTeam?.teamName) {
         const beforeFilter = allEvents.length;
@@ -80,7 +83,7 @@ export function Calendar() {
     } finally {
       setIsLoading(false);
     }
-  }, [selectedSport, user?.selectedTeams]);
+  }, [selectedSport, memoizedTeams]);
 
   const loadHighlights = useCallback(async () => {
     if (!selectedSport) return;
@@ -96,7 +99,7 @@ export function Calendar() {
       let allHighlights = data.items || [];
       
       // Filter highlights by selected team name
-      const currentTeam = user?.selectedTeams?.find(t => t.sport === selectedSport);
+      const currentTeam = memoizedTeams.find(t => t.sport === selectedSport);
       if (currentTeam?.teamName) {
         allHighlights = allHighlights.filter((highlight: Highlight) => {
           const searchText = (highlight.title + ' ' + (highlight.description || '')).toLowerCase();
@@ -109,7 +112,7 @@ export function Calendar() {
       console.error('Failed to load highlights:', error);
       setHighlights([]);
     }
-  }, [selectedSport, user?.selectedTeams]);
+  }, [selectedSport, memoizedTeams]);
 
   // Single effect to handle both sport and teams changes
   useEffect(() => {
@@ -117,7 +120,7 @@ export function Calendar() {
       loadEvents();
       loadHighlights();
     }
-  }, [selectedSport, user?.selectedTeams, loadEvents, loadHighlights]);
+  }, [selectedSport, memoizedTeams, loadEvents, loadHighlights]);
 
   const formatViews = (views?: number) => {
     if (!views) return '';
