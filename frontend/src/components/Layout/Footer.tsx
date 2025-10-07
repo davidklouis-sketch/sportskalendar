@@ -1,4 +1,3 @@
-import React from 'react';
 
 interface FooterProps {
   onNavigate: (page: 'privacy' | 'contact') => void;

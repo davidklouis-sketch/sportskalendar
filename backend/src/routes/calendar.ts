@@ -282,7 +282,9 @@ function generateDemoNFLEvents(): EventItem[] {
   
   // Generate games over 30 days (every 2-3 days)
   for (let i = 0; i < 15; i++) {
-    const [home, away] = teams[i % teams.length];
+    const teamPair = teams[i % teams.length];
+    if (!teamPair || teamPair.length < 2) continue;
+    const [home, away] = teamPair;
     const gameDate = new Date(now);
     gameDate.setDate(gameDate.getDate() + (i + 1) * 2); // Games every 2 days over 30 days
     gameDate.setHours(19 + (i % 2), 0, 0, 0); // 7 PM or 8 PM games
