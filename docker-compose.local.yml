@@ -103,7 +103,7 @@ services:
       context: ./frontend
       dockerfile: Dockerfile
       args:
-        VITE_API_URL: https://${BACKEND_HOST}/api
+        - VITE_API_URL=https://${BACKEND_HOST}/api
     container_name: sportskalendar-frontend
     depends_on:
       - backend

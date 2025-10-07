@@ -15,8 +15,14 @@ COPY . .
 ARG VITE_API_URL
 ENV VITE_API_URL=${VITE_API_URL}
 
+# Show build args for debugging
+RUN echo "Building with VITE_API_URL=${VITE_API_URL}"
+
 # Build the application with timestamp to bust cache
 RUN npx vite build --mode production
+
+# Verify build output
+RUN ls -la /app/dist && echo "Build completed, files created"
 
 # Production stage
 FROM nginx:alpine
