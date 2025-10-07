@@ -257,6 +257,8 @@ function getNextNFLGame(): { name: string; date: string; teams: string } {
   ];
 
   const randomMatch = teams[Math.floor(Math.random() * teams.length)];
+  const homeTeam = randomMatch?.[0] || 'Home Team';
+  const awayTeam = randomMatch?.[1] || 'Away Team';
 
   return {
     name: 'NFL Game',
@@ -268,7 +270,7 @@ function getNextNFLGame(): { name: string; date: string; teams: string } {
       hour: '2-digit',
       minute: '2-digit'
     }),
-    teams: `${randomMatch[0]} vs ${randomMatch[1]}`
+    teams: `${homeTeam} vs ${awayTeam}`
   };
 }
 
@@ -307,9 +309,9 @@ liveRouter.get('/f1', async (_req, res) => {
     }
 
     const entries = f1Data.map((e) => ({
-    ...e,
-      info: e.info || `Lap ${e.lap || 0}/${e.totalLaps || 58}${e.position > 1 && typeof e.gapSec === 'number' ? ` · +${e.gapSec.toFixed(1)}s` : ''}`,
-  }));
+      ...e,
+      meta: e.meta || `Lap ${e.lap || 0}/${e.totalLaps || 58}${e.position > 1 && typeof e.gapSec === 'number' ? ` · +${e.gapSec.toFixed(1)}s` : ''}`,
+    }));
   res.json({ entries });
   } catch (error) {
     console.error('Error in F1 route:', error);

@@ -93,11 +93,11 @@ async function fetchRSSFeed(feed: typeof RSS_FEEDS[0]): Promise<TickerEvent[]> {
 
       // Determine event type and priority
       let type: TickerEvent['type'] = 'news';
-      let priority: TickerEvent['priority'] = feed.priority;
+      let priority: TickerEvent['priority'] = feed.priority as 'high' | 'medium' | 'low';
       
       if (text.includes('tor') || text.includes('goal') || text.includes('score')) {
         type = 'goal';
-        priority = 'high';
+        priority = 'high' as const;
       } else if (text.includes('live') || text.includes('update') || text.includes('breaking')) {
         type = 'update';
         priority = 'high';

@@ -66,7 +66,7 @@ app.get('/api/health', (_req, res) => {
 // Debug endpoint to check users
 app.get('/api/debug/users', (_req, res) => {
   const { db } = require('./store/memory');
-  const users = Array.from(db.users.values()).map(u => ({ 
+  const users = Array.from(db.users.values()).map((u: any) => ({ 
     id: u.id, 
     email: u.email, 
     displayName: u.displayName, 

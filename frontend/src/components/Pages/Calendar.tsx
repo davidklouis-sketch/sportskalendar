@@ -28,7 +28,6 @@ export function Calendar() {
   const [events, setEvents] = useState<Event[]>([]);
   const [highlights, setHighlights] = useState<Highlight[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [isLoadingHighlights, setIsLoadingHighlights] = useState(true);
   const [selectedSport, setSelectedSport] = useState<'football' | 'nfl' | 'f1' | null>(null);
   const [showTeamSelector, setShowTeamSelector] = useState(false);
   const [selectedLeague, setSelectedLeague] = useState<number | null>(null);
@@ -65,7 +64,7 @@ export function Calendar() {
       // Filter events by selected team name
       const currentTeam = user?.selectedTeams?.find(t => t.sport === selectedSport);
       if (currentTeam?.teamName) {
-        allEvents = allEvents.filter(event => 
+        allEvents = allEvents.filter((event: Event) => 
           event.title.toLowerCase().includes(currentTeam.teamName.toLowerCase())
         );
       }
@@ -82,7 +81,6 @@ export function Calendar() {
   const loadHighlights = async () => {
     if (!selectedSport) return;
 
-    setIsLoadingHighlights(true);
     try {
       const sportMapping: Record<string, string> = {
         football: 'Fußball',
@@ -96,7 +94,7 @@ export function Calendar() {
       // Filter highlights by selected team name
       const currentTeam = user?.selectedTeams?.find(t => t.sport === selectedSport);
       if (currentTeam?.teamName) {
-        allHighlights = allHighlights.filter(highlight => {
+        allHighlights = allHighlights.filter((highlight: Highlight) => {
           const searchText = (highlight.title + ' ' + (highlight.description || '')).toLowerCase();
           return searchText.includes(currentTeam.teamName.toLowerCase());
         });
@@ -106,8 +104,6 @@ export function Calendar() {
     } catch (error) {
       console.error('Failed to load highlights:', error);
       setHighlights([]);
-    } finally {
-      setIsLoadingHighlights(false);
     }
   };
 

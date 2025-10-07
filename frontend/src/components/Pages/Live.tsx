@@ -67,7 +67,7 @@ export function Live() {
       // Filter entries by selected team name
       const currentTeam = user?.selectedTeams?.find(t => t.sport === selectedSport);
       if (currentTeam?.teamName && liveDataResult.entries) {
-        liveDataResult.entries = liveDataResult.entries.filter(entry => 
+        liveDataResult.entries = liveDataResult.entries.filter((entry: LiveEntry) => 
           entry.name.toLowerCase().includes(currentTeam.teamName.toLowerCase())
         );
       }

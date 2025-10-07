@@ -51,12 +51,6 @@ adminRouter.post('/promote-user', async (req, res) => {
     
     // Promote user to admin
     user.role = 'admin';
-    user.updatedAt = new Date();
-    
-    // Update in database (if using database)
-    if (db.updateUser) {
-      await db.updateUser(userId, { role: 'admin' });
-    }
     
     res.json({ 
       success: true, 
@@ -99,12 +93,6 @@ adminRouter.post('/demote-user', async (req, res) => {
     
     // Demote admin to user
     user.role = 'user';
-    user.updatedAt = new Date();
-    
-    // Update in database (if using database)
-    if (db.updateUser) {
-      await db.updateUser(userId, { role: 'user' });
-    }
     
     res.json({ 
       success: true, 

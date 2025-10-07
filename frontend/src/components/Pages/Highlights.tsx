@@ -50,7 +50,7 @@ export function Highlights() {
       // Filter highlights by selected team name
       const currentTeam = user?.selectedTeams?.find(t => t.sport === selectedSport);
       if (currentTeam?.teamName) {
-        allHighlights = allHighlights.filter(highlight => {
+        allHighlights = allHighlights.filter((highlight: Highlight) => {
           const searchText = (highlight.title + ' ' + (highlight.description || '')).toLowerCase();
           return searchText.includes(currentTeam.teamName.toLowerCase());
         });

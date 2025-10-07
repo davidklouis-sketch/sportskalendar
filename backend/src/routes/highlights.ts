@@ -211,10 +211,12 @@ async function parseYouTubeFeedAsync(xml: string, sport: string, source: string,
         url: link,
         sport,
         createdAt: published || new Date().toISOString(),
-        thumbnail: thumbnail || undefined,
-        duration: duration ? formatDuration(parseInt(duration)) : undefined,
-        views: views ? parseInt(views) : undefined,
-        description: entry['media:group']?.[0]?.['media:description']?.[0] || undefined,
+        ...(thumbnail && { thumbnail }),
+        ...(duration && { duration: formatDuration(parseInt(duration)) }),
+        ...(views && { views: parseInt(views) }),
+        ...(entry['media:group']?.[0]?.['media:description']?.[0] && { 
+          description: entry['media:group'][0]['media:description'][0] 
+        }),
         priority: priority as 'high' | 'medium' | 'low'
       };
 
