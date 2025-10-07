@@ -23,7 +23,7 @@ export function Calendar() {
   const [selectedLeague, setSelectedLeague] = useState<number | null>(null);
   const [selectedTeamId, setSelectedTeamId] = useState<string>('');
   // Local teams state to ensure UI updates work
-  const [localTeams, setLocalTeams] = useState<any[]>([]);
+  const [localTeams, setLocalTeams] = useState<Array<{ sport: string; teamName: string; teamId?: string; leagueId?: number }>>([]);
 
   useEffect(() => {
     // Set initial sport from user's selected teams
@@ -31,7 +31,7 @@ export function Calendar() {
       setSelectedSport(user.selectedTeams[0].sport);
       setLocalTeams(user.selectedTeams);
     }
-  }, [user?.selectedTeams?.length]); // Only depend on the length, not the entire user object
+  }, [user?.selectedTeams]); // Include the full selectedTeams dependency
 
   const loadEvents = useCallback(async () => {
     if (!selectedSport) {
@@ -83,7 +83,7 @@ export function Calendar() {
       console.log('🔍 Debug - Events state updated:', allEvents.length, 'events');
     } catch (error) {
       console.error('❌ Failed to load events:', error);
-      const err = error as { message?: string; response?: { status?: number; data?: any } };
+      const err = error as { message?: string; response?: { status?: number; data?: unknown } };
       console.error('❌ Error details:', {
         message: err.message,
         status: err.response?.status,
@@ -99,7 +99,7 @@ export function Calendar() {
   // Removed loadHighlights - not used anymore
 
   // Manual load function - only called when needed
-  const manualLoadEvents = useCallback((teamsOverride?: any[]) => {
+  const manualLoadEvents = useCallback((teamsOverride?: Array<{ sport: string; teamName: string; teamId?: string; leagueId?: number }>) => {
     console.log('🔍 Debug - Manual load events triggered');
     if (selectedSport) {
       // Use override teams if provided, otherwise use local teams
