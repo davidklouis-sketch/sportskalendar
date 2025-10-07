@@ -62,7 +62,7 @@ function App() {
     };
 
     checkAuth();
-  }, []);
+  }, [isAuthenticated, setLoading, setUser, user]);
 
   const handleLoginSuccess = () => {
     setCurrentPage('calendar');
@@ -102,7 +102,7 @@ function App() {
         </div>
     </div>
   );
-}
+  }
 
   return (
     <div className="min-h-screen flex flex-col">
@@ -120,13 +120,13 @@ function App() {
             <p className="text-gray-600 dark:text-gray-400 mb-6">
               Nur Administratoren können auf diese Seite zugreifen.
             </p>
-            <button 
+        <button 
               onClick={() => setCurrentPage('calendar')}
               className="btn btn-primary"
             >
               Zurück zum Kalender
-            </button>
-          </div>
+        </button>
+      </div>
         ) : null}
         {currentPage === 'settings' && <Settings />}
         {currentPage === 'privacy' && <Privacy />}

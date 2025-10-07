@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useAuthStore } from '../../store/useAuthStore';
 import { highlightsApi } from '../../lib/api';
 
@@ -27,13 +27,7 @@ export function Highlights() {
     }
   }, [user]);
 
-  useEffect(() => {
-    if (selectedSport) {
-      loadHighlights();
-    }
-  }, [selectedSport]);
-
-  const loadHighlights = async () => {
+  const loadHighlights = useCallback(async () => {
     if (!selectedSport) return;
 
     setIsLoading(true);
@@ -63,7 +57,13 @@ export function Highlights() {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [selectedSport, user]);
+
+  useEffect(() => {
+    if (selectedSport) {
+      loadHighlights();
+    }
+  }, [selectedSport, loadHighlights]);
 
   const formatViews = (views?: number) => {
     if (!views) return '';
@@ -99,7 +99,7 @@ export function Highlights() {
           <label className="block text-sm font-medium mb-2">Team auswählen</label>
           <select
             value={selectedSport || ''}
-            onChange={(e) => setSelectedSport(e.target.value as any)}
+            onChange={(e) => setSelectedSport(e.target.value as 'football' | 'nfl' | 'f1')}
             className="input"
           >
             {user.selectedTeams.map((team, index) => (

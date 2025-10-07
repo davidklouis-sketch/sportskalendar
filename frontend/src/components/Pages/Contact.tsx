@@ -36,7 +36,7 @@ const Contact: React.FC = () => {
       
       setSubmitStatus('success');
       setFormData({ name: '', email: '', subject: '', message: '', privacy: false });
-    } catch (error) {
+    } catch {
       setSubmitStatus('error');
     } finally {
       setIsSubmitting(false);

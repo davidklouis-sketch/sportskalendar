@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useAuthStore } from '../../store/useAuthStore';
 import { liveApi } from '../../lib/api';
 
@@ -32,23 +32,7 @@ export function Live() {
   const [isLoading, setIsLoading] = useState(true);
   const [selectedSport, setSelectedSport] = useState<'football' | 'nfl' | 'f1' | null>(null);
 
-  useEffect(() => {
-    // Set initial sport from user's selected teams
-    if (user?.selectedTeams?.length) {
-      setSelectedSport(user.selectedTeams[0].sport);
-    }
-  }, [user]);
-
-  useEffect(() => {
-    if (selectedSport) {
-      loadLiveData();
-      // Auto-refresh every 30 seconds
-      const interval = setInterval(loadLiveData, 30000);
-      return () => clearInterval(interval);
-    }
-  }, [selectedSport]);
-
-  const loadLiveData = async () => {
+  const loadLiveData = useCallback(async () => {
     if (!selectedSport) return;
 
     setIsLoading(true);
@@ -62,7 +46,7 @@ export function Live() {
         response = await liveApi.getSoccer();
       }
       
-      let liveDataResult = response.data;
+      const liveDataResult = response.data;
       
       // Filter entries by selected team name
       const currentTeam = user?.selectedTeams?.find(t => t.sport === selectedSport);
@@ -79,7 +63,23 @@ export function Live() {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [selectedSport, user]);
+
+  useEffect(() => {
+    // Set initial sport from user's selected teams
+    if (user?.selectedTeams?.length) {
+      setSelectedSport(user.selectedTeams[0].sport);
+    }
+  }, [user]);
+
+  useEffect(() => {
+    if (selectedSport) {
+      loadLiveData();
+      // Auto-refresh every 30 seconds
+      const interval = setInterval(loadLiveData, 30000);
+      return () => clearInterval(interval);
+    }
+  }, [selectedSport, loadLiveData]);
 
   if (!user?.selectedTeams?.length) {
     return (
@@ -108,7 +108,7 @@ export function Live() {
           <label className="block text-sm font-medium mb-2">Team auswählen</label>
           <select
             value={selectedSport || ''}
-            onChange={(e) => setSelectedSport(e.target.value as any)}
+            onChange={(e) => setSelectedSport(e.target.value as 'football' | 'nfl' | 'f1')}
             className="input"
           >
             {user.selectedTeams.map((team, index) => (
