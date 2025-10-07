@@ -205,13 +205,17 @@ export function Calendar() {
     try {
       const response = await userApi.updateTeams(teamsArray);
       console.log('🔍 Debug - API call successful, response:', response);
+      console.log('🔍 Debug - UpdateTeams response data:', JSON.stringify(response.data, null, 2));
+      console.log('🔍 Debug - UpdateTeams response selectedTeams:', JSON.stringify(response.data.selectedTeams, null, 2));
       
       // Force refresh user data from server to ensure UI is in sync
       try {
         const profileResponse = await userApi.getProfile();
         console.log('🔍 Debug - Profile refresh successful:', profileResponse.data);
+        console.log('🔍 Debug - Profile response selectedTeams:', JSON.stringify(profileResponse.data.user.selectedTeams, null, 2));
         setUser(profileResponse.data.user);
         console.log('🔍 Debug - User state completely refreshed with:', profileResponse.data.user);
+        console.log('🔍 Debug - User state selectedTeams after setUser:', JSON.stringify(profileResponse.data.user.selectedTeams, null, 2));
       } catch (profileError) {
         console.log('🔍 Debug - Profile refresh failed, using response data:', profileError);
         // Fallback: update user with response data
