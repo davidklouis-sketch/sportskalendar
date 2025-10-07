@@ -62,11 +62,21 @@ export function Calendar() {
       if (sportTeams.length > 0) {
         const beforeFilter = allEvents.length;
         allEvents = allEvents.filter((event: Event) => 
-          sportTeams.some(team => 
-            event.title.toLowerCase().includes(team.teamName.toLowerCase())
-          )
+          sportTeams.some(team => {
+            const teamName = team.teamName.toLowerCase();
+            const eventTitle = event.title.toLowerCase();
+            
+            // For F1, also check for last name only (e.g., "Verstappen" instead of "Max Verstappen")
+            if (selectedSport === 'f1' && teamName.includes(' ')) {
+              const lastName = teamName.split(' ').pop() || '';
+              return eventTitle.includes(teamName) || eventTitle.includes(lastName);
+            }
+            
+            return eventTitle.includes(teamName);
+          })
         );
         console.log('🔍 Debug - Filtered events:', beforeFilter, '->', allEvents.length, 'for teams:', sportTeams.map(t => t.teamName));
+        console.log('🔍 Debug - Sample event titles:', allEvents.slice(0, 3).map(e => e.title));
       }
       
       setEvents(allEvents);
@@ -113,11 +123,21 @@ export function Calendar() {
         if (sportTeams.length > 0) {
           const beforeFilter = allEvents.length;
           allEvents = allEvents.filter((event: Event) => 
-            sportTeams.some(team => 
-              event.title.toLowerCase().includes(team.teamName.toLowerCase())
-            )
+            sportTeams.some(team => {
+              const teamName = team.teamName.toLowerCase();
+              const eventTitle = event.title.toLowerCase();
+              
+              // For F1, also check for last name only (e.g., "Verstappen" instead of "Max Verstappen")
+              if (selectedSport === 'f1' && teamName.includes(' ')) {
+                const lastName = teamName.split(' ').pop() || '';
+                return eventTitle.includes(teamName) || eventTitle.includes(lastName);
+              }
+              
+              return eventTitle.includes(teamName);
+            })
           );
           console.log('🔍 Debug - Filtered events:', beforeFilter, '->', allEvents.length, 'for teams:', sportTeams.map(t => t.teamName));
+          console.log('🔍 Debug - Sample event titles:', allEvents.slice(0, 3).map(e => e.title));
         }
         
         setEvents(allEvents);
