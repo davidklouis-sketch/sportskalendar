@@ -120,15 +120,14 @@ export function Calendar() {
     }
   }, [selectedSport]);
 
-  // Load events when sport changes - manual trigger only
-  useEffect(() => {
-    console.log('🔍 Debug - useEffect triggered, selectedSport:', selectedSport);
+  // Manual load function - only called when needed
+  const manualLoadEvents = useCallback(() => {
+    console.log('🔍 Debug - Manual load events triggered');
     if (selectedSport) {
-      // Only load if we have a sport selected
       loadEvents();
       loadHighlights();
     }
-  }, [selectedSport]);
+  }, [selectedSport, loadEvents, loadHighlights]);
 
   const formatViews = (views?: number) => {
     if (!views) return '';
@@ -224,8 +223,7 @@ export function Calendar() {
       // Force reload events after team addition
       setTimeout(() => {
         console.log('🔍 Debug - Manual reload after team addition');
-        loadEvents();
-        loadHighlights();
+        manualLoadEvents();
       }, 100);
     } catch (error) {
       const err = error as { response?: { status?: number; data?: { message?: string } }; message?: string };
@@ -461,10 +459,7 @@ export function Calendar() {
           )}
         </div>
 
-        {(() => {
-          console.log('🔍 Debug - UI Render - isLoading:', isLoading, 'events.length:', events.length, 'events:', events);
-          return null;
-        })()}
+        {/* Removed debug logs that were causing infinite loop */}
         {isLoading ? (
           <div className="text-center py-12">
             <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600"></div>
