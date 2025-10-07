@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useMemo } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useAuthStore } from '../../store/useAuthStore';
 import { calendarApi, userApi, highlightsApi } from '../../lib/api';
 import { format } from 'date-fns';
@@ -40,17 +40,18 @@ export function Calendar() {
     }
   }, [user]);
 
-  // Memoize teams to prevent unnecessary re-renders
-  const memoizedTeams = useMemo(() => user?.selectedTeams || [], [user?.selectedTeams?.length, user?.selectedTeams?.map(t => `${t.sport}-${t.teamName}`).join(',')]);
-
   const loadEvents = useCallback(async () => {
-    if (!selectedSport) return;
+    if (!selectedSport) {
+      console.log('🔍 Debug - No selectedSport, skipping loadEvents');
+      return;
+    }
     
     console.log('🔍 Debug - Starting loadEvents for sport:', selectedSport);
     setIsLoading(true);
     try {
+      const teams = user?.selectedTeams || [];
       const leagues = selectedSport === 'football' 
-        ? memoizedTeams
+        ? teams
             .filter(t => t.sport === 'football' && t.leagueId)
             .map(t => t.leagueId!)
         : undefined;
@@ -62,7 +63,7 @@ export function Calendar() {
       console.log('🔍 Debug - API response received:', allEvents.length, 'events');
       
       // Filter events by selected team name
-      const currentTeam = memoizedTeams.find(t => t.sport === selectedSport);
+      const currentTeam = teams.find(t => t.sport === selectedSport);
       
       if (currentTeam?.teamName) {
         const beforeFilter = allEvents.length;
@@ -87,7 +88,7 @@ export function Calendar() {
       console.log('🔍 Debug - Setting isLoading to false');
       setIsLoading(false);
     }
-  }, [selectedSport, memoizedTeams]);
+  }, [selectedSport, user?.selectedTeams]);
 
   const loadHighlights = useCallback(async () => {
     if (!selectedSport) return;
@@ -103,7 +104,8 @@ export function Calendar() {
       let allHighlights = data.items || [];
       
       // Filter highlights by selected team name
-      const currentTeam = memoizedTeams.find(t => t.sport === selectedSport);
+      const teams = user?.selectedTeams || [];
+      const currentTeam = teams.find(t => t.sport === selectedSport);
       if (currentTeam?.teamName) {
         allHighlights = allHighlights.filter((highlight: Highlight) => {
           const searchText = (highlight.title + ' ' + (highlight.description || '')).toLowerCase();
@@ -116,15 +118,16 @@ export function Calendar() {
       console.error('Failed to load highlights:', error);
       setHighlights([]);
     }
-  }, [selectedSport, memoizedTeams]);
+  }, [selectedSport, user?.selectedTeams]);
 
-  // Single effect to handle both sport and teams changes
+  // Load events when sport or teams change - but only once
   useEffect(() => {
+    console.log('🔍 Debug - useEffect triggered, selectedSport:', selectedSport);
     if (selectedSport) {
       loadEvents();
       loadHighlights();
     }
-  }, [selectedSport, memoizedTeams, loadEvents, loadHighlights]);
+  }, [selectedSport, user?.selectedTeams?.length]);
 
   const formatViews = (views?: number) => {
     if (!views) return '';
