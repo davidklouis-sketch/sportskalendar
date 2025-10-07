@@ -120,16 +120,13 @@ export function Calendar() {
     }
   }, [selectedSport]);
 
-  // Load events when sport changes - simplified
+  // Load events when sport changes - manual trigger only
   useEffect(() => {
     console.log('🔍 Debug - useEffect triggered, selectedSport:', selectedSport);
     if (selectedSport) {
+      // Only load if we have a sport selected
       loadEvents();
       loadHighlights();
-    } else {
-      // Reset loading state when no sport is selected
-      console.log('🔍 Debug - No selectedSport, resetting loading state');
-      setIsLoading(false);
     }
   }, [selectedSport]);
 
@@ -226,6 +223,7 @@ export function Calendar() {
       // setSelectedSport(null);
       // Force reload events after team addition
       setTimeout(() => {
+        console.log('🔍 Debug - Manual reload after team addition');
         loadEvents();
         loadHighlights();
       }, 100);
