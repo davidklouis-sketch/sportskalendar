@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useAuthStore } from '../../store/useAuthStore';
-import { calendarApi, userApi, highlightsApi } from '../../lib/api';
+import { calendarApi, userApi } from '../../lib/api';
 import { format } from 'date-fns';
 import { FOOTBALL_LEAGUES, FOOTBALL_TEAMS, F1_DRIVERS, NFL_TEAMS } from '../../data/teams';
 
@@ -11,22 +11,12 @@ interface Event {
   startsAt: string;
 }
 
-interface Highlight {
-  id: string;
-  title: string;
-  url: string;
-  sport: string;
-  description?: string;
-  createdAt: string;
-  thumbnail?: string;
-  duration?: string;
-  views?: number;
-}
+// Removed Highlight interface - not used anymore
 
 export function Calendar() {
   const { user, updateUser } = useAuthStore();
   const [events, setEvents] = useState<Event[]>([]);
-  const [highlights, setHighlights] = useState<Highlight[]>([]);
+  // Removed highlights state - not used anymore
   const [isLoading, setIsLoading] = useState(false);
   const [selectedSport, setSelectedSport] = useState<'football' | 'nfl' | 'f1' | null>(null);
   const [showTeamSelector, setShowTeamSelector] = useState(false);
@@ -57,6 +47,7 @@ export function Calendar() {
         : undefined;
 
       console.log('🔍 Debug - Making API call to calendar with leagues:', leagues);
+      console.log('🔍 Debug - Teams for sport football:', teams.filter(t => t.sport === 'football'));
       const { data } = await calendarApi.getEvents(selectedSport, leagues);
       let allEvents = data || [];
       
@@ -90,51 +81,49 @@ export function Calendar() {
     }
   }, [selectedSport]);
 
-  const loadHighlights = useCallback(async () => {
-    if (!selectedSport) return;
-
-    try {
-      const sportMapping: Record<string, string> = {
-        football: 'Fußball',
-        nfl: 'NFL',
-        f1: 'F1',
-      };
-
-      const { data } = await highlightsApi.getHighlights(sportMapping[selectedSport]);
-      let allHighlights = data.items || [];
-      
-      // Filter highlights by selected team name
-      const teams = user?.selectedTeams || [];
-      const currentTeam = teams.find(t => t.sport === selectedSport);
-      if (currentTeam?.teamName) {
-        allHighlights = allHighlights.filter((highlight: Highlight) => {
-          const searchText = (highlight.title + ' ' + (highlight.description || '')).toLowerCase();
-          return searchText.includes(currentTeam.teamName.toLowerCase());
-        });
-      }
-      
-      setHighlights(allHighlights.slice(0, 3)); // Only show top 3 on calendar page
-    } catch (error) {
-      console.error('Failed to load highlights:', error);
-      setHighlights([]);
-    }
-  }, [selectedSport]);
+  // Removed loadHighlights - not used anymore
 
   // Manual load function - only called when needed
-  const manualLoadEvents = useCallback(() => {
+  const manualLoadEvents = useCallback((teamsOverride?: any[]) => {
     console.log('🔍 Debug - Manual load events triggered');
     if (selectedSport) {
-      loadEvents();
-      loadHighlights();
+      // Use override teams if provided, otherwise use user teams
+      const teamsToUse = teamsOverride || user?.selectedTeams || [];
+      console.log('🔍 Debug - Using teams:', teamsToUse);
+      
+      // Direct API call with teams
+      const leagues = selectedSport === 'football' 
+        ? teamsToUse
+            .filter(t => t.sport === 'football' && t.leagueId)
+            .map(t => t.leagueId!)
+        : undefined;
+      
+      console.log('🔍 Debug - Direct API call with leagues:', leagues);
+      calendarApi.getEvents(selectedSport, leagues).then(({ data }) => {
+        let allEvents = data || [];
+        console.log('🔍 Debug - Direct API response:', allEvents.length, 'events');
+        
+        // Filter events by selected team name
+        const currentTeam = teamsToUse.find(t => t.sport === selectedSport);
+        if (currentTeam?.teamName) {
+          const beforeFilter = allEvents.length;
+          allEvents = allEvents.filter((event: Event) => 
+            event.title.toLowerCase().includes(currentTeam.teamName.toLowerCase())
+          );
+          console.log('🔍 Debug - Filtered events:', beforeFilter, '->', allEvents.length, 'for team:', currentTeam.teamName);
+        }
+        
+        setEvents(allEvents);
+        setIsLoading(false);
+      }).catch(error => {
+        console.error('❌ Direct API call failed:', error);
+        setEvents([]);
+        setIsLoading(false);
+      });
     }
-  }, [selectedSport, loadEvents, loadHighlights]);
+  }, [selectedSport, user?.selectedTeams]);
 
-  const formatViews = (views?: number) => {
-    if (!views) return '';
-    if (views >= 1000000) return `${(views / 1000000).toFixed(1)}M`;
-    if (views >= 1000) return `${(views / 1000).toFixed(1)}K`;
-    return views.toString();
-  };
+  // Removed formatViews - not used anymore
 
   const handleAddTeam = async () => {
     if (!selectedSport) return;
@@ -223,7 +212,8 @@ export function Calendar() {
       // Force reload events after team addition
       setTimeout(() => {
         console.log('🔍 Debug - Manual reload after team addition');
-        manualLoadEvents();
+        console.log('🔍 Debug - Updated teams:', updatedTeams);
+        manualLoadEvents(updatedTeams);
       }, 100);
     } catch (error) {
       const err = error as { response?: { status?: number; data?: { message?: string } }; message?: string };
@@ -498,70 +488,7 @@ export function Calendar() {
         )}
       </div>
 
-      {/* Highlights Preview */}
-      {highlights.length > 0 && (
-        <div className="card p-6 mt-6">
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="text-2xl font-bold">Aktuelle Highlights</h2>
-            <a
-              href="#highlights"
-              onClick={(e) => {
-                e.preventDefault();
-                window.scrollTo({ top: 0, behavior: 'smooth' });
-                // Trigger navigation to highlights page through parent
-              }}
-              className="text-primary-600 dark:text-primary-400 hover:underline text-sm font-medium"
-            >
-              Alle ansehen →
-            </a>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            {highlights.map((highlight) => (
-              <a
-                key={highlight.id}
-                href={highlight.url}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="group card p-0 overflow-hidden hover:shadow-lg transition-all"
-              >
-                {highlight.thumbnail ? (
-                  <div className="relative aspect-video bg-gray-200 dark:bg-gray-700">
-                    <img
-                      src={highlight.thumbnail}
-                      alt={highlight.title}
-                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                    />
-                    {highlight.duration && (
-                      <div className="absolute bottom-2 right-2 px-2 py-1 bg-black/80 text-white text-xs rounded">
-                        {highlight.duration}
-                      </div>
-                    )}
-                  </div>
-                ) : (
-                  <div className="aspect-video bg-gradient-to-br from-primary-400 to-primary-600 flex items-center justify-center">
-                    <svg className="w-12 h-12 text-white opacity-50" fill="currentColor" viewBox="0 0 20 20">
-                      <path d="M10 18a8 8 0 100-16 8 8 0 000 16zM9.555 7.168A1 1 0 008 8v4a1 1 0 001.555.832l3-2a1 1 0 000-1.664l-3-2z" />
-                    </svg>
-                  </div>
-                )}
-
-                <div className="p-3">
-                  <h3 className="font-semibold text-sm mb-1 line-clamp-2 group-hover:text-primary-600 dark:group-hover:text-primary-400 transition-colors">
-                    {highlight.title}
-                  </h3>
-                  <div className="flex items-center justify-between text-xs text-gray-500 dark:text-gray-400">
-                    <span>{new Date(highlight.createdAt).toLocaleDateString('de-DE')}</span>
-                    {highlight.views && (
-                      <span>{formatViews(highlight.views)}</span>
-                    )}
-                  </div>
-                </div>
-              </a>
-            ))}
-          </div>
-        </div>
-      )}
+      {/* Removed Highlights Preview - not used anymore */}
     </div>
   );
 }
