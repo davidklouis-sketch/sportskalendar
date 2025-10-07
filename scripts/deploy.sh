@@ -41,20 +41,20 @@ mkdir -p backend/data
 chmod 755 backend/data
 
 echo "📦 Pulling Docker images..."
-docker-compose -f docker-compose.traefik.yml --env-file .env.production pull
+docker compose -f docker-compose.traefik.yml --env-file .env.production pull
 
 echo "🔄 Starting services..."
-docker-compose -f docker-compose.traefik.yml --env-file .env.production up -d --remove-orphans
+docker compose -f docker-compose.traefik.yml --env-file .env.production up -d --remove-orphans
 
 echo "⏳ Waiting for services to be healthy..."
 sleep 10
 
 # Check service health
-if docker-compose -f docker-compose.traefik.yml ps | grep -q "Up"; then
+if docker compose -f docker-compose.traefik.yml ps | grep -q "Up"; then
     echo "✅ Services are running!"
 else
     echo "❌ Some services failed to start. Check logs:"
-    docker-compose -f docker-compose.traefik.yml logs --tail=50
+    docker compose -f docker-compose.traefik.yml logs --tail=50
     exit 1
 fi
 
@@ -62,13 +62,13 @@ echo ""
 echo "✅ Deployment completed successfully!"
 echo ""
 echo "📊 Service Status:"
-docker-compose -f docker-compose.traefik.yml ps
+docker compose -f docker-compose.traefik.yml ps
 echo ""
 echo "🌐 Access your application at:"
 echo "   Frontend: https://${FRONTEND_HOST}"
 echo "   Backend:  https://${BACKEND_HOST}/api"
 echo ""
 echo "📝 View logs with:"
-echo "   docker-compose -f docker-compose.traefik.yml logs -f"
+echo "   docker compose -f docker-compose.traefik.yml logs -f"
 echo ""
 

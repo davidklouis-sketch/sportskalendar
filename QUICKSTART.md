@@ -28,13 +28,13 @@ Frontend läuft auf: http://localhost:5173
 
 ```bash
 # Starte alle Services (Backend, Frontend, PostgreSQL)
-docker-compose -f docker-compose.dev.yml up -d
+docker compose -f docker compose.dev.yml up -d
 
 # Logs ansehen
-docker-compose -f docker-compose.dev.yml logs -f
+docker compose -f docker compose.dev.yml logs -f
 
 # Stoppen
-docker-compose -f docker-compose.dev.yml down
+docker compose -f docker compose.dev.yml down
 ```
 
 Services:
@@ -109,21 +109,21 @@ nano .env.production  # Werte anpassen!
 
 ```bash
 # Development
-docker-compose -f docker-compose.dev.yml up -d
-docker-compose -f docker-compose.dev.yml logs -f
-docker-compose -f docker-compose.dev.yml down
+docker compose -f docker compose.dev.yml up -d
+docker compose -f docker compose.dev.yml logs -f
+docker compose -f docker compose.dev.yml down
 
 # Production
-docker-compose -f docker-compose.traefik.yml --env-file .env.production up -d
-docker-compose -f docker-compose.traefik.yml logs -f
-docker-compose -f docker-compose.traefik.yml down
+docker compose -f docker compose.traefik.yml --env-file .env.production up -d
+docker compose -f docker compose.traefik.yml logs -f
+docker compose -f docker compose.traefik.yml down
 
 # Nur Backend neu starten
-docker-compose -f docker-compose.traefik.yml restart backend
+docker compose -f docker compose.traefik.yml restart backend
 
 # In Container einloggen
-docker-compose -f docker-compose.traefik.yml exec backend sh
-docker-compose -f docker-compose.traefik.yml exec postgres psql -U sportskalendar
+docker compose -f docker compose.traefik.yml exec backend sh
+docker compose -f docker compose.traefik.yml exec postgres psql -U sportskalendar
 ```
 
 ## 🔧 Entwicklung
@@ -161,7 +161,7 @@ npm install package-name
 A: Frontend: `.env` → `VITE_API_URL`, Backend: automatisch über Docker
 
 **Q: Wie greife ich auf die Datenbank zu?**
-A: `docker-compose -f docker-compose.dev.yml exec postgres psql -U sportskalendar`
+A: `docker compose -f docker compose.dev.yml exec postgres psql -U sportskalendar`
 
 **Q: Wie erstelle ich einen neuen Admin?**
 A: Als Admin einloggen → Admin-Seite → User befördern
@@ -175,7 +175,7 @@ A: Verwende mkcert oder nutze Production-Setup mit Traefik
 ## 🆘 Hilfe
 
 Bei Problemen:
-1. Logs prüfen (`docker-compose logs`)
+1. Logs prüfen (`docker compose logs`)
 2. Health-Checks testen (`/api/health`)
 3. GitHub Issues erstellen
 

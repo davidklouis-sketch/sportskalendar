@@ -143,25 +143,25 @@ cd /opt/sportskalendar
 ### Services prüfen:
 ```bash
 cd /opt/sportskalendar
-docker-compose -f docker-compose.traefik.yml ps
+docker compose -f docker compose.traefik.yml ps
 ```
 
 ### Logs ansehen:
 ```bash
 # Alle Services
-docker-compose -f docker-compose.traefik.yml logs -f
+docker compose -f docker compose.traefik.yml logs -f
 
 # Nur Backend
-docker-compose -f docker-compose.traefik.yml logs -f backend
+docker compose -f docker compose.traefik.yml logs -f backend
 
 # Nur Frontend
-docker-compose -f docker-compose.traefik.yml logs -f frontend
+docker compose -f docker compose.traefik.yml logs -f frontend
 
 # Nur Traefik
-docker-compose -f docker-compose.traefik.yml logs -f traefik
+docker compose -f docker compose.traefik.yml logs -f traefik
 
 # Nur PostgreSQL
-docker-compose -f docker-compose.traefik.yml logs -f postgres
+docker compose -f docker compose.traefik.yml logs -f postgres
 ```
 
 ### Health Checks:
@@ -173,7 +173,7 @@ curl https://api.yourdomain.com/api/health
 curl https://yourdomain.com
 
 # PostgreSQL
-docker-compose -f docker-compose.traefik.yml exec postgres psql -U sportskalendar -d sportskalendar -c "SELECT version();"
+docker compose -f docker compose.traefik.yml exec postgres psql -U sportskalendar -d sportskalendar -c "SELECT version();"
 ```
 
 ## 🔄 Updates
@@ -198,10 +198,10 @@ git pull origin main
 ### Datenbank-Backup:
 ```bash
 # Backup erstellen
-docker-compose -f docker-compose.traefik.yml exec postgres pg_dump -U sportskalendar sportskalendar > backup_$(date +%Y%m%d_%H%M%S).sql
+docker compose -f docker compose.traefik.yml exec postgres pg_dump -U sportskalendar sportskalendar > backup_$(date +%Y%m%d_%H%M%S).sql
 
 # Backup wiederherstellen
-cat backup_20250107_120000.sql | docker-compose -f docker-compose.traefik.yml exec -T postgres psql -U sportskalendar -d sportskalendar
+cat backup_20250107_120000.sql | docker compose -f docker compose.traefik.yml exec -T postgres psql -U sportskalendar -d sportskalendar
 ```
 
 ### Logs bereinigen:
@@ -213,7 +213,7 @@ docker system prune -a --volumes -f
 ### SSL-Zertifikat erneuern:
 ```bash
 # Traefik erneuert automatisch, aber manuell forcieren:
-docker-compose -f docker-compose.traefik.yml restart traefik
+docker compose -f docker compose.traefik.yml restart traefik
 ```
 
 ## 🔒 Sicherheit
@@ -240,7 +240,7 @@ openssl rand -base64 32
 nano .env.production
 
 # Services neu starten
-docker-compose -f docker-compose.traefik.yml restart backend
+docker compose -f docker compose.traefik.yml restart backend
 ```
 
 ## 🐛 Troubleshooting
@@ -248,28 +248,28 @@ docker-compose -f docker-compose.traefik.yml restart backend
 ### Problem: Services starten nicht
 ```bash
 # Logs prüfen
-docker-compose -f docker-compose.traefik.yml logs
+docker compose -f docker compose.traefik.yml logs
 
 # Services neu starten
-docker-compose -f docker-compose.traefik.yml down
-docker-compose -f docker-compose.traefik.yml up -d
+docker compose -f docker compose.traefik.yml down
+docker compose -f docker compose.traefik.yml up -d
 ```
 
 ### Problem: SSL-Zertifikat nicht erstellt
 - DNS korrekt konfiguriert? (nslookup yourdomain.com)
 - Port 80 und 443 offen? (ufw status)
-- Traefik Logs prüfen: `docker-compose -f docker-compose.traefik.yml logs traefik`
+- Traefik Logs prüfen: `docker compose -f docker compose.traefik.yml logs traefik`
 
 ### Problem: Backend kann nicht auf DB zugreifen
 ```bash
 # DB-Container läuft?
-docker-compose -f docker-compose.traefik.yml ps postgres
+docker compose -f docker compose.traefik.yml ps postgres
 
 # DB erreichbar?
-docker-compose -f docker-compose.traefik.yml exec backend ping postgres
+docker compose -f docker compose.traefik.yml exec backend ping postgres
 
 # DB-Logs prüfen
-docker-compose -f docker-compose.traefik.yml logs postgres
+docker compose -f docker compose.traefik.yml logs postgres
 ```
 
 ### Problem: CORS-Fehler
@@ -292,7 +292,7 @@ free -h
 
 ### Uptime prüfen:
 ```bash
-docker-compose -f docker-compose.traefik.yml ps
+docker compose -f docker compose.traefik.yml ps
 ```
 
 ## 🔄 Rollback

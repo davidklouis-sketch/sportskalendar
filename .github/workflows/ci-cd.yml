@@ -178,10 +178,10 @@ jobs:
             echo "${{ secrets.GITHUB_TOKEN }}" | docker login ${{ env.REGISTRY }} -u ${{ github.actor }} --password-stdin
             
             # Pull latest images
-            docker-compose -f docker-compose.traefik.yml --env-file .env.production pull
+            docker compose -f docker-compose.traefik.yml --env-file .env.production pull
             
             # Deploy with zero-downtime
-            docker-compose -f docker-compose.traefik.yml --env-file .env.production up -d --remove-orphans
+            docker compose -f docker-compose.traefik.yml --env-file .env.production up -d --remove-orphans
             
             # Cleanup old images
             docker image prune -f
