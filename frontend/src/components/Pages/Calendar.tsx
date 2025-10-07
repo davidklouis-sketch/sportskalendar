@@ -54,22 +54,22 @@ export function Calendar() {
       const { data } = await calendarApi.getEvents(selectedSport, leagues);
       let allEvents = data || [];
       
-      console.log('🔍 Debug - Loaded events:', allEvents.length, allEvents);
-      console.log('🔍 Debug - Selected sport:', selectedSport);
-      console.log('🔍 Debug - Leagues:', leagues);
-      console.log('🔍 Debug - User teams:', user?.selectedTeams);
+      // Reduced debug logging - only log when there are actual events or errors
+      if (allEvents.length > 0) {
+        console.log('🔍 Debug - Loaded events:', allEvents.length, 'for sport:', selectedSport);
+      }
       
       // Filter events by selected team name
       const currentTeam = user?.selectedTeams?.find(t => t.sport === selectedSport);
-      console.log('🔍 Debug - Current team:', currentTeam);
       
       if (currentTeam?.teamName) {
         const beforeFilter = allEvents.length;
         allEvents = allEvents.filter((event: Event) => 
           event.title.toLowerCase().includes(currentTeam.teamName.toLowerCase())
         );
-        console.log('🔍 Debug - Filtered events:', beforeFilter, '->', allEvents.length);
-        console.log('🔍 Debug - Filtered events:', allEvents);
+        if (beforeFilter !== allEvents.length) {
+          console.log('🔍 Debug - Filtered events:', beforeFilter, '->', allEvents.length, 'for team:', currentTeam.teamName);
+        }
       }
       
       setEvents(allEvents);
@@ -110,20 +110,13 @@ export function Calendar() {
     }
   }, [selectedSport, user?.selectedTeams]);
 
+  // Single effect to handle both sport and teams changes
   useEffect(() => {
     if (selectedSport) {
       loadEvents();
       loadHighlights();
     }
-  }, [selectedSport, loadEvents, loadHighlights]);
-
-  // Separate effect for when teams change
-  useEffect(() => {
-    if (selectedSport && user?.selectedTeams?.length) {
-      loadEvents();
-      loadHighlights();
-    }
-  }, [user?.selectedTeams?.length, selectedSport, loadEvents, loadHighlights]);
+  }, [selectedSport, user?.selectedTeams]);
 
   const formatViews = (views?: number) => {
     if (!views) return '';
