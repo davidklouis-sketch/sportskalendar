@@ -4,6 +4,13 @@ import bcrypt from 'bcryptjs';
 
 export interface DatabaseUser extends Omit<User, 'id'> {
   id: string;
+  isPremium: boolean;
+  selectedTeams: Array<{
+    sport: 'football' | 'nfl' | 'f1';
+    teamId?: string;
+    teamName: string;
+    leagueId?: number;
+  }>;
   email_verified: boolean;
   two_factor_enabled: boolean;
   two_factor_secret?: string;
@@ -19,10 +26,25 @@ export interface CreateUserData {
   passwordHash: string;
   displayName: string;
   role?: 'user' | 'admin';
+  isPremium?: boolean;
+  selectedTeams?: Array<{
+    sport: 'football' | 'nfl' | 'f1';
+    teamId?: string;
+    teamName: string;
+    leagueId?: number;
+  }>;
 }
 
 export interface UpdateUserData {
+  email?: string;
   displayName?: string;
+  isPremium?: boolean;
+  selectedTeams?: Array<{
+    sport: 'football' | 'nfl' | 'f1';
+    teamId?: string;
+    teamName: string;
+    leagueId?: number;
+  }>;
   emailVerified?: boolean;
   twoFactorEnabled?: boolean;
   twoFactorSecret?: string;
@@ -37,11 +59,18 @@ export class UserRepository {
     const client = await pool.connect();
     try {
       const query = `
-        INSERT INTO users (email, password_hash, display_name, role)
-        VALUES ($1, $2, $3, $4)
+        INSERT INTO users (email, password_hash, display_name, role, is_premium, selected_teams)
+        VALUES ($1, $2, $3, $4, $5, $6)
         RETURNING *
       `;
-      const values = [userData.email, userData.passwordHash, userData.displayName, userData.role || 'user'];
+      const values = [
+        userData.email, 
+        userData.passwordHash, 
+        userData.displayName, 
+        userData.role || 'user',
+        userData.isPremium || false,
+        JSON.stringify(userData.selectedTeams || [])
+      ];
       
       const result = await client.query(query, values);
       return this.mapRowToUser(result.rows[0]);
@@ -92,9 +121,21 @@ export class UserRepository {
       const values = [];
       let paramCount = 1;
 
+      if (userData.email !== undefined) {
+        fields.push(`email = $${paramCount++}`);
+        values.push(userData.email);
+      }
       if (userData.displayName !== undefined) {
         fields.push(`display_name = $${paramCount++}`);
         values.push(userData.displayName);
+      }
+      if (userData.isPremium !== undefined) {
+        fields.push(`is_premium = $${paramCount++}`);
+        values.push(userData.isPremium);
+      }
+      if (userData.selectedTeams !== undefined) {
+        fields.push(`selected_teams = $${paramCount++}`);
+        values.push(JSON.stringify(userData.selectedTeams));
       }
       if (userData.emailVerified !== undefined) {
         fields.push(`email_verified = $${paramCount++}`);
@@ -143,6 +184,15 @@ export class UserRepository {
     } finally {
       client.release();
     }
+  }
+
+  // Update user by email
+  static async updateByEmail(email: string, userData: UpdateUserData): Promise<DatabaseUser | null> {
+    const user = await this.findByEmail(email);
+    if (!user) {
+      return null;
+    }
+    return await this.update(user.id, userData);
   }
 
   // Delete user
@@ -241,6 +291,8 @@ export class UserRepository {
       passwordHash: row.password_hash,
       displayName: row.display_name,
       role: row.role,
+      isPremium: row.is_premium || false,
+      selectedTeams: row.selected_teams ? JSON.parse(row.selected_teams) : [],
       email_verified: row.email_verified,
       two_factor_enabled: row.two_factor_enabled,
       two_factor_secret: row.two_factor_secret,
@@ -259,7 +311,9 @@ export class UserRepository {
       email: dbUser.email,
       passwordHash: dbUser.passwordHash,
       displayName: dbUser.displayName,
-      role: dbUser.role
+      role: dbUser.role,
+      isPremium: dbUser.isPremium,
+      selectedTeams: dbUser.selectedTeams
     };
   }
 }

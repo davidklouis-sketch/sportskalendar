@@ -58,23 +58,30 @@ export const userRouter = Router();
 userRouter.use(requireAuth);
 
 const changeEmailSchema = z.object({ email: z.string().email().transform(v => v.toLowerCase()) });
-userRouter.post('/change-email', (req, res) => {
+userRouter.post('/change-email', async (req, res) => {
   const user = (req as any).user as { id: string; email: string; role?: 'user' | 'admin' };
   const parsed = changeEmailSchema.safeParse(req.body);
   if (!parsed.success) return res.status(400).json({ error: parsed.error.flatten() });
   const newEmail = parsed.data.email;
-  if (db.users.has(newEmail)) return res.status(409).json({ error: 'Email already in use' });
-  const entry = Array.from(db.users.entries()).find(([, u]) => u.id === user.id);
-  if (!entry) return res.status(404).json({ error: 'User not found' });
-  const [, record] = entry;
-  db.users.delete(record.email);
-  record.email = newEmail;
-  db.users.set(newEmail, record);
+  
+  // Check if new email is already in use
+  const existingUser = await getUserByEmail(newEmail);
+  if (existingUser) return res.status(409).json({ error: 'Email already in use' });
+  
+  const record = await getUserByEmail(user.email);
+  if (!record) return res.status(404).json({ error: 'User not found' });
+  
+  // Update email in database
+  await updateUser(user.email, { email: newEmail });
+  
+  // Create updated record for token generation
+  const updatedRecord = { ...record, email: newEmail };
+  
   // rotate tokens with new email
-  const access = signAccess(record);
-  const refresh = signRefresh(record);
+  const access = signAccess(updatedRecord);
+  const refresh = signRefresh(updatedRecord);
   setAuthCookies(res, { access, refresh });
-  res.json({ user: { id: record.id, email: record.email, displayName: record.displayName, role: record.role } });
+  res.json({ user: { id: updatedRecord.id, email: updatedRecord.email, displayName: updatedRecord.displayName, role: updatedRecord.role } });
 });
 
 const changePasswordSchema = z.object({ currentPassword: z.string().min(6), newPassword: z.string().min(6) });

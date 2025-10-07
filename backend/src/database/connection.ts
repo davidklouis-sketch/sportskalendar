@@ -56,6 +56,8 @@ export async function initializeDatabase(): Promise<void> {
         password_hash VARCHAR(255) NOT NULL,
         display_name VARCHAR(100) NOT NULL,
         role VARCHAR(20) DEFAULT 'user' CHECK (role IN ('user', 'admin')),
+        is_premium BOOLEAN DEFAULT FALSE,
+        selected_teams JSONB DEFAULT '[]'::jsonb,
         email_verified BOOLEAN DEFAULT FALSE,
         two_factor_enabled BOOLEAN DEFAULT FALSE,
         two_factor_secret VARCHAR(255),
