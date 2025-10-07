@@ -35,6 +35,8 @@ const configuredOrigins = (process.env.CORS_ORIGIN || 'https://sportskalender.dl
   .map(s => s.trim())
   .filter(Boolean);
 
+console.log('🔒 CORS allowed origins:', configuredOrigins);
+
 const corsOptions = {
   origin: configuredOrigins,
   credentials: true,
