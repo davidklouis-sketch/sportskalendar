@@ -15,6 +15,32 @@ export const api = axios.create({
   }],
 });
 
+// Add response interceptor for automatic token refresh
+api.interceptors.response.use(
+  (response) => response,
+  async (error) => {
+    const originalRequest = error.config;
+    
+    if (error.response?.status === 401 && !originalRequest._retry) {
+      originalRequest._retry = true;
+      
+      try {
+        console.log('🔄 Token expired, attempting refresh...');
+        await authApi.refresh();
+        console.log('✅ Token refreshed successfully');
+        return api(originalRequest);
+      } catch (refreshError) {
+        console.log('❌ Token refresh failed, redirecting to login');
+        // Redirect to login or handle logout
+        window.location.href = '/login';
+        return Promise.reject(refreshError);
+      }
+    }
+    
+    return Promise.reject(error);
+  }
+);
+
 // Auth
 export const authApi = {
   register: (data: { email: string; password: string; displayName: string }) =>

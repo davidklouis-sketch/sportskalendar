@@ -67,7 +67,7 @@ export function signAccess(user: { id: string; email: string; role?: 'user' | 'a
     role: user.role,
     iat: Math.floor(Date.now() / 1000)
   }, secret, { 
-    expiresIn: '15m',
+    expiresIn: '24h',
     issuer: 'sportskalendar',
     audience: 'sportskalendar-users'
   });

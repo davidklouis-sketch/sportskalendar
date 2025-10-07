@@ -104,7 +104,11 @@ userRouter.get('/profile', async (req, res) => {
   const user = (req as any).user as { id: string; email: string };
   const record = await getUserByEmail(user.email);
   if (!record) return res.status(404).json({ error: 'User not found' });
-  res.json({ 
+  
+  console.log('Profile request for user:', user.email);
+  console.log('Profile - User record selectedTeams:', JSON.stringify(record.selectedTeams, null, 2));
+  
+  const responseData = { 
     user: { 
       id: record.id, 
       email: record.email, 
@@ -113,7 +117,10 @@ userRouter.get('/profile', async (req, res) => {
       isPremium: record.isPremium || false,
       selectedTeams: record.selectedTeams || []
     } 
-  });
+  };
+  
+  console.log('Profile - Response data:', JSON.stringify(responseData, null, 2));
+  res.json(responseData);
 });
 
 // Update selected teams - use flexible schema
@@ -172,6 +179,12 @@ userRouter.post('/teams', async (req, res) => {
   
   await updateUser(user.email, { selectedTeams: teamsData });
   console.log('Teams updated successfully for user:', user.email);
+  console.log('Updated teams data:', JSON.stringify(teamsData, null, 2));
+  
+  // Verify the update by reading back from database
+  const updatedRecord = await getUserByEmail(user.email);
+  console.log('Verification - User record after update:', JSON.stringify(updatedRecord?.selectedTeams, null, 2));
+  
   res.json({ 
     ok: true, 
     selectedTeams: teamsData 
