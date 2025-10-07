@@ -42,7 +42,7 @@ export function Calendar() {
     console.log('🔍 Debug - Starting loadEvents for sport:', selectedSport);
     setIsLoading(true);
     try {
-      const teams = user?.selectedTeams || [];
+      const teams = localTeams || [];
       const leagues = selectedSport === 'football' 
         ? teams
             .filter(t => t.sport === 'football' && t.leagueId)
@@ -56,15 +56,17 @@ export function Calendar() {
       
       console.log('🔍 Debug - API response received:', allEvents.length, 'events');
       
-      // Filter events by selected team name
-      const currentTeam = teams.find(t => t.sport === selectedSport);
+      // Filter events by ALL selected teams for the current sport
+      const sportTeams = teams.filter(t => t.sport === selectedSport);
       
-      if (currentTeam?.teamName) {
+      if (sportTeams.length > 0) {
         const beforeFilter = allEvents.length;
         allEvents = allEvents.filter((event: Event) => 
-          event.title.toLowerCase().includes(currentTeam.teamName.toLowerCase())
+          sportTeams.some(team => 
+            event.title.toLowerCase().includes(team.teamName.toLowerCase())
+          )
         );
-        console.log('🔍 Debug - Filtered events:', beforeFilter, '->', allEvents.length, 'for team:', currentTeam.teamName);
+        console.log('🔍 Debug - Filtered events:', beforeFilter, '->', allEvents.length, 'for teams:', sportTeams.map(t => t.teamName));
       }
       
       setEvents(allEvents);
@@ -82,7 +84,7 @@ export function Calendar() {
       console.log('🔍 Debug - Setting isLoading to false');
       setIsLoading(false);
     }
-  }, [selectedSport]);
+  }, [selectedSport, localTeams]);
 
   // Removed loadHighlights - not used anymore
 
@@ -90,8 +92,8 @@ export function Calendar() {
   const manualLoadEvents = useCallback((teamsOverride?: any[]) => {
     console.log('🔍 Debug - Manual load events triggered');
     if (selectedSport) {
-      // Use override teams if provided, otherwise use user teams
-      const teamsToUse = teamsOverride || user?.selectedTeams || [];
+      // Use override teams if provided, otherwise use local teams
+      const teamsToUse = teamsOverride || localTeams || [];
       console.log('🔍 Debug - Using teams:', teamsToUse);
       
       // Direct API call with teams
@@ -106,14 +108,16 @@ export function Calendar() {
         let allEvents = data || [];
         console.log('🔍 Debug - Direct API response:', allEvents.length, 'events');
         
-        // Filter events by selected team name
-        const currentTeam = teamsToUse.find(t => t.sport === selectedSport);
-        if (currentTeam?.teamName) {
+        // Filter events by ALL selected teams for the current sport
+        const sportTeams = teamsToUse.filter(t => t.sport === selectedSport);
+        if (sportTeams.length > 0) {
           const beforeFilter = allEvents.length;
           allEvents = allEvents.filter((event: Event) => 
-            event.title.toLowerCase().includes(currentTeam.teamName.toLowerCase())
+            sportTeams.some(team => 
+              event.title.toLowerCase().includes(team.teamName.toLowerCase())
+            )
           );
-          console.log('🔍 Debug - Filtered events:', beforeFilter, '->', allEvents.length, 'for team:', currentTeam.teamName);
+          console.log('🔍 Debug - Filtered events:', beforeFilter, '->', allEvents.length, 'for teams:', sportTeams.map(t => t.teamName));
         }
         
         setEvents(allEvents);
@@ -124,7 +128,7 @@ export function Calendar() {
         setIsLoading(false);
       });
     }
-  }, [selectedSport, user?.selectedTeams]);
+  }, [selectedSport, localTeams]);
 
   // Removed formatViews - not used anymore
 
