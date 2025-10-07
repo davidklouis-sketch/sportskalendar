@@ -7,12 +7,20 @@ import { setAuthCookies, signAccess, signRefresh } from './auth';
 
 // Helper function to get user from either PostgreSQL or in-memory store
 async function getUserByEmail(email: string): Promise<User | null> {
+  console.log('🔍 getUserByEmail called for:', email);
+  
   // Try PostgreSQL first if available
   if (process.env.DATABASE_URL) {
     try {
       const { UserRepository } = await import('../database/repositories/userRepository');
+      console.log('📖 Fetching user from PostgreSQL...');
       const pgUser = await UserRepository.findByEmail(email);
       if (pgUser) {
+        console.log('✅ User found in PostgreSQL:', JSON.stringify({
+          id: pgUser.id,
+          email: pgUser.email,
+          selectedTeams: pgUser.selectedTeams
+        }, null, 2));
         return {
           id: pgUser.id,
           email: pgUser.email,
@@ -22,6 +30,8 @@ async function getUserByEmail(email: string): Promise<User | null> {
           isPremium: pgUser.isPremium || false,
           selectedTeams: pgUser.selectedTeams || []
         };
+      } else {
+        console.log('❌ User not found in PostgreSQL');
       }
     } catch (error) {
       console.log('⚠️ Could not fetch user from PostgreSQL, falling back to in-memory:', error);
@@ -29,16 +39,39 @@ async function getUserByEmail(email: string): Promise<User | null> {
   }
   
   // Fallback to in-memory store
-  return db.users.get(email) || null;
+  console.log('📖 Fetching user from in-memory store...');
+  const memUser = db.users.get(email);
+  if (memUser) {
+    console.log('✅ User found in in-memory store:', JSON.stringify({
+      id: memUser.id,
+      email: memUser.email,
+      selectedTeams: memUser.selectedTeams
+    }, null, 2));
+  } else {
+    console.log('❌ User not found in in-memory store');
+  }
+  return memUser || null;
 }
 
 // Helper function to update user in either PostgreSQL or in-memory store
 async function updateUser(email: string, updates: Partial<User>): Promise<void> {
+  console.log('🔄 updateUser called for:', email, 'with updates:', JSON.stringify(updates, null, 2));
+  
   // Try PostgreSQL first if available
   if (process.env.DATABASE_URL) {
     try {
       const { UserRepository } = await import('../database/repositories/userRepository');
+      console.log('📝 Updating user in PostgreSQL...');
       await UserRepository.updateByEmail(email, updates);
+      console.log('✅ User updated successfully in PostgreSQL');
+      
+      // Also update in-memory store to keep them in sync
+      const user = db.users.get(email);
+      if (user) {
+        Object.assign(user, updates);
+        db.users.set(email, user);
+        console.log('🔄 Also updated in-memory store for consistency');
+      }
       return;
     } catch (error) {
       console.log('⚠️ Could not update user in PostgreSQL, falling back to in-memory:', error);
@@ -46,10 +79,14 @@ async function updateUser(email: string, updates: Partial<User>): Promise<void> 
   }
   
   // Fallback to in-memory store
+  console.log('📝 Updating user in in-memory store...');
   const user = db.users.get(email);
   if (user) {
     Object.assign(user, updates);
     db.users.set(email, user);
+    console.log('✅ User updated successfully in in-memory store');
+  } else {
+    console.log('❌ User not found in in-memory store');
   }
 }
 
