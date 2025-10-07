@@ -29,7 +29,7 @@ export function Calendar() {
     if (user?.selectedTeams?.length) {
       setSelectedSport(user.selectedTeams[0].sport);
     }
-  }, [user]);
+  }, [user?.selectedTeams?.length]); // Only depend on the length, not the entire user object
 
   const loadEvents = useCallback(async () => {
     if (!selectedSport) {
@@ -210,12 +210,6 @@ export function Calendar() {
       updateUser({ selectedTeams: response.data.selectedTeams || updatedTeams });
       console.log('🔍 Debug - User state updated with teams:', response.data.selectedTeams || updatedTeams);
       
-      // Force a re-render by updating the user state again
-      setTimeout(() => {
-        console.log('🔍 Debug - Force user state refresh');
-        updateUser({ selectedTeams: response.data.selectedTeams || updatedTeams });
-      }, 50);
-      
       setShowTeamSelector(false);
       setSelectedTeamId('');
       setSelectedLeague(null);
@@ -280,10 +274,6 @@ export function Calendar() {
 
         {/* Selected Teams */}
         <div className="space-y-2 mb-4">
-          {(() => {
-            console.log('🔍 Debug - Rendering teams, user.selectedTeams:', user?.selectedTeams);
-            return null;
-          })()}
           {user?.selectedTeams?.map((team, index) => (
             <div
               key={index}
