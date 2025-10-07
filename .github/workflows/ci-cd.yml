@@ -141,7 +141,7 @@ jobs:
           port: ${{ secrets.SSH_PORT || 22 }}
           script: |
             # Set deployment path
-            DEPLOY_PATH="${{ secrets.DEPLOY_PATH || '/home/dl/sportskalendar' }}"
+            DEPLOY_PATH="${{ secrets.DEPLOY_PATH || '/home/dl/sportskalendar/sportskalendar' }}"
             
             # Create directory if it doesn't exist
             mkdir -p "$DEPLOY_PATH"
