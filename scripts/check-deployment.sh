@@ -13,6 +13,28 @@ if [ ! -f "docker-compose.traefik.yml" ]; then
     exit 1
 fi
 
+# Check if .env.production exists
+if [ ! -f ".env.production" ]; then
+    echo "❌ .env.production not found!"
+    echo "Please create it from .env.production.example"
+    echo "  cp .env.production.example .env.production"
+    echo "  nano .env.production"
+    exit 1
+fi
+
+# Load environment variables
+set -a
+source .env.production 2>/dev/null
+set +a
+
+echo "📝 Environment Variables Check:"
+echo "  JWT_SECRET: ${JWT_SECRET:+✅ Set} ${JWT_SECRET:-❌ NOT SET}"
+echo "  DB_PASSWORD: ${DB_PASSWORD:+✅ Set} ${DB_PASSWORD:-❌ NOT SET}"
+echo "  BACKEND_HOST: ${BACKEND_HOST:+✅ Set} ${BACKEND_HOST:-❌ NOT SET}"
+echo "  FRONTEND_HOST: ${FRONTEND_HOST:+✅ Set} ${FRONTEND_HOST:-❌ NOT SET}"
+echo "  LETSENCRYPT_EMAIL: ${LETSENCRYPT_EMAIL:+✅ Set} ${LETSENCRYPT_EMAIL:-❌ NOT SET}"
+echo ""
+
 # Determine compose file
 COMPOSE_FILE="docker-compose.traefik.yml"
 if [ "${BUILD_LOCAL}" = "true" ]; then
