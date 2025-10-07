@@ -88,7 +88,7 @@ export function Calendar() {
       console.log('🔍 Debug - Setting isLoading to false');
       setIsLoading(false);
     }
-  }, [selectedSport, user?.selectedTeams]);
+  }, [selectedSport]);
 
   const loadHighlights = useCallback(async () => {
     if (!selectedSport) return;
@@ -118,16 +118,16 @@ export function Calendar() {
       console.error('Failed to load highlights:', error);
       setHighlights([]);
     }
-  }, [selectedSport, user?.selectedTeams]);
+  }, [selectedSport]);
 
-  // Load events when sport or teams change - but only once
+  // Load events when sport changes - simplified
   useEffect(() => {
     console.log('🔍 Debug - useEffect triggered, selectedSport:', selectedSport);
     if (selectedSport) {
       loadEvents();
       loadHighlights();
     }
-  }, [selectedSport, user?.selectedTeams?.length]);
+  }, [selectedSport]);
 
   const formatViews = (views?: number) => {
     if (!views) return '';
