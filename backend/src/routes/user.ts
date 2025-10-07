@@ -121,7 +121,7 @@ const updateTeamsSchema = z.object({
   teams: z.array(z.any()) // Accept any array - we'll validate structure manually
 });
 
-userRouter.post('/teams', (req, res) => {
+userRouter.post('/teams', async (req, res) => {
   const user = (req as any).user as { id: string; email: string };
   
   // Log the request body for debugging
