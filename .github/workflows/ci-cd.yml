@@ -220,6 +220,18 @@ jobs:
             echo "Waiting for database to be ready..."
             sleep 15
             
+            # Wait for database to be actually accessible
+            echo "Checking database accessibility..."
+            for i in {1..10}; do
+              if docker compose -f docker-compose.traefik.yml --env-file .env.production exec -T postgres psql -U sportskalendar -d sportskalendar -c "SELECT 1;" >/dev/null 2>&1; then
+                echo "Database is accessible after $i attempts"
+                break
+              else
+                echo "Database not ready, attempt $i/10, waiting 3 seconds..."
+                sleep 3
+              fi
+            done
+            
             # Check database status
             echo "Checking database status..."
             docker compose -f docker-compose.traefik.yml --env-file .env.production exec -T postgres psql -U sportskalendar -d sportskalendar -c "SELECT COUNT(*) as user_count FROM users;" || echo "⚠️ Could not query database"
@@ -253,7 +265,13 @@ jobs:
               fi
               
               echo "Restoration completed, checking user count..."
-              docker compose -f docker-compose.traefik.yml --env-file .env.production exec -T postgres psql -U sportskalendar -d sportskalendar -c "SELECT COUNT(*) as user_count FROM users;"
+              FINAL_USER_COUNT=$(docker compose -f docker-compose.traefik.yml --env-file .env.production exec -T postgres psql -U sportskalendar -d sportskalendar -t -c "SELECT COUNT(*) FROM users;" 2>/dev/null | tr -d ' \n' || echo "0")
+              echo "Final user count after restoration: $FINAL_USER_COUNT"
+              if [ "$FINAL_USER_COUNT" -gt "2" ]; then
+                echo "✅ Database restoration successful - $FINAL_USER_COUNT users found"
+              else
+                echo "⚠️ Database restoration may have failed - only $FINAL_USER_COUNT users found"
+              fi
             else
               echo "Database has $USER_COUNT users (> 2), skipping restoration"
             fi
