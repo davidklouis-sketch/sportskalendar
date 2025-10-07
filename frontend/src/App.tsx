@@ -5,14 +5,18 @@ import { userApi } from './lib/api';
 import { Login } from './components/Auth/Login';
 import { Register } from './components/Auth/Register';
 import { Header } from './components/Layout/Header';
+import { Footer } from './components/Layout/Footer';
+import { CookieBanner } from './components/Layout/CookieBanner';
 import { Calendar } from './components/Pages/Calendar';
 import { Live } from './components/Pages/Live';
 import { Highlights } from './components/Pages/Highlights';
 import { Admin } from './components/Pages/Admin';
 import { Settings } from './components/Pages/Settings';
+import Privacy from './components/Pages/Privacy';
+import Contact from './components/Pages/Contact';
 
 type AuthView = 'login' | 'register';
-type Page = 'calendar' | 'live' | 'highlights' | 'admin' | 'settings';
+type Page = 'calendar' | 'live' | 'highlights' | 'admin' | 'settings' | 'privacy' | 'contact';
 
 function App() {
   const { user, isAuthenticated, setUser, setLoading } = useAuthStore();
@@ -101,10 +105,10 @@ function App() {
 }
 
   return (
-    <div className="min-h-screen">
+    <div className="min-h-screen flex flex-col">
       <Header currentPage={currentPage} onNavigate={setCurrentPage} />
       
-      <main className="container mx-auto px-4 py-8">
+      <main className="flex-1">
         {currentPage === 'calendar' && <Calendar />}
         {currentPage === 'live' && <Live />}
         {currentPage === 'highlights' && <Highlights />}
@@ -116,22 +120,21 @@ function App() {
             <p className="text-gray-600 dark:text-gray-400 mb-6">
               Nur Administratoren können auf diese Seite zugreifen.
             </p>
-        <button 
+            <button 
               onClick={() => setCurrentPage('calendar')}
               className="btn btn-primary"
             >
               Zurück zum Kalender
-        </button>
-      </div>
+            </button>
+          </div>
         ) : null}
         {currentPage === 'settings' && <Settings />}
+        {currentPage === 'privacy' && <Privacy />}
+        {currentPage === 'contact' && <Contact />}
       </main>
 
-      <footer className="mt-16 py-8 border-t border-gray-200 dark:border-gray-700">
-        <div className="container mx-auto px-4 text-center text-sm text-gray-500 dark:text-gray-400">
-          <p>© 2025 SportsKalender. Alle Rechte vorbehalten.</p>
-      </div>
-      </footer>
+      <Footer onNavigate={setCurrentPage} />
+      <CookieBanner onNavigate={setCurrentPage} />
     </div>
   );
 }

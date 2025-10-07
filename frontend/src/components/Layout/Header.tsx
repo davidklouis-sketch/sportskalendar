@@ -3,8 +3,8 @@ import { useAuthStore } from '../../store/useAuthStore';
 import { authApi } from '../../lib/api';
 
 interface HeaderProps {
-  currentPage: 'calendar' | 'live' | 'highlights' | 'admin' | 'settings';
-  onNavigate: (page: 'calendar' | 'live' | 'highlights' | 'admin' | 'settings') => void;
+  currentPage: 'calendar' | 'live' | 'highlights' | 'admin' | 'settings' | 'privacy' | 'contact';
+  onNavigate: (page: 'calendar' | 'live' | 'highlights' | 'admin' | 'settings' | 'privacy' | 'contact') => void;
 }
 
 export function Header({ currentPage, onNavigate }: HeaderProps) {
@@ -192,6 +192,24 @@ export function Header({ currentPage, onNavigate }: HeaderProps) {
             </button>
           </div>
         </nav>
+
+        {/* Footer Links */}
+        <div className="md:hidden border-t border-gray-200 dark:border-gray-700 pt-3">
+          <div className="flex justify-center gap-4 text-sm">
+            <button
+              onClick={() => onNavigate('privacy')}
+              className="text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 transition-colors"
+            >
+              Datenschutz
+            </button>
+            <button
+              onClick={() => onNavigate('contact')}
+              className="text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 transition-colors"
+            >
+              Kontakt
+            </button>
+          </div>
+        </div>
       </div>
     </header>
   );

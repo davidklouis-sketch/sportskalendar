@@ -113,7 +113,7 @@ calendarRouter.delete('/reminder', requireAuth, (req, res) => {
 
 // --- External aggregation helpers ---
 async function aggregateUpcomingEvents(debug?: DebugBuffer, opts?: AggregateOptions): Promise<EventItem[]> {
-  const rangeEnd = Date.now() + 180 * 24 * 60 * 60 * 1000; // 180 days
+  const rangeEnd = Date.now() + 30 * 24 * 60 * 60 * 1000; // 30 days
   const sevenDaysEnd = Date.now() + 7 * 24 * 60 * 60 * 1000; // 7 days minimum
   const items: EventItem[] = [];
   // include custom events for this sport
@@ -144,7 +144,7 @@ async function aggregateUpcomingEvents(debug?: DebugBuffer, opts?: AggregateOpti
   debug?.logs.push(`Events in next 7 days: ${sevenDayEvents.length}, total upcoming: ${dedup.length}`);
   
   if (dedup.length > 0) return dedup.slice(0, 100);
-  // If nothing in 180 days window, fall back to earliest by date overall (from 'next' queries)
+  // If nothing in 30 days window, fall back to earliest by date overall (from 'next' queries)
   items.sort((a, b) => new Date(a.startsAt).getTime() - new Date(b.startsAt).getTime());
   const seen2 = new Set<string>();
   const out: EventItem[] = [];
@@ -266,27 +266,34 @@ function generateDemoNFLEvents(): EventItem[] {
   const now = new Date();
   const events: EventItem[] = [];
   
-  // Generate some upcoming NFL games
+  // Generate more upcoming NFL games over 30 days
   const teams = [
     ['Kansas City Chiefs', 'Buffalo Bills'],
     ['Dallas Cowboys', 'Philadelphia Eagles'],
     ['San Francisco 49ers', 'Seattle Seahawks'],
     ['Green Bay Packers', 'Chicago Bears'],
-    ['New England Patriots', 'Miami Dolphins']
+    ['New England Patriots', 'Miami Dolphins'],
+    ['Pittsburgh Steelers', 'Baltimore Ravens'],
+    ['Denver Broncos', 'Las Vegas Raiders'],
+    ['Tampa Bay Buccaneers', 'New Orleans Saints'],
+    ['Los Angeles Rams', 'Arizona Cardinals'],
+    ['Cleveland Browns', 'Cincinnati Bengals']
   ];
   
-  teams.forEach(([home, away], index) => {
+  // Generate games over 30 days (every 2-3 days)
+  for (let i = 0; i < 15; i++) {
+    const [home, away] = teams[i % teams.length];
     const gameDate = new Date(now);
-    gameDate.setDate(gameDate.getDate() + (index + 1) * 7); // Weekly games
-    gameDate.setHours(19, 0, 0, 0); // 7 PM games
+    gameDate.setDate(gameDate.getDate() + (i + 1) * 2); // Games every 2 days over 30 days
+    gameDate.setHours(19 + (i % 2), 0, 0, 0); // 7 PM or 8 PM games
     
     events.push({
-      id: `demo_nfl_${index + 1}`,
+      id: `demo_nfl_${i + 1}`,
       title: `NFL · ${home} vs ${away}`,
       sport: 'NFL',
       startsAt: gameDate.toISOString()
     });
-  });
+  }
   
   return events;
 }
@@ -330,7 +337,7 @@ async function fetchSoccerApiFootball(debug?: DebugBuffer, leagues: number[] = [
       if (!fixtures.length) {
         // fallback 2: wider date window + multiple statuses
         const from = formatYMD(new Date());
-        const to = formatYMD(new Date(Date.now() + 90*86400000));
+        const to = formatYMD(new Date(Date.now() + 30*86400000));
         const statuses = 'NS,TBD,PST';
         const u3 = `https://v3.football.api-sports.io/fixtures?league=${league}&from=${from}&to=${to}&status=${encodeURIComponent(statuses)}&timezone=Europe/Berlin`;
         const r3 = await fetchWithLog(u3, { headers }, debug, `API-FOOTBALL ${league} range+status`);
@@ -393,15 +400,15 @@ function generateDemoFootballEvents(leagues: number[] = []): EventItem[] {
     const leagueName = leagueNames[league as keyof typeof leagueNames];
     
     if (leagueTeams && leagueName) {
-      // Generate more matches over 7 days - repeat teams if needed
-      const totalMatches = Math.max(8, leagueTeams.length * 2); // At least 8 matches per league
+      // Generate more matches over 30 days - repeat teams if needed
+      const totalMatches = Math.max(20, leagueTeams.length * 3); // At least 20 matches per league
       
       for (let i = 0; i < totalMatches; i++) {
         const match = leagueTeams[i % leagueTeams.length];
         if (!match || match.length < 2) continue; // Skip if match is undefined or incomplete
         
-        // Distribute matches over 7 days
-        const dayOffset = Math.floor(i / Math.ceil(totalMatches / 7)); // Spread over 7 days
+        // Distribute matches over 30 days
+        const dayOffset = Math.floor(i / Math.ceil(totalMatches / 30)); // Spread over 30 days
         const timeOffset = (i % 3) * 2; // Different times: 0, 2, 4 hours apart
         
         const matchDate = new Date(now.getTime() + dayOffset * 24 * 60 * 60 * 1000);
@@ -445,27 +452,27 @@ async function fetchFootballDataOrg(apiKey: string, debug?: DebugBuffer, leagues
       continue;
     }
 
-    // Get upcoming matches for this competition with date range to ensure at least 7 days
+    // Get upcoming matches for this competition with date range to ensure at least 30 days
     const today = new Date();
-    const sevenDaysFromNow = new Date(today.getTime() + 7 * 24 * 60 * 60 * 1000);
+    const thirtyDaysFromNow = new Date(today.getTime() + 30 * 24 * 60 * 60 * 1000);
     const dateFrom = today.toISOString().split('T')[0]; // YYYY-MM-DD format
-    const dateTo = sevenDaysFromNow.toISOString().split('T')[0]; // YYYY-MM-DD format
+    const dateTo = thirtyDaysFromNow.toISOString().split('T')[0]; // YYYY-MM-DD format
     
-    // Try with date range first to ensure we get at least 7 days
+    // Try with date range first to ensure we get at least 30 days
     let url = `https://api.football-data.org/v4/competitions/${competition.id}/matches?dateFrom=${dateFrom}&dateTo=${dateTo}`;
     
     try {
-      let r = await fetchWithLog(url, { headers }, debug, `FOOTBALL-DATA ${competition.name} (7 days)`);
+      let r = await fetchWithLog(url, { headers }, debug, `FOOTBALL-DATA ${competition.name} (30 days)`);
       let data: any = {};
       let matches: any[] = [];
       
       if (r.ok) {
         data = await r.json();
         matches = data?.matches || [];
-        debug?.logs.push(`FOOTBALL-DATA ${competition.name} (7 days) count: ${matches.length}`);
+        debug?.logs.push(`FOOTBALL-DATA ${competition.name} (30 days) count: ${matches.length}`);
       }
       
-      // If we don't have enough matches in 7 days, try with just SCHEDULED status (broader range)
+      // If we don't have enough matches in 30 days, try with just SCHEDULED status (broader range)
       if (matches.length < 3) {
         const fallbackUrl = `https://api.football-data.org/v4/competitions/${competition.id}/matches?status=SCHEDULED`;
         const r2 = await fetchWithLog(fallbackUrl, { headers }, debug, `FOOTBALL-DATA ${competition.name} (scheduled)`);
