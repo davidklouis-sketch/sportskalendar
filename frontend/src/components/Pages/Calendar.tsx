@@ -46,6 +46,7 @@ export function Calendar() {
   const loadEvents = useCallback(async () => {
     if (!selectedSport) return;
     
+    console.log('🔍 Debug - Starting loadEvents for sport:', selectedSport);
     setIsLoading(true);
     try {
       const leagues = selectedSport === 'football' 
@@ -54,13 +55,11 @@ export function Calendar() {
             .map(t => t.leagueId!)
         : undefined;
 
+      console.log('🔍 Debug - Making API call to calendar with leagues:', leagues);
       const { data } = await calendarApi.getEvents(selectedSport, leagues);
       let allEvents = data || [];
       
-      // Reduced debug logging - only log when there are actual events or errors
-      if (allEvents.length > 0) {
-        console.log('🔍 Debug - Loaded events:', allEvents.length, 'for sport:', selectedSport);
-      }
+      console.log('🔍 Debug - API response received:', allEvents.length, 'events');
       
       // Filter events by selected team name
       const currentTeam = memoizedTeams.find(t => t.sport === selectedSport);
@@ -70,17 +69,22 @@ export function Calendar() {
         allEvents = allEvents.filter((event: Event) => 
           event.title.toLowerCase().includes(currentTeam.teamName.toLowerCase())
         );
-        if (beforeFilter !== allEvents.length) {
-          console.log('🔍 Debug - Filtered events:', beforeFilter, '->', allEvents.length, 'for team:', currentTeam.teamName);
-        }
+        console.log('🔍 Debug - Filtered events:', beforeFilter, '->', allEvents.length, 'for team:', currentTeam.teamName);
       }
       
       setEvents(allEvents);
       console.log('🔍 Debug - Events state updated:', allEvents.length, 'events');
     } catch (error) {
-      console.error('Failed to load events:', error);
+      console.error('❌ Failed to load events:', error);
+      const err = error as { message?: string; response?: { status?: number; data?: any } };
+      console.error('❌ Error details:', {
+        message: err.message,
+        status: err.response?.status,
+        data: err.response?.data
+      });
       setEvents([]);
     } finally {
+      console.log('🔍 Debug - Setting isLoading to false');
       setIsLoading(false);
     }
   }, [selectedSport, memoizedTeams]);
