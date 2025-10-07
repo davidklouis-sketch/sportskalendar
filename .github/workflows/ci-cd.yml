@@ -180,13 +180,35 @@ jobs:
             # Pull latest images
             docker compose -f docker-compose.traefik.yml --env-file .env.production pull
             
-            # Create database backup before deployment
+            # Check if database volume exists and create backup
+            echo "Checking database volume persistence..."
+            docker volume ls | grep postgres_data || echo "⚠️ postgres_data volume not found"
+            
+            # Create database backup if container is running
             echo "Creating database backup..."
-            docker compose -f docker-compose.traefik.yml --env-file .env.production exec -T postgres pg_dump -U sportskalendar sportskalendar > /tmp/db_backup.sql || echo "⚠️ Could not create backup (database might not exist yet)"
+            if docker compose -f docker-compose.traefik.yml --env-file .env.production ps postgres | grep -q "Up"; then
+              echo "PostgreSQL container is running, creating backup..."
+              docker compose -f docker-compose.traefik.yml --env-file .env.production exec -T postgres pg_dump -U sportskalendar sportskalendar > /tmp/db_backup.sql
+              echo "Backup created: $(ls -la /tmp/db_backup.sql)"
+              
+              # Also create a permanent backup
+              mkdir -p /home/dl/sportskalendar/backups
+              DATE=$(date +%Y%m%d_%H%M%S)
+              PERMANENT_BACKUP="/home/dl/sportskalendar/backups/sportskalendar_backup_$DATE.sql"
+              cp /tmp/db_backup.sql "$PERMANENT_BACKUP"
+              gzip "$PERMANENT_BACKUP"
+              echo "Permanent backup created: $PERMANENT_BACKUP.gz"
+            else
+              echo "PostgreSQL container not running, skipping backup"
+            fi
             
             # Stop services gracefully to preserve database
             echo "Stopping services gracefully..."
             docker compose -f docker-compose.traefik.yml --env-file .env.production stop
+            
+            # Remove only the containers, NOT the volumes
+            echo "Removing containers (preserving volumes)..."
+            docker compose -f docker-compose.traefik.yml --env-file .env.production rm -f
             
             # Deploy with zero-downtime (preserving volumes)
             echo "Starting services with preserved volumes..."
@@ -194,18 +216,39 @@ jobs:
             
             # Wait for database to be ready
             echo "Waiting for database to be ready..."
-            sleep 10
+            sleep 15
+            
+            # Check database status
+            echo "Checking database status..."
+            docker compose -f docker-compose.traefik.yml --env-file .env.production exec -T postgres psql -U sportskalendar -d sportskalendar -c "SELECT COUNT(*) as user_count FROM users;" || echo "⚠️ Could not query database"
             
             # Restore database if backup exists and database is empty
-            if [ -f /tmp/db_backup.sql ] && [ -s /tmp/db_backup.sql ]; then
-              echo "Checking if database needs restoration..."
-              USER_COUNT=$(docker compose -f docker-compose.traefik.yml --env-file .env.production exec -T postgres psql -U sportskalendar -d sportskalendar -t -c "SELECT COUNT(*) FROM users;" 2>/dev/null | tr -d ' \n' || echo "0")
-              if [ "$USER_COUNT" = "0" ]; then
-                echo "Database is empty, restoring from backup..."
-                docker compose -f docker-compose.traefik.yml --env-file .env.production exec -T postgres psql -U sportskalendar -d sportskalendar < /tmp/db_backup.sql || echo "⚠️ Could not restore database"
+            USER_COUNT=$(docker compose -f docker-compose.traefik.yml --env-file .env.production exec -T postgres psql -U sportskalendar -d sportskalendar -t -c "SELECT COUNT(*) FROM users;" 2>/dev/null | tr -d ' \n' || echo "0")
+            echo "Current user count: $USER_COUNT"
+            
+            if [ "$USER_COUNT" = "0" ]; then
+              echo "Database is empty, attempting restoration..."
+              
+              # Try to restore from temporary backup first
+              if [ -f /tmp/db_backup.sql ] && [ -s /tmp/db_backup.sql ]; then
+                echo "Restoring from temporary backup..."
+                docker compose -f docker-compose.traefik.yml --env-file .env.production exec -T postgres psql -U sportskalendar -d sportskalendar < /tmp/db_backup.sql
               else
-                echo "Database has $USER_COUNT users, skipping restoration"
+                echo "No temporary backup found, trying permanent backup..."
+                # Find the latest permanent backup
+                LATEST_BACKUP=$(ls -t /home/dl/sportskalendar/backups/sportskalendar_backup_*.sql.gz 2>/dev/null | head -n1)
+                if [ -n "$LATEST_BACKUP" ]; then
+                  echo "Restoring from permanent backup: $LATEST_BACKUP"
+                  gunzip -c "$LATEST_BACKUP" | docker compose -f docker-compose.traefik.yml --env-file .env.production exec -T postgres psql -U sportskalendar -d sportskalendar
+                else
+                  echo "⚠️ No backup found, database will be empty"
+                fi
               fi
+              
+              echo "Restoration completed, checking user count..."
+              docker compose -f docker-compose.traefik.yml --env-file .env.production exec -T postgres psql -U sportskalendar -d sportskalendar -c "SELECT COUNT(*) as user_count FROM users;"
+            else
+              echo "Database has $USER_COUNT users, skipping restoration"
             fi
             
             # Verify database volume exists and is persistent
