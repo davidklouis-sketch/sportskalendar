@@ -59,6 +59,7 @@ services:
       NODE_ENV: production
       PORT: 4000
       FORCE_HTTPS: "true"
+      DEMO_MODE: "true"
       DATABASE_URL: postgresql://sportskalendar:${DB_PASSWORD}@postgres:5432/sportskalendar
       DB_HOST: postgres
       DB_PORT: 5432

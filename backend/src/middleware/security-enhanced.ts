@@ -31,10 +31,10 @@ export const enhancedSecurityMiddleware = [
   // Cookie parser
   cookieParser(),
   
-  // General rate limiting (relaxed for development)
+  // General rate limiting (very relaxed for demo)
   rateLimit({ 
     windowMs: 60_000, 
-    max: 500, // Increased from 100 to 500
+    max: 2000, // Increased to 2000 requests per minute for demo
     message: 'Too many requests from this IP, please try again later.',
     standardHeaders: true,
     legacyHeaders: false,
@@ -84,17 +84,17 @@ export const enhancedSecurityMiddleware = [
   }
 ];
 
-// Auth-specific rate limiting (relaxed for development)
+// Auth-specific rate limiting (very relaxed for demo)
 export const authRateLimit = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 20, // Increased from 5 to 20 attempts per IP
+  max: 100, // Increased to 100 attempts per IP for demo
   message: 'Too many authentication attempts, please try again later.',
   standardHeaders: true,
   legacyHeaders: false,
   skipSuccessfulRequests: true,
   skip: (req) => {
-    // Skip rate limiting for development environment
-    return process.env.NODE_ENV !== 'production';
+    // Skip rate limiting for development environment or demo
+    return process.env.NODE_ENV !== 'production' || process.env.DEMO_MODE === 'true';
   }
 });
 
