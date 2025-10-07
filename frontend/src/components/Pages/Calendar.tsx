@@ -27,7 +27,7 @@ export function Calendar() {
   const { user, updateUser } = useAuthStore();
   const [events, setEvents] = useState<Event[]>([]);
   const [highlights, setHighlights] = useState<Highlight[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(false);
   const [selectedSport, setSelectedSport] = useState<'football' | 'nfl' | 'f1' | null>(null);
   const [showTeamSelector, setShowTeamSelector] = useState(false);
   const [selectedLeague, setSelectedLeague] = useState<number | null>(null);
@@ -126,6 +126,10 @@ export function Calendar() {
     if (selectedSport) {
       loadEvents();
       loadHighlights();
+    } else {
+      // Reset loading state when no sport is selected
+      console.log('🔍 Debug - No selectedSport, resetting loading state');
+      setIsLoading(false);
     }
   }, [selectedSport]);
 
