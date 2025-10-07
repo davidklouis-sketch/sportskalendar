@@ -15,10 +15,6 @@ interface Event {
 
 export function Calendar() {
   const { user, updateUser, setUser } = useAuthStore();
-  
-  // Debug: Log every render
-  console.log('🔍 Calendar Component Render - user:', user);
-  console.log('🔍 Calendar Component Render - selectedTeams:', user?.selectedTeams);
   const [events, setEvents] = useState<Event[]>([]);
   // Removed highlights state - not used anymore
   const [isLoading, setIsLoading] = useState(false);
@@ -26,12 +22,14 @@ export function Calendar() {
   const [showTeamSelector, setShowTeamSelector] = useState(false);
   const [selectedLeague, setSelectedLeague] = useState<number | null>(null);
   const [selectedTeamId, setSelectedTeamId] = useState<string>('');
-  // Remove local teams state - use database only
+  // Local teams state to ensure UI updates work
+  const [localTeams, setLocalTeams] = useState<any[]>([]);
 
   useEffect(() => {
     // Set initial sport from user's selected teams
     if (user?.selectedTeams?.length) {
       setSelectedSport(user.selectedTeams[0].sport);
+      setLocalTeams(user.selectedTeams);
     }
   }, [user?.selectedTeams?.length]); // Only depend on the length, not the entire user object
 
@@ -212,12 +210,15 @@ export function Calendar() {
       console.log('🔍 Debug - UpdateTeams response data:', JSON.stringify(response.data, null, 2));
       console.log('🔍 Debug - UpdateTeams response selectedTeams:', JSON.stringify(response.data.selectedTeams, null, 2));
       
-      // WORKAROUND: Use teams directly from updateTeams response since getProfile is broken
-      console.log('🔍 Debug - Using WORKAROUND: Teams from updateTeams response');
+      // Update local teams state immediately for UI
+      if (response.data.selectedTeams) {
+        setLocalTeams(response.data.selectedTeams);
+      }
+      
+      // Also update user state
       if (user && response.data.selectedTeams) {
         const updatedUser = { ...user, selectedTeams: response.data.selectedTeams };
         setUser(updatedUser);
-        console.log('🔍 Debug - WORKAROUND: User updated with teams from response:', updatedUser);
       }
       
       // Still try profile refresh for other user data, but don't rely on it for teams
@@ -303,13 +304,7 @@ export function Calendar() {
 
         {/* Selected Teams */}
         <div className="space-y-2 mb-4">
-          {(() => {
-            console.log('🔍 UI Debug - Current user object:', user);
-            console.log('🔍 UI Debug - Current selectedTeams:', user?.selectedTeams);
-            console.log('🔍 UI Debug - selectedTeams length:', user?.selectedTeams?.length);
-            return null;
-          })()}
-          {user?.selectedTeams?.map((team, index) => (
+          {localTeams?.map((team, index) => (
             <div
               key={index}
               className="flex items-center justify-between p-3 bg-gray-100 dark:bg-gray-700 rounded-lg"
@@ -329,7 +324,7 @@ export function Calendar() {
             </div>
           ))}
 
-          {(!user?.selectedTeams || user.selectedTeams.length === 0) && (
+          {(!localTeams || localTeams.length === 0) && (
             <p className="text-gray-500 dark:text-gray-400 text-center py-4">
               Noch keine Teams ausgewählt. Füge jetzt dein erstes Team hinzu!
             </p>
@@ -337,7 +332,7 @@ export function Calendar() {
         </div>
 
         {/* Premium Limit Info */}
-        {!user?.isPremium && user?.selectedTeams && user.selectedTeams.length >= 1 && (
+        {!user?.isPremium && localTeams && localTeams.length >= 1 && (
           <div className="p-3 bg-yellow-100 dark:bg-yellow-900/30 border border-yellow-400 dark:border-yellow-700 text-yellow-800 dark:text-yellow-200 rounded-lg text-sm mb-4">
             Free-Account: Nur 1 Team möglich. Upgrade zu Premium für unbegrenzte Teams!
           </div>
@@ -347,7 +342,7 @@ export function Calendar() {
         {!showTeamSelector ? (
           <button
             onClick={() => setShowTeamSelector(true)}
-            disabled={!user?.isPremium && (user?.selectedTeams?.length || 0) >= 1}
+            disabled={!user?.isPremium && (localTeams?.length || 0) >= 1}
             className="btn btn-primary w-full disabled:opacity-50 disabled:cursor-not-allowed"
           >
             + Team hinzufügen
