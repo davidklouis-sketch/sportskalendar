@@ -15,6 +15,10 @@ interface Event {
 
 export function Calendar() {
   const { user, updateUser, setUser } = useAuthStore();
+  
+  // Debug: Log every render
+  console.log('🔍 Calendar Component Render - user:', user);
+  console.log('🔍 Calendar Component Render - selectedTeams:', user?.selectedTeams);
   const [events, setEvents] = useState<Event[]>([]);
   // Removed highlights state - not used anymore
   const [isLoading, setIsLoading] = useState(false);
@@ -299,6 +303,12 @@ export function Calendar() {
 
         {/* Selected Teams */}
         <div className="space-y-2 mb-4">
+          {(() => {
+            console.log('🔍 UI Debug - Current user object:', user);
+            console.log('🔍 UI Debug - Current selectedTeams:', user?.selectedTeams);
+            console.log('🔍 UI Debug - selectedTeams length:', user?.selectedTeams?.length);
+            return null;
+          })()}
           {user?.selectedTeams?.map((team, index) => (
             <div
               key={index}
