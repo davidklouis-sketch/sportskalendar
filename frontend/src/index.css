@@ -1,155 +1,32 @@
-:root {
-  --color-bg: #ffffff;
-  --color-surface: #ffffff;
-  --color-muted: #f3f4f6;
-  --color-text: #111827;
-  --color-text-muted: #6b7280;
-  --color-border: #e5e7eb;
-  --color-primary: #2563eb;
-  --color-accent: #22c55e;
-  --shadow-sm: 0 1px 2px rgba(0,0,0,0.06), 0 1px 3px rgba(0,0,0,0.10);
-  --radius: 12px;
-  --space-1: 4px;
-  --space-2: 8px;
-  --space-3: 12px;
-  --space-4: 16px;
-  --space-6: 24px;
-  --space-8: 32px;
-  color-scheme: light;
-}
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
 
-/* Modern Scoreboard Animations */
-@keyframes pulse {
-  0%, 100% { 
-    opacity: 1; 
-    transform: scale(1);
-  }
-  50% { 
-    opacity: 0.5; 
-    transform: scale(1.1);
+@layer base {
+  body {
+    @apply bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100;
+    @apply transition-colors duration-200;
   }
 }
 
-@keyframes spin {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
-}
-
-@keyframes fadeInUp {
-  from {
-    opacity: 0;
-    transform: translateY(20px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-@keyframes slideInRight {
-  from {
-    opacity: 0;
-    transform: translateX(30px);
-  }
-  to {
-    opacity: 1;
-    transform: translateX(0);
-  }
-}
-
-/* Smooth transitions for all interactive elements */
-* {
-  transition: all 0.2s ease;
-}
-
-/* Smooth scrolling for anchor links */
-html {
-  scroll-behavior: smooth;
-}
-
-/* Enhanced scrollbar styling */
-::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
-}
-
-::-webkit-scrollbar-track {
-  background: var(--color-muted);
-  border-radius: 4px;
-}
-
-::-webkit-scrollbar-thumb {
-  background: var(--color-text-muted);
-  border-radius: 4px;
-}
-
-::-webkit-scrollbar-thumb:hover {
-  background: var(--color-text);
-}
-
-/* Mobile Navigation */
-@media (max-width: 768px) {
-  .mobile-menu-button {
-    display: flex !important;
+@layer components {
+  .btn {
+    @apply px-4 py-2 rounded-lg font-medium transition-all duration-200;
   }
   
-  .desktop-nav {
-    display: none !important;
+  .btn-primary {
+    @apply bg-primary-600 hover:bg-primary-700 text-white shadow-sm hover:shadow-md;
   }
   
-  .user-actions {
-    gap: 8px !important;
+  .btn-secondary {
+    @apply bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 text-gray-900 dark:text-gray-100;
   }
   
-  .user-actions > div {
-    gap: 4px !important;
+  .card {
+    @apply bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700;
   }
   
-  .user-actions button,
-  .user-actions a {
-    padding: 8px 12px !important;
-    font-size: 12px !important;
-  }
-  
-  .logo {
-    font-size: 20px !important;
-  }
-  
-  .logo span {
-    font-size: 24px !important;
+  .input {
+    @apply w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all;
   }
 }
-
-[data-theme="dark"] {
-  --color-bg: #0b1220;
-  --color-surface: #111827;
-  --color-muted: #0f172a;
-  --color-text: #f3f4f6;
-  --color-text-muted: #cbd5e1;
-  --color-border: #1f2937;
-  --color-primary: #3b82f6;
-  --color-accent: #22c55e;
-  color-scheme: dark;
-}
-
-* { box-sizing: border-box; }
-
-html, body {
-  margin: 0;
-  padding: 0;
-  background: var(--color-bg);
-  color: var(--color-text);
-  font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji", "Segoe UI Emoji";
-  line-height: 1.5;
-}
-html { scroll-behavior: smooth; }
-
-a { color: var(--color-primary); text-decoration: none; }
-a:hover { text-decoration: underline; }
-
-.btn { display:inline-flex; align-items:center; gap:.5rem; padding:.6rem .9rem; border:1px solid var(--color-border); background: var(--color-primary); color:#fff; border-radius: 8px; cursor:pointer; }
-.btn.secondary { background: transparent; color: var(--color-text); }
-
-.card { background: var(--color-surface); border:1px solid var(--color-border); border-radius: var(--radius); box-shadow: var(--shadow-sm); }
-
-.container { width: 100%; max-width: 1200px; margin: 0 auto; padding: 0 var(--space-4); }

@@ -1,257 +1,250 @@
-# 🏆 SportsKalender - Moderne Sport-Event-Verwaltung
+# SportsKalender - Moderner Sport Event Kalender
 
-Eine vollständige Web-Anwendung zur Verwaltung und Anzeige von Sport-Events mit Live-Scores, Kalender-Integration und Community-Features.
+Eine moderne One-Page Web-Anwendung für Sport-Events mit Fußball, NFL und Formel 1 Integration.
+
+![SportsKalender](Images/generated-image.png)
 
 ## ✨ Features
 
-### 📅 **Interaktiver Kalender**
-- **Multi-Sport-Unterstützung**: Fußball, F1, NFL Events
-- **Echte API-Integration**: football-data.org, Jolpica F1 API, ESPN NFL API
-- **Smart Filtering**: Nach Sportarten filtern
-- **Event-Management**: Eigene Events hinzufügen
-- **Reminder-System**: Erinnerungen für wichtige Events
-- **Dark Mode**: Vollständige Dark/Light Mode Unterstützung
+### 📅 Kalender
+- **Team-Auswahl**: Wähle deine Lieblings-Teams oder Fahrer
+  - ⚽ **Fußball**: 19 Premier League Teams, 18 Bundesliga Teams, Champions League, EM/WM
+  - 🏈 **NFL**: 32 NFL Teams (alle Divisions)
+  - 🏎️ **F1**: 20 aktuelle Formel 1 Fahrer
+- **Event-Übersicht**: Nur Events deiner ausgewählten Teams
+- **Highlights-Preview**: Top 3 aktuelle Highlights auf der Startseite
+- **Smart-Filtering**: Zeigt nur relevante Events für dein Team
 
-### 🏁 **Live Scoreboard**
-- **Echtzeit-Daten**: Live-Scores für alle Sportarten
-- **Auto-Refresh**: Automatische Aktualisierung alle 5 Sekunden
-- **Fallback-System**: Robuste API-Fehlerbehandlung
-- **Rate-Limiting**: Intelligentes Caching zur Vermeidung von API-Limits
+### 🔴 Live-Ticker
+- **Echtzeit-Updates**: Live-Ergebnisse deiner Teams
+- **Auto-Refresh**: Automatische Aktualisierung alle 30 Sekunden
+- **Team-Filter**: Nur Daten für dein ausgewähltes Team
+- **Multi-Sport**: F1, NFL und Fußball Live-Daten
 
-### 🎯 **Community Features**
-- **Event-Sharing**: Events mit der Community teilen
-- **Real-time Updates**: Live-Updates über WebSocket
-- **User-Management**: Registrierung und Profil-Verwaltung
+### 🎬 Highlights
+- **Video-Highlights**: Automatisch kuratierte YouTube-Highlights
+- **Team-spezifisch**: Nur Highlights für deine Teams
+- **Rich Metadata**: Thumbnails, Dauer, View-Count
+- **Sport-News**: Aktuelle Nachrichten gefiltert nach Team
 
-### 🎨 **Moderne UI/UX**
-- **Responsive Design**: Funktioniert auf allen Geräten
-- **Dark Mode**: Automatische Theme-Erkennung
-- **Intuitive Navigation**: Benutzerfreundliche Oberfläche
-- **Performance**: Optimiert für schnelle Ladezeiten
+### 👤 Account-Features
+- **Sicherer Login**: JWT-basiert mit HttpOnly Cookies
+- **Passwort ändern**: In den Einstellungen
+- **Premium-Account**: Mehrere Teams gleichzeitig
+- **Admin-Dashboard**: User-Verwaltung (nur für Admins)
 
-## 🚀 Produktiver Einsatz
+### 💎 Premium-Features
+- ✅ **Mehrere Teams**: Unbegrenzt (Free: nur 1 Team)
+- ✅ **Team-Filter**: Personalisierte Events und Highlights
+- 🔄 **Kalender-Sync**: Export zu externen Kalendern (geplant)
+- 🔔 **Push-Benachrichtigungen**: Echtzeit-Alerts (geplant)
 
-### **Für Sport-Websites**
-- **Fan-Portale**: Integriere den Kalender in deine Vereins-Website
-- **Event-Management**: Verwalte Turniere und Spiele zentral
-- **Live-Updates**: Biete deinen Besuchern aktuelle Scores
+## 🎨 Design
 
-### **Für Unternehmen**
-- **Corporate Events**: Plane und verwalte Firmen-Sportevents
-- **Team-Building**: Organisiere interne Sportaktivitäten
-- **Kunden-Engagement**: Biete Sport-Content für deine Kunden
+- **Modern & Schlicht**: Minimalistisches UI mit Tailwind CSS
+- **Dark Mode**: Vollständige Dark Mode Unterstützung mit Toggle
+- **Responsive**: Optimiert für Desktop, Tablet und Mobile
+- **One-Page**: Flüssige Navigation ohne Page Reloads
+- **Accessibility**: WCAG-konform
 
-### **Für Entwickler**
-- **API-Integration**: Nutze die robusten API-Adapter
-- **Custom Events**: Erweitere um eigene Sportarten
-- **White-Label**: Passe das Design an deine Marke an
+## 🛠 Tech Stack
 
-## 🛠️ Installation & Setup
+### Backend
+- Node.js + Express
+- TypeScript
+- JWT-Authentifizierung mit HttpOnly Cookies
+- In-Memory Store (erweiterbar auf PostgreSQL)
+- API-Integration: football-data.org, Jolpica F1 API, ESPN
 
-### **Voraussetzungen**
-- Node.js (LTS Version)
-- npm oder yarn
-- Git
+### Frontend
+- React 19 + TypeScript
+- Tailwind CSS
+- Zustand (State Management)
+- Axios
+- Vite
 
-### **1. Repository klonen**
+## 🚀 Quick Start
+
+### Lokale Entwicklung
+
 ```bash
+# 1. Repository klonen
 git clone https://github.com/davidklouis-sketch/sportskalendar.git
 cd sportskalendar
-```
 
-### **2. Backend einrichten**
-```bash
+# 2. Backend starten
 cd backend
 npm install
-
-# .env Datei erstellen
-cp .env.example .env
-# Bearbeite .env und füge deine API-Keys hinzu
-```
-
-**API-Keys konfigurieren:**
-```env
-PORT=4000
-JWT_SECRET=your-super-secret-jwt-key-here
-FOOTBALL_DATA_KEY=your-football-data-api-key-here
-API_FOOTBALL_KEY=your-api-football-key-here
-```
-
-### **3. Frontend einrichten**
-```bash
-cd ../frontend
-npm install
-```
-
-### **4. Anwendung starten**
-```bash
-# Backend starten (Terminal 1)
-cd backend
 npm run dev
 
-# Frontend starten (Terminal 2)
+# 3. Frontend starten (neues Terminal)
 cd frontend
+npm install
 npm run dev
 ```
 
-Die Anwendung ist dann verfügbar unter:
-- **Frontend**: http://localhost:5173
-- **Backend API**: http://localhost:4000
+**Fertig!** 🎉
+- Frontend: http://localhost:5173
+- Backend: http://localhost:4000
 
-## 🔑 API-Keys erhalten
+### Mit Docker (inkl. PostgreSQL)
 
-### **Fußball-Daten (football-data.org)**
-1. Besuche https://www.football-data.org/client/register
-2. Registriere dich kostenlos
-3. Erhalte deinen API-Key (10 Anfragen/Minute)
-4. Füge den Key in die `.env` Datei ein
-
-### **NFL-Daten (ESPN API)**
-- **Kostenlos**: Keine Registrierung erforderlich
-- **Zuverlässig**: Direkte ESPN-Integration
-- **Aktuell**: Immer die neuesten NFL-Daten
-
-### **F1-Daten (Jolpica API)**
-- **Kostenlos**: Keine Registrierung erforderlich
-- **Ergast-Nachfolger**: Moderne F1-API
-- **Vollständig**: Alle F1-Events und Ergebnisse
-
-## 📦 Deployment
-
-### **Docker Deployment**
 ```bash
-# Docker Compose verwenden
-docker-compose up -d
+docker-compose -f docker-compose.dev.yml up -d
 ```
 
-### **Vercel/Netlify (Frontend)**
-```bash
-# Frontend builden
-cd frontend
-npm run build
+### Production Deployment
 
-# Dist-Ordner zu Vercel/Netlify deployen
+Siehe [QUICKSTART.md](QUICKSTART.md) oder [DEPLOYMENT.md](DEPLOYMENT.md)
+
+## 👤 Demo-Accounts
+
+### Free Account
+- **Email**: `demo@sportskalender.local`
+- **Passwort**: `password`
+- Kann 1 Team auswählen
+
+### Premium Account (Admin)
+- **Email**: `admin@sportskalender.local`
+- **Passwort**: `admin123`
+- Kann unbegrenzt Teams auswählen
+
+## 📁 Projektstruktur
+
+```
+sportskalendar/
+├── backend/
+│   ├── src/
+│   │   ├── routes/        # API Routes (auth, calendar, live, highlights, user)
+│   │   ├── middleware/    # Auth & Security Middleware
+│   │   ├── store/         # In-Memory Datenbank
+│   │   └── index.ts       # Server Entry Point
+│   └── package.json
+├── frontend/
+│   ├── src/
+│   │   ├── components/
+│   │   │   ├── Auth/      # Login & Register
+│   │   │   ├── Layout/    # Header mit Navigation & Dark Mode
+│   │   │   └── Pages/     # Calendar, Live, Highlights
+│   │   ├── store/         # Zustand Stores
+│   │   ├── lib/           # API Client
+│   │   ├── App.tsx        # Haupt-App
+│   │   └── main.tsx       # Entry Point
+│   └── package.json
+└── README.md
 ```
 
-### **Railway/Heroku (Backend)**
-```bash
-# Backend zu Railway/Heroku deployen
-# Vergiss nicht, die Umgebungsvariablen zu setzen
-```
+## 🔑 API-Routen
 
-### **VPS/Server Deployment**
-```bash
-# PM2 für Production verwenden
-npm install -g pm2
+### Authentifizierung
+- `POST /api/auth/register` - Neuen User registrieren
+- `POST /api/auth/login` - Einloggen
+- `POST /api/auth/logout` - Ausloggen
+- `POST /api/auth/refresh` - Token erneuern
 
-# Backend starten
-cd backend
-pm2 start npm --name "sportskalendar-backend" -- run dev
+### User
+- `GET /api/user/profile` - User-Profil mit Premium-Status und Teams
+- `POST /api/user/teams` - Teams aktualisieren
+- `POST /api/user/upgrade-premium` - Zu Premium upgraden (Demo)
 
-# Nginx für Frontend
-# Konfiguriere Nginx für statische Dateien
-```
+### Kalender
+- `GET /api/calendar?sport=football&leagues=39,78` - Events abrufen
+- `GET /api/calendar/reminder` - Erinnerungen abrufen
+- `POST /api/calendar/reminder` - Erinnerung hinzufügen
 
-## 🔧 Konfiguration
+### Live
+- `GET /api/live/f1` - F1 Live-Daten
+- `GET /api/live/nfl` - NFL Live-Daten
+- `GET /api/live/soccer` - Fußball Live-Daten
 
-### **Umgebungsvariablen**
-```env
-# Backend (.env)
-PORT=4000
-JWT_SECRET=your-jwt-secret
-FOOTBALL_DATA_KEY=your-football-key
-API_FOOTBALL_KEY=your-api-football-key
+### Highlights
+- `GET /api/highlights?sport=F1` - Highlights abrufen
 
-# Frontend (vite.config.ts)
-VITE_API_URL=http://localhost:4000
-```
+## 🌐 API-Integrationen
 
-### **Caching konfigurieren**
-```typescript
-// backend/src/routes/calendar.ts
-const CACHE_MS = 5 * 60 * 1000; // 5 Minuten Cache
-const FOOTBALL_CACHE_DURATION = 2 * 60 * 1000; // 2 Minuten Live-Cache
-```
+### Fußball
+- **football-data.org**: Premier League, Bundesliga, Champions League
+- **Fallback**: Demo-Daten bei fehlenden API-Keys
 
-## 🎯 Erweiterungen
+### NFL
+- **ESPN API**: Live-Spiele und Ergebnisse
+- **TheSportsDB**: Backup-Quelle
 
-### **Neue Sportarten hinzufügen**
-1. Backend: Neue API-Funktion in `calendar.ts`
-2. Frontend: Sport-Filter in `Calendar.tsx` erweitern
-3. Live-API: Neue Route in `live.ts` hinzufügen
+### Formel 1
+- **Jolpica API** (Ergast Replacement): Rennkalender und Ergebnisse
 
-### **Custom Events**
-```typescript
-// Eigene Event-Typen definieren
-type CustomEvent = {
-  id: string;
-  title: string;
-  sport: string;
-  startsAt: string;
-  customField?: string;
-};
-```
-
-### **Theming anpassen**
-```css
-/* CSS-Variablen überschreiben */
-:root {
-  --primary-color: #your-color;
-  --secondary-color: #your-color;
-}
-```
-
-## 📊 Monitoring & Analytics
-
-### **Performance Monitoring**
-- **API-Response-Zeiten**: Überwache Backend-Performance
-- **Cache-Hit-Rate**: Optimiere Caching-Strategien
-- **Error-Rate**: Überwache API-Fehler
-
-### **User Analytics**
-- **Event-Interaktionen**: Welche Events sind beliebt?
-- **Filter-Nutzung**: Welche Sportarten werden am meisten gefiltert?
-- **Reminder-Rate**: Wie viele Benutzer setzen Reminder?
+### Highlights
+- **YouTube RSS Feeds**: Automatische Video-Highlights
 
 ## 🔒 Sicherheit
 
-### **API-Sicherheit**
-- **Rate Limiting**: Schutz vor API-Missbrauch
-- **CORS-Konfiguration**: Sichere Cross-Origin-Requests
-- **JWT-Authentication**: Sichere Benutzer-Authentifizierung
+- JWT mit HttpOnly Cookies
+- Secure Cookie-Flags in Production
+- CORS-Konfiguration
+- Rate Limiting
+- Token-Blacklisting bei Logout
+- Passwort-Hashing mit bcrypt (12 Rounds)
 
-### **Daten-Schutz**
-- **Keine persönlichen Daten**: Nur Event-Daten werden gespeichert
-- **GDPR-konform**: Minimale Datensammlung
-- **Sichere API-Keys**: Umgebungsvariablen für sensible Daten
+## 📱 Browser-Support
 
-## 🤝 Contributing
+- Chrome/Edge (neueste 2 Versionen)
+- Firefox (neueste 2 Versionen)
+- Safari (neueste 2 Versionen)
 
-1. Fork das Repository
-2. Erstelle einen Feature-Branch (`git checkout -b feature/AmazingFeature`)
-3. Committe deine Änderungen (`git commit -m 'Add some AmazingFeature'`)
-4. Push zum Branch (`git push origin feature/AmazingFeature`)
-5. Öffne eine Pull Request
+## 🚧 Roadmap
 
-## 📝 Lizenz
+- [x] Team-basierte Filterung (Events, Live, Highlights)
+- [x] Premium-Account System
+- [x] Admin-Dashboard
+- [x] Passwort-Änderung
+- [x] Dark Mode
+- [x] Multi-Team Support
+- [x] CI/CD Pipeline mit GitHub Actions
+- [ ] Kalender-Export (ICS)
+- [ ] Push-Benachrichtigungen
+- [ ] Favoriten-System für Events
+- [ ] Team-Statistiken
+- [ ] Social Sharing
+- [ ] Mobile App
 
-Dieses Projekt steht unter der MIT-Lizenz. Siehe [LICENSE](LICENSE) für Details.
+## 📚 Dokumentation
 
-## 🙏 Danksagungen
+- **[QUICKSTART.md](QUICKSTART.md)** - Schnelleinstieg für Entwicklung und Deployment
+- **[DEPLOYMENT.md](DEPLOYMENT.md)** - Vollständige Production Deployment Anleitung
+- **[.github/workflows/README.md](.github/workflows/README.md)** - CI/CD Pipeline Details
+- **[frontend/README.md](frontend/README.md)** - Frontend-spezifische Dokumentation
+- **[backend/README.md](backend/README.md)** - Backend API Dokumentation
 
-- **football-data.org** für Fußball-APIs
-- **Jolpica** für F1-API (Ergast-Nachfolger)
-- **ESPN** für NFL-APIs
-- **React & Vite** für das Frontend-Framework
-- **Express.js** für das Backend-Framework
+## 🐳 Docker & CI/CD
 
-## 📞 Support
+### GitHub Actions Pipeline
+- ✅ Automatische Tests bei jedem Push/PR
+- ✅ Docker Images bauen und zu GHCR pushen
+- ✅ Automatisches Deployment bei Push auf `main`
+- ✅ Zero-Downtime Deployment
 
-Bei Fragen oder Problemen:
-- **Issues**: Öffne ein GitHub Issue
-- **Discussions**: Nutze GitHub Discussions
-- **Email**: [Deine Email]
+### Docker Compose Konfigurationen
+- `docker-compose.dev.yml` - Lokale Entwicklung mit PostgreSQL
+- `docker-compose.yml` - Einfaches Production Setup
+- `docker-compose.traefik.yml` - Production mit Traefik & SSL
 
----
+### Services
+- **Frontend**: Nginx serving static React build
+- **Backend**: Node.js Express API
+- **PostgreSQL**: Datenbank (oder In-Memory für Development)
+- **Traefik**: Reverse Proxy mit automatischen Let's Encrypt Zertifikaten
 
-**Made with ❤️ for the sports community**
+## 📄 Lizenz
+
+Alle Rechte vorbehalten © 2025
+
+## 👨‍💻 Entwickler
+
+Entwickelt mit ❤️ von David K. Louis
+
+## 🙏 Credits
+
+- **Football Data**: football-data.org, API-Football
+- **F1 Data**: Jolpica API (Ergast Replacement)
+- **NFL Data**: ESPN API, TheSportsDB
+- **Highlights**: YouTube RSS Feeds

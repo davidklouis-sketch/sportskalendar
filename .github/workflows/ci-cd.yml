@@ -1,149 +1,178 @@
-name: CI/CD
+name: CI/CD Pipeline
 
 on:
   push:
-    branches: [ main ]
+    branches: [main, develop]
   pull_request:
-    branches: [ main ]
-  workflow_dispatch:
+    branches: [main, develop]
 
 env:
   REGISTRY: ghcr.io
-  IMAGE_FRONTEND: ghcr.io/${{ github.repository }}/frontend
-  IMAGE_BACKEND: ghcr.io/${{ github.repository }}/backend
+  BACKEND_IMAGE_NAME: ${{ github.repository }}/backend
+  FRONTEND_IMAGE_NAME: ${{ github.repository }}/frontend
 
 jobs:
-  build-and-push:
-    name: Build and push Docker images
-    environment: prod
+  # Test Backend
+  test-backend:
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./backend
+    
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: backend/package-lock.json
+      
+      - name: Install dependencies
+        run: npm ci
+      
+      - name: TypeScript compile check
+        run: npm run build
+      
+      - name: Run linter (if available)
+        run: npm run lint --if-present
+        continue-on-error: true
+
+  # Test Frontend
+  test-frontend:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./frontend
+    
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: frontend/package-lock.json
+      
+      - name: Install dependencies
+        run: npm ci
+      
+      - name: TypeScript compile check
+        run: npm run build
+      
+      - name: Run linter
+        run: npm run lint
+        continue-on-error: true
+
+  # Build and Push Docker Images
+  build-and-push:
+    needs: [test-backend, test-frontend]
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     permissions:
       contents: read
       packages: write
-    strategy:
-      matrix:
-        service: [ frontend, backend ]
+    
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
-
-      - name: Log in to GHCR
+      - uses: actions/checkout@v4
+      
+      - name: Log in to Container Registry
         uses: docker/login-action@v3
         with:
           registry: ${{ env.REGISTRY }}
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Compute frontend API URL
-        run: |
-          if [ "${{ matrix.service }}" = "frontend" ]; then
-            echo "FRONTEND_API_URL=https://${{ secrets.BACKEND_HOST }}/api" >> $GITHUB_ENV
-          fi
-
-      - name: Prepare tags
-        id: prep
-        run: |
-          IMAGE_VAR=IMAGE_$(echo "${{ matrix.service }}" | tr '[:lower:]' '[:upper:]')
-          IMAGE_NAME=${!IMAGE_VAR}
-          echo "IMAGE_NAME=$IMAGE_NAME" >> $GITHUB_OUTPUT
-          # tags: sha and branch-latest
-          SHA_TAG=$IMAGE_NAME:sha-${GITHUB_SHA::7}
-          if [ "${{ github.ref_name }}" = "main" ]; then
-            LATEST_TAG=$IMAGE_NAME:latest
-          else
-            SAFE_BRANCH=$(echo "${{ github.ref_name }}" | tr '[:upper:]' '[:lower:]' | tr -c 'a-z0-9._-' '-')
-            LATEST_TAG=$IMAGE_NAME:${SAFE_BRANCH}
-          fi
-          echo "SHA_TAG=$SHA_TAG" >> $GITHUB_OUTPUT
-          echo "LATEST_TAG=$LATEST_TAG" >> $GITHUB_OUTPUT
-
-      - name: Build and push ${{ matrix.service }}
-        uses: docker/build-push-action@v6
+      
+      - name: Extract metadata for Backend
+        id: meta-backend
+        uses: docker/metadata-action@v5
         with:
-          context: ./${{ matrix.service }}
-          file: ./${{ matrix.service }}/Dockerfile
-          push: true
+          images: ${{ env.REGISTRY }}/${{ env.BACKEND_IMAGE_NAME }}
           tags: |
-            ${{ steps.prep.outputs.SHA_TAG }}
-            ${{ steps.prep.outputs.LATEST_TAG }}
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
-          build-args: |
-            VITE_API_URL=${{ env.FRONTEND_API_URL }}
-
-  deploy:
-    name: Deploy to server
-    needs: build-and-push
-    if: github.ref == 'refs/heads/main'
-    environment: prod
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Validate SSH_PRIVATE_KEY is set
-        run: |
-          if [ -z "${{ secrets.SSH_PRIVATE_KEY }}" ]; then
-            echo "SSH_PRIVATE_KEY secret is empty or not configured" >&2
-            exit 1
-          fi
-
-      - name: Install SSH key
-        uses: webfactory/ssh-agent@v0.9.0
+            type=ref,event=branch
+            type=sha,prefix={{branch}}-
+            type=raw,value=latest,enable={{is_default_branch}}
+      
+      - name: Build and push Backend image
+        uses: docker/build-push-action@v5
         with:
-          ssh-private-key: |
-            ${{ secrets.SSH_PRIVATE_KEY }}
+          context: ./backend
+          push: true
+          tags: ${{ steps.meta-backend.outputs.tags }}
+          labels: ${{ steps.meta-backend.outputs.labels }}
+      
+      - name: Extract metadata for Frontend
+        id: meta-frontend
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.REGISTRY }}/${{ env.FRONTEND_IMAGE_NAME }}
+          tags: |
+            type=ref,event=branch
+            type=sha,prefix={{branch}}-
+            type=raw,value=latest,enable={{is_default_branch}}
+      
+      - name: Build and push Frontend image
+        uses: docker/build-push-action@v5
+        with:
+          context: ./frontend
+          push: true
+          tags: ${{ steps.meta-frontend.outputs.tags }}
+          labels: ${{ steps.meta-frontend.outputs.labels }}
+          build-args: |
+            VITE_API_URL=https://${{ secrets.BACKEND_HOST }}/api
 
-      - name: Add known hosts
-        run: ssh-keyscan -H ${{ secrets.SSH_HOST }} >> ~/.ssh/known_hosts
-
-      - name: Create .env for compose
-        run: |
-          cat > .env.deploy <<'EOF'
-          DB_PASSWORD=${{ secrets.DB_PASSWORD }}
-          JWT_SECRET=${{ secrets.JWT_SECRET }}
-          FOOTBALL_DATA_KEY=${{ secrets.FOOTBALL_DATA_KEY }}
-          API_FOOTBALL_KEY=${{ secrets.API_FOOTBALL_KEY }}
-          NEWS_API_KEY=${{ secrets.NEWS_API_KEY }}
-          LETSENCRYPT_EMAIL=${{ secrets.LETSENCRYPT_EMAIL }}
-          FRONTEND_IMAGE=ghcr.io/${{ github.repository }}/frontend:latest
-          BACKEND_IMAGE=ghcr.io/${{ github.repository }}/backend:latest
-          FRONTEND_HOST=${{ secrets.FRONTEND_HOST }}
-          BACKEND_HOST=${{ secrets.BACKEND_HOST }}
-          CORS_ORIGIN=https://${{ secrets.FRONTEND_HOST }},https://${{ secrets.BACKEND_HOST }},https://sportskalendar.de,http://localhost:5173,http://localhost:3000
-          EOF
-
-      - name: Ensure remote directory exists
-        run: ssh ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} "mkdir -p ~/sportskalendar"
-
-      - name: Copy compose files (Traefik stack)
-        run: |
-          rsync -avz -e ssh docker-compose.traefik.yml ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}:~/sportskalendar/docker-compose.yml
-          rsync -avz -e ssh .env.deploy ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}:~/sportskalendar/.env
-
-      - name: Check Docker & Compose on server
-        run: |
-          ssh ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} "docker version && docker compose version"
-
-      - name: Deploy stack (Traefik + Postgres + Backend + Frontend)
-        env:
-          REGISTRY: ghcr.io
-          FRONTEND_IMAGE: ghcr.io/${{ github.repository }}/frontend:latest
-          BACKEND_IMAGE: ghcr.io/${{ github.repository }}/backend:latest
-        run: |
-          ssh ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} "
-            set -euo pipefail;
-            cd ~/sportskalendar;
-            echo 'Logging in to GHCR';
-            echo ${{ secrets.GITHUB_TOKEN }} | docker login ghcr.io -u ${{ github.actor }} --password-stdin;
-            docker pull $BACKEND_IMAGE || true;
-            docker pull $FRONTEND_IMAGE || true;
-            docker compose -f docker-compose.yml pull || true;
-            docker compose -f docker-compose.yml up -d --remove-orphans;
-            docker system prune -f;
-          "
-
-
+  # Deploy to Production
+  deploy:
+    needs: [build-and-push]
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Deploy to Server via SSH
+        uses: appleboy/ssh-action@v1.0.0
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          port: ${{ secrets.SSH_PORT || 22 }}
+          script: |
+            cd ${{ secrets.DEPLOY_PATH || '/opt/sportskalendar' }}
+            
+            # Pull latest code
+            git pull origin main
+            
+            # Create .env if it doesn't exist
+            if [ ! -f .env.production ]; then
+              echo "Creating .env.production from secrets..."
+              cat > .env.production << EOF
+            JWT_SECRET=${{ secrets.JWT_SECRET }}
+            DB_PASSWORD=${{ secrets.DB_PASSWORD }}
+            FOOTBALL_DATA_KEY=${{ secrets.FOOTBALL_DATA_KEY }}
+            API_FOOTBALL_KEY=${{ secrets.API_FOOTBALL_KEY }}
+            NEWS_API_KEY=${{ secrets.NEWS_API_KEY }}
+            BACKEND_HOST=${{ secrets.BACKEND_HOST }}
+            FRONTEND_HOST=${{ secrets.FRONTEND_HOST }}
+            LETSENCRYPT_EMAIL=${{ secrets.LETSENCRYPT_EMAIL }}
+            CORS_ORIGIN=${{ secrets.CORS_ORIGIN }}
+            BACKEND_IMAGE=${{ env.REGISTRY }}/${{ env.BACKEND_IMAGE_NAME }}:latest
+            FRONTEND_IMAGE=${{ env.REGISTRY }}/${{ env.FRONTEND_IMAGE_NAME }}:latest
+            EOF
+            fi
+            
+            # Login to GitHub Container Registry
+            echo "${{ secrets.GITHUB_TOKEN }}" | docker login ${{ env.REGISTRY }} -u ${{ github.actor }} --password-stdin
+            
+            # Pull latest images
+            docker-compose -f docker-compose.traefik.yml --env-file .env.production pull
+            
+            # Deploy with zero-downtime
+            docker-compose -f docker-compose.traefik.yml --env-file .env.production up -d --remove-orphans
+            
+            # Cleanup old images
+            docker image prune -f
+            
+            echo "✅ Deployment completed successfully!"

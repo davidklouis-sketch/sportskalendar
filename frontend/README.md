@@ -1,73 +1,108 @@
-# React + TypeScript + Vite
+# SportsKalender Frontend
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Modernes One-Page Frontend für den SportsKalender mit React, TypeScript und Tailwind CSS.
 
-Currently, two official plugins are available:
+## Features
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+### ✨ Hauptfunktionen
+- **Kalender**: Übersicht über kommende Sportevents (Fußball, NFL, F1)
+- **Live**: Echtzeit-Anzeige aktueller Spiele und Rennen
+- **Highlights**: Video-Highlights und News zu ausgewählten Teams
 
-## React Compiler
+### 🎨 Design
+- Modernes, schlichtes UI mit Tailwind CSS
+- Dark Mode Unterstützung
+- Responsive Design für Mobile, Tablet und Desktop
+- One-Page Application mit clientseitiger Navigation
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+### 👤 Benutzer-Features
+- Sichere Authentifizierung (Login/Register)
+- Team-Auswahl (1 Team gratis, mehrere mit Premium)
+- Premium-Account für erweiterte Features
 
-## Expanding the ESLint configuration
+### 🔒 Sicherheit
+- JWT-basierte Authentifizierung
+- HttpOnly Cookies
+- Sichere API-Kommunikation
+- Token-Refresh-Mechanismus
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+## Tech Stack
 
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
+- **React 19** - UI Framework
+- **TypeScript** - Type Safety
+- **Tailwind CSS** - Styling
+- **Zustand** - State Management
+- **Axios** - HTTP Client
+- **date-fns** - Date Formatting
+- **Vite** - Build Tool
 
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
+## Projektstruktur
 
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+```
+src/
+├── components/
+│   ├── Auth/          # Login & Register Komponenten
+│   ├── Layout/        # Header & Footer
+│   └── Pages/         # Hauptseiten (Calendar, Live, Highlights)
+├── store/             # Zustand Stores (Auth, Theme)
+├── lib/               # API Client
+├── App.tsx            # Haupt-App Komponente
+├── main.tsx           # Entry Point
+└── index.css          # Tailwind CSS
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+## Installation & Start
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+```bash
+# Dependencies installieren
+npm install
 
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+# Development Server starten
+npm run dev
+
+# Production Build
+npm run build
+
+# Preview Production Build
+npm run preview
 ```
+
+## Umgebungsvariablen
+
+Erstelle eine `.env` Datei im Frontend-Verzeichnis:
+
+```env
+VITE_API_URL=http://localhost:4000/api
+```
+
+## Development
+
+Der Development Server läuft standardmäßig auf `http://localhost:5173`.
+
+Das Backend muss auf Port 4000 laufen (`http://localhost:4000`).
+
+## Benutzerkonten
+
+### Demo-Account (Free)
+- Email: `demo@sportskalender.local`
+- Passwort: `password`
+
+### Admin-Account
+- Email: `admin@sportskalender.local`
+- Passwort: `admin123`
+
+## Premium-Features
+
+- **Mehrere Teams**: Free-Nutzer können nur 1 Team auswählen, Premium unbegrenzt
+- **Kalender-Sync**: Export zu externen Kalendern (geplant)
+- **Push-Benachrichtigungen**: Echtzeit-Benachrichtigungen (geplant)
+
+## Browser-Support
+
+- Chrome/Edge (neueste 2 Versionen)
+- Firefox (neueste 2 Versionen)
+- Safari (neueste 2 Versionen)
+
+## Lizenz
+
+Alle Rechte vorbehalten © 2025

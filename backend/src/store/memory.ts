@@ -6,6 +6,13 @@ export interface User {
   passwordHash: string;
   displayName: string;
   role: 'user' | 'admin';
+  isPremium?: boolean;
+  selectedTeams?: Array<{
+    sport: 'football' | 'nfl' | 'f1';
+    teamId?: string;
+    teamName: string;
+    leagueId?: number;
+  }>;
 }
 
 export const db = {
