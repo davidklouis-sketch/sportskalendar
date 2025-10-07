@@ -76,7 +76,7 @@ export function Calendar() {
           })
         );
         console.log('🔍 Debug - Filtered events:', beforeFilter, '->', allEvents.length, 'for teams:', sportTeams.map(t => t.teamName));
-        console.log('🔍 Debug - Sample event titles:', allEvents.slice(0, 3).map(e => e.title));
+        console.log('🔍 Debug - Sample event titles:', allEvents.slice(0, 3).map((e: Event) => e.title));
       }
       
       setEvents(allEvents);
@@ -137,7 +137,7 @@ export function Calendar() {
             })
           );
           console.log('🔍 Debug - Filtered events:', beforeFilter, '->', allEvents.length, 'for teams:', sportTeams.map(t => t.teamName));
-          console.log('🔍 Debug - Sample event titles:', allEvents.slice(0, 3).map(e => e.title));
+          console.log('🔍 Debug - Sample event titles:', allEvents.slice(0, 3).map((e: Event) => e.title));
         }
         
         setEvents(allEvents);
