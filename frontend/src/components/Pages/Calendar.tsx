@@ -54,12 +54,22 @@ export function Calendar() {
       const { data } = await calendarApi.getEvents(selectedSport, leagues);
       let allEvents = data || [];
       
+      console.log('🔍 Debug - Loaded events:', allEvents.length, allEvents);
+      console.log('🔍 Debug - Selected sport:', selectedSport);
+      console.log('🔍 Debug - Leagues:', leagues);
+      console.log('🔍 Debug - User teams:', user?.selectedTeams);
+      
       // Filter events by selected team name
       const currentTeam = user?.selectedTeams?.find(t => t.sport === selectedSport);
+      console.log('🔍 Debug - Current team:', currentTeam);
+      
       if (currentTeam?.teamName) {
+        const beforeFilter = allEvents.length;
         allEvents = allEvents.filter((event: Event) => 
           event.title.toLowerCase().includes(currentTeam.teamName.toLowerCase())
         );
+        console.log('🔍 Debug - Filtered events:', beforeFilter, '->', allEvents.length);
+        console.log('🔍 Debug - Filtered events:', allEvents);
       }
       
       setEvents(allEvents);

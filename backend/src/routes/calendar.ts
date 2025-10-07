@@ -130,6 +130,8 @@ async function aggregateUpcomingEvents(debug?: DebugBuffer, opts?: AggregateOpti
     items.push(...soccer);
   }
   const upcoming = items.filter(i => new Date(i.startsAt).getTime() <= rangeEnd && new Date(i.startsAt).getTime() >= Date.now());
+  debug?.logs.push(`Total items: ${items.length}, upcoming: ${upcoming.length}`);
+  
   // de-duplicate by id
   const seen = new Set<string>();
   const dedup: EventItem[] = [];
@@ -138,6 +140,7 @@ async function aggregateUpcomingEvents(debug?: DebugBuffer, opts?: AggregateOpti
     seen.add(it.id);
     dedup.push(it);
   }
+  debug?.logs.push(`After deduplication: ${dedup.length} events`);
   
   // Check if we have enough events in the next 7 days
   const sevenDayEvents = dedup.filter(i => new Date(i.startsAt).getTime() <= sevenDaysEnd);
