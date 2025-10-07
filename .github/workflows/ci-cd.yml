@@ -188,14 +188,16 @@ jobs:
             echo "Creating database backup..."
             if docker compose -f docker-compose.traefik.yml --env-file .env.production ps postgres | grep -q "Up"; then
               echo "PostgreSQL container is running, creating backup..."
-              docker compose -f docker-compose.traefik.yml --env-file .env.production exec -T postgres pg_dump -U sportskalendar sportskalendar > /tmp/db_backup.sql
+              # Create data-only backup to avoid schema conflicts
+              docker compose -f docker-compose.traefik.yml --env-file .env.production exec -T postgres pg_dump -U sportskalendar sportskalendar --data-only --inserts > /tmp/db_backup.sql
               echo "Backup created: $(ls -la /tmp/db_backup.sql)"
               
               # Also create a permanent backup
               mkdir -p /home/dl/sportskalendar/backups
               DATE=$(date +%Y%m%d_%H%M%S)
               PERMANENT_BACKUP="/home/dl/sportskalendar/backups/sportskalendar_backup_$DATE.sql"
-              cp /tmp/db_backup.sql "$PERMANENT_BACKUP"
+              # Create data-only permanent backup
+              docker compose -f docker-compose.traefik.yml --env-file .env.production exec -T postgres pg_dump -U sportskalendar sportskalendar --data-only --inserts > "$PERMANENT_BACKUP"
               gzip "$PERMANENT_BACKUP"
               echo "Permanent backup created: $PERMANENT_BACKUP.gz"
             else
@@ -232,14 +234,19 @@ jobs:
               # Try to restore from temporary backup first
               if [ -f /tmp/db_backup.sql ] && [ -s /tmp/db_backup.sql ]; then
                 echo "Restoring from temporary backup..."
-                docker compose -f docker-compose.traefik.yml --env-file .env.production exec -T postgres psql -U sportskalendar -d sportskalendar < /tmp/db_backup.sql
+                # Clear existing data first, then restore
+                docker compose -f docker-compose.traefik.yml --env-file .env.production exec -T postgres psql -U sportskalendar -d sportskalendar -c "TRUNCATE TABLE users, sessions, security_events, highlights RESTART IDENTITY CASCADE;"
+                # Restore only data (skip schema conflicts)
+                docker compose -f docker-compose.traefik.yml --env-file .env.production exec -T postgres psql -U sportskalendar -d sportskalendar --single-transaction --on-error-stop=off < /tmp/db_backup.sql
               else
                 echo "No temporary backup found, trying permanent backup..."
                 # Find the latest permanent backup
                 LATEST_BACKUP=$(ls -t /home/dl/sportskalendar/backups/sportskalendar_backup_*.sql.gz 2>/dev/null | head -n1)
                 if [ -n "$LATEST_BACKUP" ]; then
                   echo "Restoring from permanent backup: $LATEST_BACKUP"
-                  gunzip -c "$LATEST_BACKUP" | docker compose -f docker-compose.traefik.yml --env-file .env.production exec -T postgres psql -U sportskalendar -d sportskalendar
+                  # Clear existing data first, then restore
+                  docker compose -f docker-compose.traefik.yml --env-file .env.production exec -T postgres psql -U sportskalendar -d sportskalendar -c "TRUNCATE TABLE users, sessions, security_events, highlights RESTART IDENTITY CASCADE;"
+                  gunzip -c "$LATEST_BACKUP" | docker compose -f docker-compose.traefik.yml --env-file .env.production exec -T postgres psql -U sportskalendar -d sportskalendar --single-transaction --on-error-stop=off
                 else
                   echo "⚠️ No backup found, database will be empty"
                 fi

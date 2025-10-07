@@ -25,13 +25,17 @@ fi
 
 echo "🔄 Restoring database from: $BACKUP_FILE"
 
+# Clear existing data first to avoid conflicts
+echo "🧹 Clearing existing data..."
+docker compose -f /home/dl/sportskalendar/sportskalendar/docker-compose.traefik.yml --env-file /home/dl/sportskalendar/sportskalendar/.env.production exec -T postgres psql -U sportskalendar -d sportskalendar -c "TRUNCATE TABLE users, sessions, security_events, highlights RESTART IDENTITY CASCADE;"
+
 # Check if backup is compressed
 if [[ "$BACKUP_FILE" == *.gz ]]; then
-    echo "📦 Decompressing backup..."
-    gunzip -c "$BACKUP_FILE" | docker compose -f /home/dl/sportskalendar/sportskalendar/docker-compose.traefik.yml --env-file /home/dl/sportskalendar/sportskalendar/.env.production exec -T postgres psql -U sportskalendar -d sportskalendar
+    echo "📦 Decompressing and restoring backup..."
+    gunzip -c "$BACKUP_FILE" | docker compose -f /home/dl/sportskalendar/sportskalendar/docker-compose.traefik.yml --env-file /home/dl/sportskalendar/sportskalendar/.env.production exec -T postgres psql -U sportskalendar -d sportskalendar --single-transaction --on-error-stop=off
 else
     echo "📄 Restoring uncompressed backup..."
-    docker compose -f /home/dl/sportskalendar/sportskalendar/docker-compose.traefik.yml --env-file /home/dl/sportskalendar/sportskalendar/.env.production exec -T postgres psql -U sportskalendar -d sportskalendar < "$BACKUP_FILE"
+    docker compose -f /home/dl/sportskalendar/sportskalendar/docker-compose.traefik.yml --env-file /home/dl/sportskalendar/sportskalendar/.env.production exec -T postgres psql -U sportskalendar -d sportskalendar --single-transaction --on-error-stop=off < "$BACKUP_FILE"
 fi
 
 echo "✅ Database restored successfully!"

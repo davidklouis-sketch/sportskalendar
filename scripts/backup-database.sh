@@ -15,8 +15,8 @@ mkdir -p "$BACKUP_DIR"
 
 echo "🗄️ Creating database backup: $BACKUP_FILE"
 
-# Create backup
-docker compose -f /home/dl/sportskalendar/sportskalendar/docker-compose.traefik.yml --env-file /home/dl/sportskalendar/sportskalendar/.env.production exec -T postgres pg_dump -U sportskalendar sportskalendar > "$BACKUP_FILE"
+# Create data-only backup to avoid schema conflicts
+docker compose -f /home/dl/sportskalendar/sportskalendar/docker-compose.traefik.yml --env-file /home/dl/sportskalendar/sportskalendar/.env.production exec -T postgres pg_dump -U sportskalendar sportskalendar --data-only --inserts > "$BACKUP_FILE"
 
 # Compress backup
 gzip "$BACKUP_FILE"
