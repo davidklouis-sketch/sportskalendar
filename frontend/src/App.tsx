@@ -983,16 +983,6 @@ function LoginPage() {
           {isLoading ? 'Wird eingeloggt...' : 'Einloggen'}
         </button>
       </form>
-      
-      <div style={{ marginTop: '16px', fontSize: '14px', color: '#6b7280' }}>
-        <strong>Demo-Benutzer:</strong><br />
-        <strong>Admin:</strong> admin@sportskalender.local / admin123<br />
-        <strong>User:</strong> demo@sportskalender.local / password
-      </div>
-
-      <p style={{ marginTop: '20px' }}>
-        Kein Konto? <Link to="/register">Registrieren</Link>
-      </p>
     </div>
   );
 }
