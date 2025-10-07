@@ -22,6 +22,7 @@ export function Calendar() {
   const [showTeamSelector, setShowTeamSelector] = useState(false);
   const [selectedLeague, setSelectedLeague] = useState<number | null>(null);
   const [selectedTeamId, setSelectedTeamId] = useState<string>('');
+  // Remove local teams state - use database only
 
   useEffect(() => {
     // Set initial sport from user's selected teams
@@ -202,8 +203,19 @@ export function Calendar() {
     console.log('Sending teams to API:', JSON.stringify(teamsArray, null, 2));
 
     try {
-      await userApi.updateTeams(teamsArray);
-      updateUser({ selectedTeams: updatedTeams });
+      const response = await userApi.updateTeams(teamsArray);
+      console.log('🔍 Debug - API call successful, response:', response);
+      
+      // Update user state with the response from the server
+      updateUser({ selectedTeams: response.data.selectedTeams || updatedTeams });
+      console.log('🔍 Debug - User state updated with teams:', response.data.selectedTeams || updatedTeams);
+      
+      // Force a re-render by updating the user state again
+      setTimeout(() => {
+        console.log('🔍 Debug - Force user state refresh');
+        updateUser({ selectedTeams: response.data.selectedTeams || updatedTeams });
+      }, 50);
+      
       setShowTeamSelector(false);
       setSelectedTeamId('');
       setSelectedLeague(null);
@@ -212,8 +224,8 @@ export function Calendar() {
       // Force reload events after team addition
       setTimeout(() => {
         console.log('🔍 Debug - Manual reload after team addition');
-        console.log('🔍 Debug - Updated teams:', updatedTeams);
-        manualLoadEvents(updatedTeams);
+        console.log('🔍 Debug - Updated teams:', response.data.selectedTeams || updatedTeams);
+        manualLoadEvents(response.data.selectedTeams || updatedTeams);
       }, 100);
     } catch (error) {
       const err = error as { response?: { status?: number; data?: { message?: string } }; message?: string };
@@ -268,6 +280,10 @@ export function Calendar() {
 
         {/* Selected Teams */}
         <div className="space-y-2 mb-4">
+          {(() => {
+            console.log('🔍 Debug - Rendering teams, user.selectedTeams:', user?.selectedTeams);
+            return null;
+          })()}
           {user?.selectedTeams?.map((team, index) => (
             <div
               key={index}
