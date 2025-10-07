@@ -180,12 +180,41 @@ jobs:
             # Pull latest images
             docker compose -f docker-compose.traefik.yml --env-file .env.production pull
             
+            # Create database backup before deployment
+            echo "Creating database backup..."
+            docker compose -f docker-compose.traefik.yml --env-file .env.production exec -T postgres pg_dump -U sportskalendar sportskalendar > /tmp/db_backup.sql || echo "⚠️ Could not create backup (database might not exist yet)"
+            
+            # Stop services gracefully to preserve database
+            echo "Stopping services gracefully..."
+            docker compose -f docker-compose.traefik.yml --env-file .env.production stop
+            
             # Deploy with zero-downtime (preserving volumes)
-            docker compose -f docker-compose.traefik.yml --env-file .env.production up -d --remove-orphans
+            echo "Starting services with preserved volumes..."
+            docker compose -f docker-compose.traefik.yml --env-file .env.production up -d
+            
+            # Wait for database to be ready
+            echo "Waiting for database to be ready..."
+            sleep 10
+            
+            # Restore database if backup exists and database is empty
+            if [ -f /tmp/db_backup.sql ] && [ -s /tmp/db_backup.sql ]; then
+              echo "Checking if database needs restoration..."
+              USER_COUNT=$(docker compose -f docker-compose.traefik.yml --env-file .env.production exec -T postgres psql -U sportskalendar -d sportskalendar -t -c "SELECT COUNT(*) FROM users;" 2>/dev/null | tr -d ' \n' || echo "0")
+              if [ "$USER_COUNT" = "0" ]; then
+                echo "Database is empty, restoring from backup..."
+                docker compose -f docker-compose.traefik.yml --env-file .env.production exec -T postgres psql -U sportskalendar -d sportskalendar < /tmp/db_backup.sql || echo "⚠️ Could not restore database"
+              else
+                echo "Database has $USER_COUNT users, skipping restoration"
+              fi
+            fi
             
             # Verify database volume exists and is persistent
             echo "Checking database volume persistence..."
             docker volume ls | grep postgres_data || echo "⚠️ postgres_data volume not found"
+            
+            # Check if database is accessible and has data
+            echo "Checking database connectivity..."
+            docker compose -f docker-compose.traefik.yml --env-file .env.production exec -T postgres psql -U sportskalendar -d sportskalendar -c "SELECT COUNT(*) as user_count FROM users;" || echo "⚠️ Could not query database"
             
             # Cleanup old images
             docker image prune -f
