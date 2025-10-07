@@ -42,24 +42,24 @@ if [ "${BUILD_LOCAL}" = "true" ]; then
 fi
 
 echo "📊 Container Status:"
-docker compose -f "$COMPOSE_FILE" ps
+docker compose -f "$COMPOSE_FILE" --env-file .env.production ps
 echo ""
 
 echo "🏥 Health Checks:"
-echo "Backend API: "
+echo -n "Backend API: "
 curl -s http://localhost:4000/api/health && echo "✅ OK" || echo "❌ FAILED"
 echo ""
 
 echo "📝 Recent Backend Logs:"
-docker compose -f "$COMPOSE_FILE" logs --tail=20 backend
+docker compose -f "$COMPOSE_FILE" --env-file .env.production logs --tail=20 backend
 echo ""
 
 echo "📝 Recent Frontend Logs:"
-docker compose -f "$COMPOSE_FILE" logs --tail=10 frontend
+docker compose -f "$COMPOSE_FILE" --env-file .env.production logs --tail=10 frontend
 echo ""
 
 echo "🌐 Frontend Container Check:"
-docker compose -f "$COMPOSE_FILE" exec frontend ls -la /usr/share/nginx/html || echo "❌ Cannot access frontend container"
+docker exec sportskalendar-frontend ls -la /usr/share/nginx/html 2>/dev/null || echo "❌ Cannot access frontend container"
 echo ""
 
 echo "🔗 Network Check:"
@@ -74,26 +74,26 @@ echo ""
 echo "🔍 Quick Diagnostics:"
 echo "===================="
 
-# Check if containers are running
-if docker compose -f "$COMPOSE_FILE" ps | grep -q "Up.*backend"; then
+# Check if containers are running using docker ps
+if docker ps --format '{{.Names}}' | grep -q "sportskalendar-backend"; then
     echo "✅ Backend container is running"
 else
     echo "❌ Backend container is NOT running"
 fi
 
-if docker compose -f "$COMPOSE_FILE" ps | grep -q "Up.*frontend"; then
+if docker ps --format '{{.Names}}' | grep -q "sportskalendar-frontend"; then
     echo "✅ Frontend container is running"
 else
     echo "❌ Frontend container is NOT running"
 fi
 
-if docker compose -f "$COMPOSE_FILE" ps | grep -q "Up.*postgres"; then
+if docker ps --format '{{.Names}}' | grep -q "sportskalendar-db"; then
     echo "✅ PostgreSQL container is running"
 else
     echo "❌ PostgreSQL container is NOT running"
 fi
 
-if docker compose -f "$COMPOSE_FILE" ps | grep -q "Up.*traefik"; then
+if docker ps --format '{{.Names}}' | grep -q "traefik"; then
     echo "✅ Traefik container is running"
 else
     echo "❌ Traefik container is NOT running"
