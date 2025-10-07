@@ -54,7 +54,12 @@ function App() {
           setUser(data.user);
         } catch (error) {
           console.error('Failed to load user profile:', error);
-          // Keep existing user data if refresh fails
+          // If profile fails to load, user is not actually authenticated
+          // Clear the auth state and force re-login
+          setUser(null);
+          setLoading(false);
+          setIsInitializing(false);
+          return;
         }
       }
       setLoading(false);
