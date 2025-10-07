@@ -116,7 +116,7 @@ export function Calendar() {
       loadEvents();
       loadHighlights();
     }
-  }, [selectedSport, user?.selectedTeams]);
+  }, [selectedSport, user?.selectedTeams, loadEvents, loadHighlights]);
 
   const formatViews = (views?: number) => {
     if (!views) return '';
@@ -207,8 +207,13 @@ export function Calendar() {
       setShowTeamSelector(false);
       setSelectedTeamId('');
       setSelectedLeague(null);
-      setSelectedSport(null);
-      loadEvents();
+      // Don't reset selectedSport - keep it to show events for the added team
+      // setSelectedSport(null);
+      // Force reload events after team addition
+      setTimeout(() => {
+        loadEvents();
+        loadHighlights();
+      }, 100);
     } catch (error) {
       const err = error as { response?: { status?: number; data?: { message?: string } }; message?: string };
       if (err.response?.status === 403) {
