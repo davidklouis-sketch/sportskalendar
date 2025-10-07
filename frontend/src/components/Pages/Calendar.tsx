@@ -79,7 +79,7 @@ export function Calendar() {
     } finally {
       setIsLoading(false);
     }
-  }, [selectedSport, user]);
+  }, [selectedSport, user?.selectedTeams]);
 
   const loadHighlights = useCallback(async () => {
     if (!selectedSport) return;
@@ -108,14 +108,22 @@ export function Calendar() {
       console.error('Failed to load highlights:', error);
       setHighlights([]);
     }
-  }, [selectedSport, user]);
+  }, [selectedSport, user?.selectedTeams]);
 
   useEffect(() => {
     if (selectedSport) {
       loadEvents();
       loadHighlights();
     }
-  }, [selectedSport, user?.selectedTeams, loadEvents, loadHighlights]);
+  }, [selectedSport, loadEvents, loadHighlights]);
+
+  // Separate effect for when teams change
+  useEffect(() => {
+    if (selectedSport && user?.selectedTeams?.length) {
+      loadEvents();
+      loadHighlights();
+    }
+  }, [user?.selectedTeams?.length, selectedSport, loadEvents, loadHighlights]);
 
   const formatViews = (views?: number) => {
     if (!views) return '';
