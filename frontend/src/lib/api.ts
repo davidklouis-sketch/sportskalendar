@@ -21,7 +21,8 @@ api.interceptors.response.use(
   async (error) => {
     const originalRequest = error.config;
     
-    if (error.response?.status === 401 && !originalRequest._retry) {
+    // Don't retry refresh requests to avoid infinite loops
+    if (error.response?.status === 401 && !originalRequest._retry && !originalRequest.url?.includes('/auth/refresh')) {
       originalRequest._retry = true;
       
       try {
@@ -31,7 +32,9 @@ api.interceptors.response.use(
         return api(originalRequest);
       } catch (refreshError) {
         console.log('❌ Token refresh failed, redirecting to login');
-        // Redirect to login or handle logout
+        // Clear any stored tokens and redirect to login
+        localStorage.removeItem('accessToken');
+        localStorage.removeItem('refreshToken');
         window.location.href = '/login';
         return Promise.reject(refreshError);
       }

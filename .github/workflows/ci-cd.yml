@@ -226,8 +226,8 @@ jobs:
             USER_COUNT=$(docker compose -f docker-compose.traefik.yml --env-file .env.production exec -T postgres psql -U sportskalendar -d sportskalendar -t -c "SELECT COUNT(*) FROM users;" 2>/dev/null | tr -d ' \n' || echo "0")
             echo "Current user count: $USER_COUNT"
             
-            if [ "$USER_COUNT" = "0" ]; then
-              echo "Database is empty, attempting restoration..."
+            if [ "$USER_COUNT" -lt "2" ]; then
+              echo "Database has fewer than 2 users (expected: demo + admin), attempting restoration..."
               
               # Try to restore from temporary backup first
               if [ -f /tmp/db_backup.sql ] && [ -s /tmp/db_backup.sql ]; then
@@ -248,7 +248,7 @@ jobs:
               echo "Restoration completed, checking user count..."
               docker compose -f docker-compose.traefik.yml --env-file .env.production exec -T postgres psql -U sportskalendar -d sportskalendar -c "SELECT COUNT(*) as user_count FROM users;"
             else
-              echo "Database has $USER_COUNT users, skipping restoration"
+              echo "Database has $USER_COUNT users (>= 2), skipping restoration"
             fi
             
             # Verify database volume exists and is persistent
