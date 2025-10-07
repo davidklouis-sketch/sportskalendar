@@ -117,9 +117,11 @@ export function Calendar() {
       calendarApi.getEvents(selectedSport, leagues).then(({ data }) => {
         let allEvents = data || [];
         console.log('🔍 Debug - Direct API response:', allEvents.length, 'events');
+        console.log('🔍 Debug - All event titles:', allEvents.map((e: Event) => e.title));
         
         // Filter events by ALL selected teams for the current sport
         const sportTeams = teamsToUse.filter(t => t.sport === selectedSport);
+        console.log('🔍 Debug - Sport teams to filter by:', sportTeams.map(t => ({ name: t.teamName, sport: t.sport })));
         if (sportTeams.length > 0) {
           const beforeFilter = allEvents.length;
           allEvents = allEvents.filter((event: Event) => 
