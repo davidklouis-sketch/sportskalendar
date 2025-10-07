@@ -1,3 +1,6 @@
+# Docker Compose for local builds (without GHCR)
+# Use this when you want to build locally instead of pulling from GitHub Container Registry
+
 networks:
   proxy:
     name: traefik-proxy
@@ -53,7 +56,9 @@ services:
     restart: unless-stopped
 
   backend:
-    image: ${BACKEND_IMAGE:-ghcr.io/davidklouis-sketch/sportskalendar/backend:latest}
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
     container_name: sportskalendar-backend
     environment:
       NODE_ENV: production
@@ -79,31 +84,26 @@ services:
     volumes:
       - ./backend/data:/app/data
     labels:
-      # Enable routing via Traefik
       traefik.enable: "true"
       traefik.docker.network: traefik-proxy
-      # Backend API on api.<domain>, keep /api prefix (backend already serves under /api)
       traefik.http.routers.backend.rule: Host(`${BACKEND_HOST}`) && PathPrefix(`/api`)
       traefik.http.routers.backend.entrypoints: websecure
       traefik.http.routers.backend.tls: "true"
       traefik.http.routers.backend.tls.certresolver: le
       traefik.http.services.backend.loadbalancer.server.port: "4000"
-      # CORS headers
       traefik.http.middlewares.backend-cors.headers.accesscontrolallowmethods: GET,POST,PUT,DELETE,OPTIONS
       traefik.http.middlewares.backend-cors.headers.accesscontrolallowheaders: Content-Type,Authorization,X-Requested-With,X-CSRF-Token
       traefik.http.middlewares.backend-cors.headers.accesscontrolalloworigin: ${CORS_ORIGIN}
       traefik.http.middlewares.backend-cors.headers.accesscontrolallowcredentials: "true"
       traefik.http.routers.backend.middlewares: backend-cors
     restart: unless-stopped
-    healthcheck:
-      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:4000/api/health"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
-      start_period: 40s
 
   frontend:
-    image: ${FRONTEND_IMAGE:-ghcr.io/davidklouis-sketch/sportskalendar/frontend:latest}
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+      args:
+        VITE_API_URL: https://${BACKEND_HOST}/api
     container_name: sportskalendar-frontend
     depends_on:
       - backend
@@ -112,17 +112,14 @@ services:
     labels:
       traefik.enable: "true"
       traefik.docker.network: traefik-proxy
-      # Frontend on <domain>
       traefik.http.routers.frontend.rule: Host(`${FRONTEND_HOST}`)
       traefik.http.routers.frontend.entrypoints: websecure
       traefik.http.routers.frontend.tls: "true"
       traefik.http.routers.frontend.tls.certresolver: le
       traefik.http.services.frontend.loadbalancer.server.port: "80"
-      # Security headers
       traefik.http.middlewares.frontend-security.headers.frameDeny: "true"
       traefik.http.middlewares.frontend-security.headers.contentTypeNosniff: "true"
       traefik.http.middlewares.frontend-security.headers.browserXssFilter: "true"
       traefik.http.routers.frontend.middlewares: frontend-security
     restart: unless-stopped
-
 
