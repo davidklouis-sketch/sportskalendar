@@ -71,26 +71,26 @@ function TopNav() {
   return (
     <nav style={{
       background: isDarkMode 
-        ? 'linear-gradient(135deg, rgba(15, 23, 42, 0.95), rgba(30, 41, 59, 0.95))'
-        : 'linear-gradient(135deg, rgba(255, 255, 255, 0.95), rgba(248, 250, 252, 0.95))',
-      borderBottom: `1px solid ${isDarkMode ? 'rgba(71, 85, 105, 0.3)' : 'rgba(229, 231, 235, 0.5)'}`,
+        ? 'rgba(15, 23, 42, 0.75)'
+        : 'rgba(255, 255, 255, 0.75)',
+      borderBottom: `1px solid ${isDarkMode ? 'rgba(71, 85, 105, 0.2)' : 'rgba(226, 232, 240, 0.6)'}`,
       boxShadow: isDarkMode 
-        ? '0 8px 32px rgba(0, 0, 0, 0.4), 0 0 0 1px rgba(71, 85, 105, 0.1)'
-        : '0 8px 32px rgba(0, 0, 0, 0.1), 0 0 0 1px rgba(229, 231, 235, 0.5)',
+        ? '0 1px 3px rgba(0, 0, 0, 0.12)'
+        : '0 1px 3px rgba(0, 0, 0, 0.05)',
       position: 'sticky',
       top: 0,
       zIndex: 1000,
-      backdropFilter: 'blur(20px)',
-      WebkitBackdropFilter: 'blur(20px)'
+      backdropFilter: 'blur(12px) saturate(180%)',
+      WebkitBackdropFilter: 'blur(12px) saturate(180%)'
     }}>
       <div style={{
         maxWidth: '1400px',
         margin: '0 auto',
-        padding: '0 32px',
+        padding: '0 24px',
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'space-between',
-        height: '80px'
+        height: '64px'
       }}>
         {/* Logo */}
         <a 
@@ -107,78 +107,47 @@ function TopNav() {
           style={{
             display: 'flex',
             alignItems: 'center',
-            gap: '16px',
+            gap: '12px',
             textDecoration: 'none',
             color: 'inherit',
-            fontSize: '26px',
-            fontWeight: '900',
-            transition: 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
+            fontSize: '20px',
+            fontWeight: '700',
+            transition: 'opacity 0.2s',
             position: 'relative'
           }}
           onMouseEnter={(e) => {
-            e.currentTarget.style.transform = 'scale(1.05) translateY(-2px)';
-            e.currentTarget.style.filter = 'brightness(1.1)';
+            e.currentTarget.style.opacity = '0.8';
           }}
           onMouseLeave={(e) => {
-            e.currentTarget.style.transform = 'scale(1) translateY(0)';
-            e.currentTarget.style.filter = 'brightness(1)';
+            e.currentTarget.style.opacity = '1';
           }}
         >
           <div style={{
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
-            width: '56px',
-            height: '56px',
-            borderRadius: '18px',
+            width: '40px',
+            height: '40px',
+            borderRadius: '10px',
             background: isDarkMode 
-              ? 'linear-gradient(135deg, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.05))'
-              : 'linear-gradient(135deg, rgba(59, 130, 246, 0.1), rgba(139, 92, 246, 0.05))',
-            boxShadow: isDarkMode 
-              ? '0 8px 32px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.1)'
-              : '0 8px 32px rgba(59, 130, 246, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.8)',
-            border: `1px solid ${isDarkMode ? 'rgba(255, 255, 255, 0.1)' : 'rgba(59, 130, 246, 0.2)'}`,
-            transition: 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
-            overflow: 'hidden',
-            position: 'relative'
+              ? 'rgba(255, 255, 255, 0.08)'
+              : 'rgba(59, 130, 246, 0.08)',
+            border: `1px solid ${isDarkMode ? 'rgba(255, 255, 255, 0.12)' : 'rgba(59, 130, 246, 0.12)'}`,
+            transition: 'all 0.2s'
           }}>
             <img 
               src={logoImage} 
               alt="SportsKalender Logo"
               style={{
-                width: '40px',
-                height: '40px',
-                objectFit: 'contain',
-                filter: isDarkMode ? 'brightness(1.2) contrast(1.1)' : 'none',
-                transition: 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)'
+                width: '28px',
+                height: '28px',
+                objectFit: 'contain'
               }}
             />
-            {/* Subtle glow effect */}
-            <div style={{
-              position: 'absolute',
-              top: '0',
-              left: '0',
-              right: '0',
-              bottom: '0',
-              background: isDarkMode 
-                ? 'radial-gradient(circle at center, rgba(59, 130, 246, 0.1) 0%, transparent 70%)'
-                : 'radial-gradient(circle at center, rgba(59, 130, 246, 0.05) 0%, transparent 70%)',
-              borderRadius: '18px',
-              pointerEvents: 'none'
-            }} />
           </div>
           <span style={{
-            letterSpacing: '-0.02em',
-            position: 'relative',
-            backgroundImage: isDarkMode 
-              ? 'linear-gradient(135deg, #f8fafc, #e2e8f0, #cbd5e1)'
-              : 'linear-gradient(135deg, #1e293b, #334155, #475569)',
-            WebkitBackgroundClip: 'text',
-            WebkitTextFillColor: 'transparent',
-            backgroundClip: 'text',
-            textShadow: isDarkMode 
-              ? '0 2px 4px rgba(0, 0, 0, 0.3)'
-              : '0 1px 2px rgba(0, 0, 0, 0.1)'
+            color: isDarkMode ? '#f1f5f9' : '#0f172a',
+            letterSpacing: '-0.025em'
           }}>
             SportsKalender
           </span>
@@ -188,15 +157,7 @@ function TopNav() {
         <div className="desktop-nav" style={{
           display: 'flex',
           alignItems: 'center',
-          gap: '4px',
-          background: isDarkMode 
-            ? 'rgba(71, 85, 105, 0.1)' 
-            : 'rgba(243, 244, 246, 0.5)',
-          padding: '8px',
-          borderRadius: '20px',
-          border: `1px solid ${isDarkMode ? 'rgba(71, 85, 105, 0.2)' : 'rgba(229, 231, 235, 0.5)'}`,
-          backdropFilter: 'blur(10px)',
-          WebkitBackdropFilter: 'blur(10px)'
+          gap: '2px'
         }}>
           {navItems.map((item) => (
             <a
@@ -204,13 +165,12 @@ function TopNav() {
               href={item.href}
               onClick={(e) => {
                 e.preventDefault();
-                // Always go to main page first, then scroll to section
                 if (window.location.pathname !== '/') {
                   window.location.href = `/${item.href}`;
                 } else {
                   const element = document.querySelector(item.href) as HTMLElement;
                   if (element) {
-                    const offsetTop = element.offsetTop - 80; // Account for sticky nav height
+                    const offsetTop = element.offsetTop - 64;
                     window.scrollTo({
                       top: offsetTop,
                       behavior: 'smooth'
@@ -221,52 +181,32 @@ function TopNav() {
               style={{
                 display: 'flex',
                 alignItems: 'center',
-                gap: '10px',
-                padding: '14px 20px',
-                borderRadius: '16px',
+                gap: '8px',
+                padding: '8px 14px',
+                borderRadius: '8px',
                 textDecoration: 'none',
-                color: isDarkMode ? '#e2e8f0' : '#475569',
-                fontSize: '15px',
-                fontWeight: '600',
-                transition: 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
-                position: 'relative',
-                overflow: 'hidden',
+                color: isDarkMode ? '#cbd5e1' : '#64748b',
+                fontSize: '14px',
+                fontWeight: '500',
+                transition: 'all 0.15s ease',
                 cursor: 'pointer',
-                background: 'transparent',
-                border: '1px solid transparent'
+                background: 'transparent'
               }}
               onMouseEnter={(e) => {
                 e.currentTarget.style.background = isDarkMode 
-                  ? 'linear-gradient(135deg, rgba(59, 130, 246, 0.1), rgba(139, 92, 246, 0.1))'
-                  : 'linear-gradient(135deg, rgba(59, 130, 246, 0.05), rgba(139, 92, 246, 0.05))';
-                e.currentTarget.style.borderColor = isDarkMode 
-                  ? 'rgba(59, 130, 246, 0.3)' 
-                  : 'rgba(59, 130, 246, 0.2)';
-                e.currentTarget.style.transform = 'translateY(-3px) scale(1.02)';
-                e.currentTarget.style.boxShadow = isDarkMode 
-                  ? '0 12px 24px rgba(59, 130, 246, 0.15), 0 0 0 1px rgba(59, 130, 246, 0.1)'
-                  : '0 12px 24px rgba(59, 130, 246, 0.1), 0 0 0 1px rgba(59, 130, 246, 0.05)';
-                e.currentTarget.style.color = isDarkMode ? '#f1f5f9' : '#334155';
+                  ? 'rgba(255, 255, 255, 0.06)'
+                  : 'rgba(0, 0, 0, 0.04)';
+                e.currentTarget.style.color = isDarkMode ? '#f1f5f9' : '#0f172a';
               }}
               onMouseLeave={(e) => {
                 e.currentTarget.style.background = 'transparent';
-                e.currentTarget.style.borderColor = 'transparent';
-                e.currentTarget.style.transform = 'translateY(0) scale(1)';
-                e.currentTarget.style.boxShadow = 'none';
-                e.currentTarget.style.color = isDarkMode ? '#e2e8f0' : '#475569';
+                e.currentTarget.style.color = isDarkMode ? '#cbd5e1' : '#64748b';
               }}
             >
-              <span style={{ 
-                fontSize: '18px',
-                transition: 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
-                filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.1))'
-              }}>
+              <span style={{ fontSize: '16px' }}>
                 {item.icon}
               </span>
-              <span style={{
-                letterSpacing: '-0.01em',
-                whiteSpace: 'nowrap'
-              }}>
+              <span style={{ whiteSpace: 'nowrap' }}>
                 {item.label}
               </span>
             </a>
@@ -277,15 +217,7 @@ function TopNav() {
         <div className="user-actions" style={{
           display: 'flex',
           alignItems: 'center',
-          gap: '8px',
-          background: isDarkMode 
-            ? 'rgba(71, 85, 105, 0.1)' 
-            : 'rgba(243, 244, 246, 0.5)',
-          padding: '8px',
-          borderRadius: '20px',
-          border: `1px solid ${isDarkMode ? 'rgba(71, 85, 105, 0.2)' : 'rgba(229, 231, 235, 0.5)'}`,
-          backdropFilter: 'blur(10px)',
-          WebkitBackdropFilter: 'blur(10px)'
+          gap: '8px'
         }}>
           {/* Theme Toggle */}
           <button
@@ -294,38 +226,27 @@ function TopNav() {
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
-              width: '48px',
-              height: '48px',
-              borderRadius: '16px',
+              width: '36px',
+              height: '36px',
+              borderRadius: '8px',
               border: 'none',
               background: isDarkMode 
-                ? 'linear-gradient(135deg, rgba(71, 85, 105, 0.8), rgba(55, 65, 81, 0.8))'
-                : 'linear-gradient(135deg, rgba(243, 244, 246, 0.8), rgba(229, 231, 235, 0.8))',
-              color: isDarkMode ? '#f9fafb' : '#374151',
+                ? 'rgba(255, 255, 255, 0.06)'
+                : 'rgba(0, 0, 0, 0.04)',
+              color: isDarkMode ? '#f1f5f9' : '#0f172a',
               cursor: 'pointer',
-              transition: 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
-              fontSize: '20px',
-              boxShadow: isDarkMode 
-                ? '0 4px 12px rgba(0, 0, 0, 0.2)'
-                : '0 4px 12px rgba(0, 0, 0, 0.1)'
+              transition: 'all 0.15s ease',
+              fontSize: '18px'
             }}
             onMouseEnter={(e) => {
               e.currentTarget.style.background = isDarkMode 
-                ? 'linear-gradient(135deg, rgba(59, 130, 246, 0.2), rgba(139, 92, 246, 0.2))'
-                : 'linear-gradient(135deg, rgba(59, 130, 246, 0.1), rgba(139, 92, 246, 0.1))';
-              e.currentTarget.style.transform = 'scale(1.1) rotate(15deg)';
-              e.currentTarget.style.boxShadow = isDarkMode 
-                ? '0 8px 20px rgba(59, 130, 246, 0.3)'
-                : '0 8px 20px rgba(59, 130, 246, 0.2)';
+                ? 'rgba(255, 255, 255, 0.1)'
+                : 'rgba(0, 0, 0, 0.08)';
             }}
             onMouseLeave={(e) => {
               e.currentTarget.style.background = isDarkMode 
-                ? 'linear-gradient(135deg, rgba(71, 85, 105, 0.8), rgba(55, 65, 81, 0.8))'
-                : 'linear-gradient(135deg, rgba(243, 244, 246, 0.8), rgba(229, 231, 235, 0.8))';
-              e.currentTarget.style.transform = 'scale(1) rotate(0deg)';
-              e.currentTarget.style.boxShadow = isDarkMode 
-                ? '0 4px 12px rgba(0, 0, 0, 0.2)'
-                : '0 4px 12px rgba(0, 0, 0, 0.1)';
+                ? 'rgba(255, 255, 255, 0.06)'
+                : 'rgba(0, 0, 0, 0.04)';
             }}
             title={isDarkMode ? 'Zu Light Mode wechseln' : 'Zu Dark Mode wechseln'}
           >
@@ -337,56 +258,45 @@ function TopNav() {
             <div style={{
               display: 'flex',
               alignItems: 'center',
-              gap: '12px',
-              padding: '8px',
-              borderRadius: '20px',
-              background: isDarkMode 
-                ? 'linear-gradient(135deg, rgba(30, 41, 59, 0.8), rgba(51, 65, 85, 0.6))'
-                : 'linear-gradient(135deg, rgba(248, 250, 252, 0.8), rgba(241, 245, 249, 0.6))',
-              border: `1px solid ${isDarkMode ? 'rgba(71, 85, 105, 0.3)' : 'rgba(226, 232, 240, 0.5)'}`,
-              backdropFilter: 'blur(10px)',
-              boxShadow: isDarkMode 
-                ? '0 8px 32px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.1)'
-                : '0 8px 32px rgba(0, 0, 0, 0.1), inset 0 1px 0 rgba(255, 255, 255, 0.8)'
+              gap: '8px'
             }}>
               {/* User Info */}
               <div style={{
                 display: 'flex',
                 alignItems: 'center',
                 gap: '8px',
-                padding: '8px 12px',
-                borderRadius: '12px',
+                padding: '6px 12px 6px 6px',
+                borderRadius: '8px',
                 background: isDarkMode 
-                  ? 'rgba(59, 130, 246, 0.1)'
-                  : 'rgba(59, 130, 246, 0.05)',
-                border: `1px solid ${isDarkMode ? 'rgba(59, 130, 246, 0.2)' : 'rgba(59, 130, 246, 0.1)'}`
+                  ? 'rgba(255, 255, 255, 0.06)'
+                  : 'rgba(0, 0, 0, 0.04)',
+                border: `1px solid ${isDarkMode ? 'rgba(255, 255, 255, 0.08)' : 'rgba(0, 0, 0, 0.06)'}`
               }}>
                 <div style={{
-                  width: '32px',
-                  height: '32px',
-                  borderRadius: '50%',
+                  width: '28px',
+                  height: '28px',
+                  borderRadius: '6px',
                   background: 'linear-gradient(135deg, #3b82f6, #8b5cf6)',
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
-                  fontSize: '14px',
+                  fontSize: '13px',
                   fontWeight: '600',
-                  color: 'white',
-                  boxShadow: '0 2px 8px rgba(59, 130, 246, 0.3)'
+                  color: 'white'
                 }}>
                   {user.displayName?.charAt(0).toUpperCase() || 'U'}
                 </div>
-                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start' }}>
+                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', gap: '1px' }}>
                   <span style={{
                     fontSize: '13px',
-                    fontWeight: '600',
-                    color: isDarkMode ? '#f1f5f9' : '#334155',
+                    fontWeight: '500',
+                    color: isDarkMode ? '#f1f5f9' : '#0f172a',
                     lineHeight: '1.2'
                   }}>
                     {user.displayName || 'User'}
                   </span>
                   <span style={{
-                    fontSize: '11px',
+                    fontSize: '10px',
                     color: isDarkMode ? '#94a3b8' : '#64748b',
                     textTransform: 'uppercase',
                     letterSpacing: '0.5px'
@@ -400,7 +310,7 @@ function TopNav() {
               <div style={{
                 display: 'flex',
                 alignItems: 'center',
-                gap: '8px'
+                gap: '4px'
               }}>
                 {/* Profile Button */}
                 <Link
@@ -409,35 +319,31 @@ function TopNav() {
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
-                    width: '40px',
-                    height: '40px',
-                    borderRadius: '12px',
+                    width: '36px',
+                    height: '36px',
+                    borderRadius: '8px',
                     textDecoration: 'none',
                     background: isDarkMode 
-                      ? 'rgba(34, 197, 94, 0.1)'
-                      : 'rgba(34, 197, 94, 0.05)',
-                    border: `1px solid ${isDarkMode ? 'rgba(34, 197, 94, 0.2)' : 'rgba(34, 197, 94, 0.1)'}`,
-                    color: isDarkMode ? '#22c55e' : '#16a34a',
-                    transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-                    position: 'relative'
+                      ? 'rgba(255, 255, 255, 0.06)'
+                      : 'rgba(0, 0, 0, 0.04)',
+                    color: isDarkMode ? '#cbd5e1' : '#64748b',
+                    transition: 'all 0.15s ease'
                   }}
                   onMouseEnter={(e) => {
                     e.currentTarget.style.background = isDarkMode 
-                      ? 'rgba(34, 197, 94, 0.2)'
-                      : 'rgba(34, 197, 94, 0.1)';
-                    e.currentTarget.style.transform = 'translateY(-2px) scale(1.05)';
-                    e.currentTarget.style.boxShadow = '0 4px 12px rgba(34, 197, 94, 0.3)';
+                      ? 'rgba(255, 255, 255, 0.1)'
+                      : 'rgba(0, 0, 0, 0.08)';
+                    e.currentTarget.style.color = isDarkMode ? '#f1f5f9' : '#0f172a';
                   }}
                   onMouseLeave={(e) => {
                     e.currentTarget.style.background = isDarkMode 
-                      ? 'rgba(34, 197, 94, 0.1)'
-                      : 'rgba(34, 197, 94, 0.05)';
-                    e.currentTarget.style.transform = 'translateY(0) scale(1)';
-                    e.currentTarget.style.boxShadow = 'none';
+                      ? 'rgba(255, 255, 255, 0.06)'
+                      : 'rgba(0, 0, 0, 0.04)';
+                    e.currentTarget.style.color = isDarkMode ? '#cbd5e1' : '#64748b';
                   }}
                   title="Profil"
                 >
-                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                     <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
                     <circle cx="12" cy="7" r="4"/>
                   </svg>
@@ -451,29 +357,23 @@ function TopNav() {
                       display: 'flex',
                       alignItems: 'center',
                       justifyContent: 'center',
-                      width: '40px',
-                      height: '40px',
-                      borderRadius: '12px',
+                      width: '36px',
+                      height: '36px',
+                      borderRadius: '8px',
                       textDecoration: 'none',
-                      background: 'linear-gradient(135deg, rgba(220, 38, 38, 0.1), rgba(185, 28, 28, 0.1))',
-                      border: '1px solid rgba(220, 38, 38, 0.2)',
+                      background: 'rgba(220, 38, 38, 0.1)',
                       color: '#dc2626',
-                      transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-                      position: 'relative'
+                      transition: 'all 0.15s ease'
                     }}
                     onMouseEnter={(e) => {
-                      e.currentTarget.style.background = 'linear-gradient(135deg, rgba(220, 38, 38, 0.2), rgba(185, 28, 28, 0.2))';
-                      e.currentTarget.style.transform = 'translateY(-2px) scale(1.05)';
-                      e.currentTarget.style.boxShadow = '0 4px 12px rgba(220, 38, 38, 0.3)';
+                      e.currentTarget.style.background = 'rgba(220, 38, 38, 0.15)';
                     }}
                     onMouseLeave={(e) => {
-                      e.currentTarget.style.background = 'linear-gradient(135deg, rgba(220, 38, 38, 0.1), rgba(185, 28, 28, 0.1))';
-                      e.currentTarget.style.transform = 'translateY(0) scale(1)';
-                      e.currentTarget.style.boxShadow = 'none';
+                      e.currentTarget.style.background = 'rgba(220, 38, 38, 0.1)';
                     }}
                     title="Admin Portal"
                   >
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                       <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
                       <path d="M9 9h6v6H9z"/>
                     </svg>
@@ -487,35 +387,32 @@ function TopNav() {
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
-                    width: '40px',
-                    height: '40px',
-                    borderRadius: '12px',
-                    border: `1px solid ${isDarkMode ? 'rgba(239, 68, 68, 0.2)' : 'rgba(239, 68, 68, 0.1)'}`,
+                    width: '36px',
+                    height: '36px',
+                    borderRadius: '8px',
+                    border: 'none',
                     background: isDarkMode 
-                      ? 'rgba(239, 68, 68, 0.1)'
-                      : 'rgba(239, 68, 68, 0.05)',
-                    color: isDarkMode ? '#ef4444' : '#dc2626',
+                      ? 'rgba(255, 255, 255, 0.06)'
+                      : 'rgba(0, 0, 0, 0.04)',
+                    color: isDarkMode ? '#cbd5e1' : '#64748b',
                     cursor: 'pointer',
-                    transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-                    position: 'relative'
+                    transition: 'all 0.15s ease'
                   }}
                   onMouseEnter={(e) => {
                     e.currentTarget.style.background = isDarkMode 
-                      ? 'rgba(239, 68, 68, 0.2)'
-                      : 'rgba(239, 68, 68, 0.1)';
-                    e.currentTarget.style.transform = 'translateY(-2px) scale(1.05)';
-                    e.currentTarget.style.boxShadow = '0 4px 12px rgba(239, 68, 68, 0.3)';
+                      ? 'rgba(255, 255, 255, 0.1)'
+                      : 'rgba(0, 0, 0, 0.08)';
+                    e.currentTarget.style.color = isDarkMode ? '#f1f5f9' : '#0f172a';
                   }}
                   onMouseLeave={(e) => {
                     e.currentTarget.style.background = isDarkMode 
-                      ? 'rgba(239, 68, 68, 0.1)'
-                      : 'rgba(239, 68, 68, 0.05)';
-                    e.currentTarget.style.transform = 'translateY(0) scale(1)';
-                    e.currentTarget.style.boxShadow = 'none';
+                      ? 'rgba(255, 255, 255, 0.06)'
+                      : 'rgba(0, 0, 0, 0.04)';
+                    e.currentTarget.style.color = isDarkMode ? '#cbd5e1' : '#64748b';
                   }}
                   title="Logout"
                 >
-                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                     <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
                     <polyline points="16,17 21,12 16,7"/>
                     <line x1="21" y1="12" x2="9" y2="12"/>
@@ -529,30 +426,24 @@ function TopNav() {
               style={{
                 display: 'flex',
                 alignItems: 'center',
-                gap: '8px',
-                padding: '12px 20px',
-                borderRadius: '12px',
+                gap: '6px',
+                padding: '8px 14px',
+                borderRadius: '8px',
                 textDecoration: 'none',
-                background: 'linear-gradient(135deg, #3b82f6, #1d4ed8)',
+                background: '#3b82f6',
                 color: 'white',
                 fontSize: '14px',
-                fontWeight: '600',
-                transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-                boxShadow: '0 4px 12px rgba(59, 130, 246, 0.3)',
-                border: '1px solid rgba(59, 130, 246, 0.2)'
+                fontWeight: '500',
+                transition: 'all 0.15s ease'
               }}
               onMouseEnter={(e) => {
-                e.currentTarget.style.transform = 'translateY(-2px) scale(1.02)';
-                e.currentTarget.style.boxShadow = '0 8px 20px rgba(59, 130, 246, 0.4)';
-                e.currentTarget.style.background = 'linear-gradient(135deg, #2563eb, #1e40af)';
+                e.currentTarget.style.background = '#2563eb';
               }}
               onMouseLeave={(e) => {
-                e.currentTarget.style.transform = 'translateY(0) scale(1)';
-                e.currentTarget.style.boxShadow = '0 4px 12px rgba(59, 130, 246, 0.3)';
-                e.currentTarget.style.background = 'linear-gradient(135deg, #3b82f6, #1d4ed8)';
+                e.currentTarget.style.background = '#3b82f6';
               }}
             >
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                 <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/>
                 <polyline points="10,17 15,12 10,7"/>
                 <line x1="15" y1="12" x2="3" y2="12"/>
