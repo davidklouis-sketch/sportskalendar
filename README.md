@@ -248,3 +248,4 @@ Entwickelt mit ❤️ von David K. Louis
 - **F1 Data**: Jolpica API (Ergast Replacement)
 - **NFL Data**: ESPN API, TheSportsDB
 - **Highlights**: YouTube RSS Feeds
+# Force rebuild with correct API URL
