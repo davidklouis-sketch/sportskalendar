@@ -208,22 +208,31 @@ export function Calendar() {
       console.log('🔍 Debug - UpdateTeams response data:', JSON.stringify(response.data, null, 2));
       console.log('🔍 Debug - UpdateTeams response selectedTeams:', JSON.stringify(response.data.selectedTeams, null, 2));
       
-      // Force refresh user data from server to ensure UI is in sync
+      // WORKAROUND: Use teams directly from updateTeams response since getProfile is broken
+      console.log('🔍 Debug - Using WORKAROUND: Teams from updateTeams response');
+      if (user && response.data.selectedTeams) {
+        const updatedUser = { ...user, selectedTeams: response.data.selectedTeams };
+        setUser(updatedUser);
+        console.log('🔍 Debug - WORKAROUND: User updated with teams from response:', updatedUser);
+      }
+      
+      // Still try profile refresh for other user data, but don't rely on it for teams
       try {
         const profileResponse = await userApi.getProfile();
         console.log('🔍 Debug - Profile refresh successful:', profileResponse.data);
         console.log('🔍 Debug - Profile response selectedTeams:', JSON.stringify(profileResponse.data.user.selectedTeams, null, 2));
-        setUser(profileResponse.data.user);
-        console.log('🔍 Debug - User state completely refreshed with:', profileResponse.data.user);
-        console.log('🔍 Debug - User state selectedTeams after setUser:', JSON.stringify(profileResponse.data.user.selectedTeams, null, 2));
-      } catch (profileError) {
-        console.log('🔍 Debug - Profile refresh failed, using response data:', profileError);
-        // Fallback: update user with response data
-        if (user) {
-          const updatedUser = { ...user, selectedTeams: response.data.selectedTeams || updatedTeams };
+        
+        // Only update non-team data from profile, keep teams from updateTeams response
+        if (user && response.data.selectedTeams) {
+          const updatedUser = { 
+            ...profileResponse.data.user, 
+            selectedTeams: response.data.selectedTeams // Keep teams from updateTeams response
+          };
           setUser(updatedUser);
-          console.log('🔍 Debug - Fallback user update with:', updatedUser);
+          console.log('🔍 Debug - User updated with profile data + teams from response:', updatedUser);
         }
+      } catch (profileError) {
+        console.log('🔍 Debug - Profile refresh failed, but teams are already set from response:', profileError);
       }
       
       setShowTeamSelector(false);
