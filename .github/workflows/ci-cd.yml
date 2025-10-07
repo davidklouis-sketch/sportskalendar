@@ -180,8 +180,12 @@ jobs:
             # Pull latest images
             docker compose -f docker-compose.traefik.yml --env-file .env.production pull
             
-            # Deploy with zero-downtime
+            # Deploy with zero-downtime (preserving volumes)
             docker compose -f docker-compose.traefik.yml --env-file .env.production up -d --remove-orphans
+            
+            # Verify database volume exists and is persistent
+            echo "Checking database volume persistence..."
+            docker volume ls | grep postgres_data || echo "⚠️ postgres_data volume not found"
             
             # Cleanup old images
             docker image prune -f

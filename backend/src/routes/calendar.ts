@@ -323,7 +323,15 @@ async function fetchSoccerApiFootball(debug?: DebugBuffer, leagues: number[] = [
     const url = `https://v3.football.api-sports.io/fixtures?league=${league}&next=50&timezone=Europe/Berlin`;
     try {
       const r = await fetchWithLog(url, { headers }, debug, `API-FOOTBALL ${league}`);
-      if (!r.ok) continue;
+      if (!r.ok) {
+        if (r.status === 429) {
+          debug?.logs.push(`API-FOOTBALL ${league}: Rate limit exceeded - using demo data`);
+          // Use demo data when rate limited
+          const demoEvents = generateDemoFootballEvents([league]);
+          items.push(...demoEvents);
+        }
+        continue;
+      }
       const data = await r.json();
       let fixtures = data?.response || [];
       if (!fixtures.length) {
@@ -334,6 +342,12 @@ async function fetchSoccerApiFootball(debug?: DebugBuffer, leagues: number[] = [
         if (r2.ok) {
           const d2 = await r2.json();
           fixtures = d2?.response || [];
+        } else if (r2.status === 429) {
+          debug?.logs.push(`API-FOOTBALL ${league}: Rate limit exceeded - using demo data`);
+          // Use demo data when rate limited
+          const demoEvents = generateDemoFootballEvents([league]);
+          items.push(...demoEvents);
+          continue;
         }
       }
       if (!fixtures.length) {
@@ -346,6 +360,12 @@ async function fetchSoccerApiFootball(debug?: DebugBuffer, leagues: number[] = [
         if (r3.ok) {
           const d3 = await r3.json();
           fixtures = d3?.response || [];
+        } else if (r3.status === 429) {
+          debug?.logs.push(`API-FOOTBALL ${league}: Rate limit exceeded - using demo data`);
+          // Use demo data when rate limited
+          const demoEvents = generateDemoFootballEvents([league]);
+          items.push(...demoEvents);
+          continue;
         }
       }
       debug?.logs.push(`SOCCER ${league} count: ${fixtures.length}`);
@@ -494,7 +514,10 @@ async function fetchFootballDataOrg(apiKey: string, debug?: DebugBuffer, leagues
       
       if (!r.ok && matches.length === 0) {
         if (r.status === 429) {
-          debug?.logs.push(`FOOTBALL-DATA ${competition.name}: Rate limit exceeded`);
+          debug?.logs.push(`FOOTBALL-DATA ${competition.name}: Rate limit exceeded - using demo data`);
+          // Use demo data when rate limited
+          const demoEvents = generateDemoFootballEvents([competition.id]);
+          items.push(...demoEvents);
         }
         continue;
       }

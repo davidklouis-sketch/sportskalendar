@@ -35,6 +35,21 @@ export interface HighlightItem {
 }
 
 export async function seedDevUser() {
+  // Check if we're using PostgreSQL and if users already exist
+  if (process.env.DATABASE_URL) {
+    try {
+      const { UserRepository } = await import('../database/repositories/userRepository');
+      const existingUsers = await UserRepository.findAll();
+      if (existingUsers.length > 0) {
+        console.log('✅ PostgreSQL database already has users, skipping demo user seeding');
+        return;
+      }
+    } catch (error) {
+      console.log('⚠️ Could not check PostgreSQL users, falling back to in-memory check');
+    }
+  }
+  
+  // Fallback to in-memory check
   if (db.users.size > 0) return;
   const passwordHash = await bcrypt.hash('password', 10);
   const user: User = {
@@ -55,6 +70,28 @@ export async function seedDevUser() {
     role: 'admin',
   };
   db.users.set(admin.email, admin);
+
+  // If using PostgreSQL, also create users in database
+  if (process.env.DATABASE_URL) {
+    try {
+      const { UserRepository } = await import('../database/repositories/userRepository');
+      await UserRepository.create({
+        email: user.email,
+        passwordHash: user.passwordHash,
+        displayName: user.displayName,
+        role: user.role
+      });
+      await UserRepository.create({
+        email: admin.email,
+        passwordHash: admin.passwordHash,
+        displayName: admin.displayName,
+        role: admin.role
+      });
+      console.log('✅ Demo users created in PostgreSQL database');
+    } catch (error) {
+      console.log('⚠️ Could not create demo users in PostgreSQL:', error);
+    }
+  }
 }
 
 export function seedHighlights() {
