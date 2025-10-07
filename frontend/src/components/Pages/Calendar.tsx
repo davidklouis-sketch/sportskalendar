@@ -210,6 +210,15 @@ export function Calendar() {
       updateUser({ selectedTeams: response.data.selectedTeams || updatedTeams });
       console.log('🔍 Debug - User state updated with teams:', response.data.selectedTeams || updatedTeams);
       
+      // Force refresh user data from server to ensure UI is in sync
+      try {
+        const profileResponse = await userApi.getProfile();
+        console.log('🔍 Debug - Profile refresh successful:', profileResponse.data);
+        updateUser(profileResponse.data.user);
+      } catch (profileError) {
+        console.log('🔍 Debug - Profile refresh failed, using response data:', profileError);
+      }
+      
       setShowTeamSelector(false);
       setSelectedTeamId('');
       setSelectedLeague(null);
@@ -274,6 +283,11 @@ export function Calendar() {
 
         {/* Selected Teams */}
         <div className="space-y-2 mb-4">
+          {(() => {
+            console.log('🔍 Debug - Current user state:', user);
+            console.log('🔍 Debug - Current selectedTeams:', user?.selectedTeams);
+            return null;
+          })()}
           {user?.selectedTeams?.map((team, index) => (
             <div
               key={index}
