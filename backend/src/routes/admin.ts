@@ -1,30 +1,47 @@
 import { Router } from 'express';
 import { requireAuth, requireRole } from '../middleware/auth';
-import { db } from '../store/memory';
+import { UserRepository } from '../database/repositories/userRepository';
 
 export const adminRouter = Router();
 
 // All admin routes require authentication and admin role
 adminRouter.use(requireAuth, requireRole('admin'));
 
-adminRouter.get('/users', (_req, res) => {
-  const users = Array.from(db.users.values()).map(u => ({ 
-    id: u.id, 
-    email: u.email, 
-    displayName: u.displayName, 
-    role: u.role,
-    isPremium: u.isPremium || false,
-    selectedTeams: u.selectedTeams || []
-  }));
-  res.json({ users });
+adminRouter.get('/users', async (_req, res) => {
+  try {
+    const users = await UserRepository.findAll();
+    const formattedUsers = users.map(u => ({ 
+      id: u.id, 
+      email: u.email, 
+      displayName: u.displayName, 
+      role: u.role,
+      isPremium: u.isPremium || false,
+      selectedTeams: u.selectedTeams || [],
+      emailVerified: u.email_verified || false,
+      twoFactorEnabled: u.two_factor_enabled || false,
+      createdAt: u.created_at,
+      lastLogin: u.last_login
+    }));
+    res.json({ users: formattedUsers });
+  } catch (error) {
+    console.error('Error fetching users for admin:', error);
+    res.status(500).json({ error: 'Failed to fetch users' });
+  }
 });
 
-adminRouter.delete('/users/:id', (req, res) => {
-  const id = req.params.id;
-  const entry = Array.from(db.users.entries()).find(([, u]) => u.id === id);
-  if (!entry) return res.status(404).json({ error: 'Not found' });
-  db.users.delete(entry[0]);
-  res.status(204).end();
+adminRouter.delete('/users/:id', async (req, res) => {
+  try {
+    const id = req.params.id;
+    const user = await UserRepository.findById(id);
+    if (!user) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+    await UserRepository.delete(id);
+    res.status(204).end();
+  } catch (error) {
+    console.error('Error deleting user:', error);
+    res.status(500).json({ error: 'Failed to delete user' });
+  }
 });
 
 // Promote user to admin
@@ -37,12 +54,10 @@ adminRouter.post('/promote-user', async (req, res) => {
     }
     
     // Find the user to promote
-    const userEntry = Array.from(db.users.entries()).find(([, u]) => u.id === userId);
-    if (!userEntry) {
+    const user = await UserRepository.findById(userId);
+    if (!user) {
       return res.status(404).json({ error: 'User not found' });
     }
-    
-    const [, user] = userEntry;
     
     // Check if user is already admin
     if (user.role === 'admin') {
@@ -50,7 +65,7 @@ adminRouter.post('/promote-user', async (req, res) => {
     }
     
     // Promote user to admin
-    user.role = 'admin';
+    await UserRepository.update(userId, { role: 'admin' });
     
     res.json({ 
       success: true, 
@@ -59,7 +74,7 @@ adminRouter.post('/promote-user', async (req, res) => {
         id: user.id,
         email: user.email,
         displayName: user.displayName,
-        role: user.role
+        role: 'admin'
       }
     });
     
@@ -79,12 +94,10 @@ adminRouter.post('/demote-user', async (req, res) => {
     }
     
     // Find the user to demote
-    const userEntry = Array.from(db.users.entries()).find(([, u]) => u.id === userId);
-    if (!userEntry) {
+    const user = await UserRepository.findById(userId);
+    if (!user) {
       return res.status(404).json({ error: 'User not found' });
     }
-    
-    const [, user] = userEntry;
     
     // Check if user is not admin
     if (user.role !== 'admin') {
@@ -92,7 +105,7 @@ adminRouter.post('/demote-user', async (req, res) => {
     }
     
     // Demote admin to user
-    user.role = 'user';
+    await UserRepository.update(userId, { role: 'user' });
     
     res.json({ 
       success: true, 
@@ -101,7 +114,7 @@ adminRouter.post('/demote-user', async (req, res) => {
         id: user.id,
         email: user.email,
         displayName: user.displayName,
-        role: user.role
+        role: 'user'
       }
     });
     
@@ -121,25 +134,24 @@ adminRouter.post('/toggle-premium', async (req, res) => {
     }
     
     // Find the user
-    const userEntry = Array.from(db.users.entries()).find(([, u]) => u.id === userId);
-    if (!userEntry) {
+    const user = await UserRepository.findById(userId);
+    if (!user) {
       return res.status(404).json({ error: 'User not found' });
     }
     
-    const [, user] = userEntry;
-    
     // Toggle premium status
-    user.isPremium = !user.isPremium;
+    const newPremiumStatus = !user.isPremium;
+    await UserRepository.update(userId, { isPremium: newPremiumStatus });
     
     res.json({ 
       success: true, 
-      message: `User ${user.email} premium status: ${user.isPremium ? 'activated' : 'deactivated'}`,
+      message: `User ${user.email} premium status: ${newPremiumStatus ? 'activated' : 'deactivated'}`,
       user: {
         id: user.id,
         email: user.email,
         displayName: user.displayName,
         role: user.role,
-        isPremium: user.isPremium
+        isPremium: newPremiumStatus
       }
     });
     

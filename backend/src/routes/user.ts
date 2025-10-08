@@ -2,8 +2,20 @@ import { Router } from 'express';
 import { z } from 'zod';
 import bcrypt from 'bcryptjs';
 import { requireAuth } from '../middleware/auth';
-import { db, User } from '../store/memory';
 import { setAuthCookies, signAccess, signRefresh } from './auth';
+
+interface User {
+  id: string;
+  email: string;
+  passwordHash: string;
+  displayName: string;
+  role: 'user' | 'admin';
+  isPremium?: boolean;
+  selectedTeams?: Array<{
+    sport: 'football' | 'nfl' | 'f1';
+    teamName: string;
+  }>;
+}
 
 // Helper function to get user from PostgreSQL only
 async function getUserByEmail(email: string): Promise<User | null> {

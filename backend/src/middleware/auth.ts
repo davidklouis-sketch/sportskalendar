@@ -74,14 +74,14 @@ export function requireAuth(req: Request, res: Response, next: NextFunction) {
 }
 
 export function requireRole(role: 'user' | 'admin') {
-  return (req: Request, res: Response, next: NextFunction) => {
+  return async (req: Request, res: Response, next: NextFunction) => {
     const user = (req as any).user as JwtUser | undefined;
     if (!user) return res.status(401).json({ error: 'Unauthorized' });
-    // If role missing in token, try to load from store (handles old tokens)
+    // If role missing in token, try to load from database (handles old tokens)
     if (!user.role) {
       try {
-        const { db } = require('../store/memory');
-        const real = db.users.get(user.email);
+        const { UserRepository } = await import('../database/repositories/userRepository');
+        const real = await UserRepository.findByEmail(user.email);
         if (real?.role) {
           user.role = real.role;
         }

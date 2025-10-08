@@ -65,15 +65,6 @@ app.get('/api/health', (_req, res) => {
 
 // Debug endpoint to check users
 app.get('/api/debug/users', async (_req, res) => {
-  const { db } = require('./store/memory');
-  const inMemoryUsers = Array.from(db.users.values()).map((u: any) => ({ 
-    id: u.id, 
-    email: u.email, 
-    displayName: u.displayName, 
-    role: u.role,
-    source: 'in-memory'
-  }));
-  
   let postgresUsers: any[] = [];
   if (process.env.DATABASE_URL) {
     try {
@@ -84,6 +75,9 @@ app.get('/api/debug/users', async (_req, res) => {
         email: u.email,
         displayName: u.displayName,
         role: u.role,
+        isPremium: u.isPremium,
+        emailVerified: u.email_verified,
+        createdAt: u.created_at,
         source: 'postgresql'
       }));
     } catch (error) {
@@ -92,11 +86,9 @@ app.get('/api/debug/users', async (_req, res) => {
   }
   
   res.json({ 
-    inMemoryUsers, 
-    postgresUsers,
-    inMemoryCount: inMemoryUsers.length,
-    postgresCount: postgresUsers.length,
-    totalCount: inMemoryUsers.length + postgresUsers.length
+    users: postgresUsers,
+    totalUsers: postgresUsers.length,
+    database: process.env.DATABASE_URL ? 'postgresql' : 'none'
   });
 });
 
@@ -115,13 +107,7 @@ app.use('/api/live', liveRouter);
 app.get('/api/user/me', requireAuth, (req, res) => {
   const tokenUser = (req as any).user as { id: string; email: string; role?: 'user' | 'admin' };
   // Load fresh user from store to ensure role/displayName are current
-  try {
-    const { db } = require('./store/memory');
-    const realUser = db.users.get(tokenUser.email);
-    if (realUser) {
-      return res.json({ user: { id: realUser.id, email: realUser.email, displayName: realUser.displayName, role: realUser.role } });
-    }
-  } catch {}
+  // Return user from JWT token (no need to fetch from database for this endpoint)
   res.json({ user: tokenUser });
 });
 

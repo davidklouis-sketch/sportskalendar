@@ -3,55 +3,38 @@ import { z } from 'zod';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import { Request, Response } from 'express';
-import { db, User } from '../store/memory';
+import { UserRepository } from '../database/repositories/userRepository';
 import { authRateLimit, validatePassword, validateJwtSecret, SessionManager } from '../middleware/security-enhanced';
 
-// Helper function to get user from either PostgreSQL or in-memory store
-async function getUserByEmail(email: string): Promise<User | null> {
-  // Try PostgreSQL first if available
-  if (process.env.DATABASE_URL) {
-    try {
-      const { UserRepository } = await import('../database/repositories/userRepository');
-      const pgUser = await UserRepository.findByEmail(email);
-      if (pgUser) {
-        return {
-          id: pgUser.id,
-          email: pgUser.email,
-          passwordHash: pgUser.passwordHash,
-          displayName: pgUser.displayName,
-          role: pgUser.role as 'user' | 'admin',
-          isPremium: pgUser.isPremium || false,
-          selectedTeams: pgUser.selectedTeams || []
-        };
-      }
-    } catch (error) {
-      console.log('⚠️ Could not fetch user from PostgreSQL, falling back to in-memory:', error);
-    }
+// Helper function to get user from PostgreSQL
+async function getUserByEmail(email: string) {
+  if (!process.env.DATABASE_URL) {
+    throw new Error('Database not configured');
   }
   
-  // Fallback to in-memory store
-  return db.users.get(email) || null;
+  const pgUser = await UserRepository.findByEmail(email);
+  if (pgUser) {
+    return {
+      id: pgUser.id,
+      email: pgUser.email,
+      passwordHash: pgUser.passwordHash,
+      displayName: pgUser.displayName,
+      role: pgUser.role as 'user' | 'admin',
+      isPremium: pgUser.isPremium || false,
+      selectedTeams: pgUser.selectedTeams || []
+    };
+  }
+  
+  return null;
 }
 
-// Helper function to update user in either PostgreSQL or in-memory store
-async function updateUser(email: string, updates: Partial<User>): Promise<void> {
-  // Try PostgreSQL first if available
-  if (process.env.DATABASE_URL) {
-    try {
-      const { UserRepository } = await import('../database/repositories/userRepository');
-      await UserRepository.updateByEmail(email, updates);
-      return;
-    } catch (error) {
-      console.log('⚠️ Could not update user in PostgreSQL, falling back to in-memory:', error);
-    }
+// Helper function to update user in PostgreSQL
+async function updateUser(email: string, updates: any): Promise<void> {
+  if (!process.env.DATABASE_URL) {
+    throw new Error('Database not configured');
   }
   
-  // Fallback to in-memory store
-  const user = db.users.get(email);
-  if (user) {
-    Object.assign(user, updates);
-    db.users.set(email, user);
-  }
+  await UserRepository.updateByEmail(email, updates);
 }
 
 export const authRouter = Router();
