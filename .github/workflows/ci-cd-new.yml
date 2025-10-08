@@ -89,18 +89,6 @@ jobs:
     if: github.ref == 'refs/heads/main'
     
     steps:
-    - name: Check deployment secrets
-      run: |
-        if [ -z "${{ secrets.HOST }}" ] || [ -z "${{ secrets.USERNAME }}" ] || [ -z "${{ secrets.SSH_KEY }}" ]; then
-          echo "❌ Deployment secrets not configured"
-          echo "Please configure the following secrets in GitHub:"
-          echo "- HOST: Your server hostname"
-          echo "- USERNAME: Your SSH username"
-          echo "- SSH_KEY: Your private SSH key"
-          exit 1
-        fi
-        echo "✅ Deployment secrets configured"
-    
     - name: Deploy to server
       uses: appleboy/ssh-action@v1.0.3
       with:
