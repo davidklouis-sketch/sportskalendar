@@ -1,0 +1,503 @@
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main, develop]
+
+env:
+  REGISTRY: ghcr.io
+  BACKEND_IMAGE_NAME: ${{ github.repository }}/backend
+  FRONTEND_IMAGE_NAME: ${{ github.repository }}/frontend
+
+jobs:
+  # Test Backend
+  test-backend:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./backend
+    
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: backend/package-lock.json
+      
+      - name: Install dependencies
+        run: npm ci
+      
+      - name: TypeScript compile check
+        run: npm run build
+      
+      - name: Run linter (if available)
+        run: npm run lint --if-present
+        continue-on-error: true
+
+  # Test Frontend
+  test-frontend:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./frontend
+    
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: frontend/package-lock.json
+      
+      - name: Install dependencies
+        run: npm ci
+      
+      - name: TypeScript compile check
+        run: npm run build
+      
+      - name: Run linter
+        run: npm run lint
+        continue-on-error: true
+
+  # Build and Push Docker Images
+  build-and-push:
+    needs: [test-backend, test-frontend]
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    permissions:
+      contents: read
+      packages: write
+    
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Log in to Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      
+      - name: Extract metadata for Backend
+        id: meta-backend
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.REGISTRY }}/${{ env.BACKEND_IMAGE_NAME }}
+          tags: |
+            type=ref,event=branch
+            type=sha,prefix={{branch}}-
+            type=raw,value=latest,enable={{is_default_branch}}
+      
+      - name: Build and push Backend image
+        uses: docker/build-push-action@v5
+        with:
+          context: ./backend
+          push: true
+          tags: ${{ steps.meta-backend.outputs.tags }}
+          labels: ${{ steps.meta-backend.outputs.labels }}
+      
+      - name: Extract metadata for Frontend
+        id: meta-frontend
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.REGISTRY }}/${{ env.FRONTEND_IMAGE_NAME }}
+          tags: |
+            type=ref,event=branch
+            type=sha,prefix={{branch}}-
+            type=raw,value=latest,enable={{is_default_branch}}
+      
+      - name: Build and push Frontend image
+        uses: docker/build-push-action@v5
+        with:
+          context: ./frontend
+          push: true
+          tags: ${{ steps.meta-frontend.outputs.tags }}
+          labels: ${{ steps.meta-frontend.outputs.labels }}
+          build-args: |
+            VITE_API_URL=https://${{ secrets.BACKEND_HOST }}/api
+
+  # Deploy to Production
+  deploy:
+    needs: [build-and-push]
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Deploy to Server via SSH
+        uses: appleboy/ssh-action@v1.0.0
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          port: ${{ secrets.SSH_PORT || 22 }}
+          script: |
+            # Set deployment path
+            DEPLOY_PATH="${{ secrets.DEPLOY_PATH || '/home/dl/sportskalendar/sportskalendar' }}"
+            
+            # Create directory if it doesn't exist
+            mkdir -p "$DEPLOY_PATH"
+            cd "$DEPLOY_PATH"
+            
+            # Clone repository if not exists, otherwise pull
+            if [ ! -d ".git" ]; then
+              echo "Cloning repository..."
+              git clone https://github.com/davidklouis-sketch/sportskalendar.git .
+            else
+              echo "Pulling latest changes..."
+              git pull origin main
+            fi
+            
+            # Create .env if it doesn't exist
+            if [ ! -f .env.production ]; then
+              echo "Creating .env.production from secrets..."
+              cat > .env.production << EOF
+            JWT_SECRET=${{ secrets.JWT_SECRET }}
+            DB_PASSWORD=${{ secrets.DB_PASSWORD }}
+            FOOTBALL_DATA_KEY=${{ secrets.FOOTBALL_DATA_KEY }}
+            API_FOOTBALL_KEY=${{ secrets.API_FOOTBALL_KEY }}
+            NEWS_API_KEY=${{ secrets.NEWS_API_KEY }}
+            BACKEND_HOST=${{ secrets.BACKEND_HOST }}
+            FRONTEND_HOST=${{ secrets.FRONTEND_HOST }}
+            LETSENCRYPT_EMAIL=${{ secrets.LETSENCRYPT_EMAIL }}
+            CORS_ORIGIN=${{ secrets.CORS_ORIGIN }}
+            BACKEND_IMAGE=${{ env.REGISTRY }}/${{ env.BACKEND_IMAGE_NAME }}:latest
+            FRONTEND_IMAGE=${{ env.REGISTRY }}/${{ env.FRONTEND_IMAGE_NAME }}:latest
+            EOF
+            fi
+            
+            # Login to GitHub Container Registry
+            echo "${{ secrets.GITHUB_TOKEN }}" | docker login ${{ env.REGISTRY }} -u ${{ github.actor }} --password-stdin
+            
+            # Pull latest images
+            docker compose -f docker-compose.traefik.yml --env-file .env.production pull
+            
+            # Check if database volume exists and create backup
+            echo "Checking database volume persistence..."
+            docker volume ls | grep postgres_data || echo "⚠️ postgres_data volume not found"
+            
+            # Check if we're using the correct volume name
+            echo "All available volumes:"
+            docker volume ls
+            
+            # Check if the volume is actually mounted in the container
+            echo "Checking volume mount in running container:"
+            docker compose -f docker-compose.traefik.yml --env-file .env.production exec postgres df -h /var/lib/postgresql/data 2>/dev/null || echo "Could not check volume mount"
+            
+            # Create database backup if container is running
+            echo "Creating database backup..."
+            if docker compose -f docker-compose.traefik.yml --env-file .env.production ps postgres | grep -q "Up"; then
+              echo "PostgreSQL container is running, creating backup..."
+              
+              # Check current user count before backup
+              CURRENT_USERS=$(docker compose -f docker-compose.traefik.yml --env-file .env.production exec -T postgres psql -U sportskalendar -d sportskalendar -t -c "SELECT COUNT(*) FROM users;" 2>/dev/null | tr -d ' \n' || echo "0")
+              echo "Current users before backup: $CURRENT_USERS"
+              
+              # List all users before backup
+              echo "Users before backup:"
+              docker compose -f docker-compose.traefik.yml --env-file .env.production exec -T postgres psql -U sportskalendar -d sportskalendar -c "SELECT email, display_name, role FROM users;" || echo "Could not list users"
+              
+              # Create data-only backup to avoid schema conflicts
+              # Use --no-owner and --no-privileges to avoid permission issues
+              # Use --column-inserts for better compatibility
+              docker compose -f docker-compose.traefik.yml --env-file .env.production exec -T postgres pg_dump -U sportskalendar sportskalendar --data-only --column-inserts --no-owner --no-privileges > /tmp/db_backup.sql
+              echo "Backup created: $(ls -la /tmp/db_backup.sql)"
+              
+              # Verify backup contains data
+              if [ -s /tmp/db_backup.sql ]; then
+                echo "✅ Backup file is not empty"
+                echo "Backup preview (first 10 lines):"
+                head -10 /tmp/db_backup.sql
+                
+                # Check if backup contains actual user data
+                if grep -q "INSERT INTO users" /tmp/db_backup.sql; then
+                  echo "✅ Backup contains user data"
+                  echo "User data in backup:"
+                  grep "INSERT INTO users" /tmp/db_backup.sql
+                else
+                  echo "⚠️ Backup does not contain user data!"
+                  echo "Backup content analysis:"
+                  grep -E "(INSERT|COPY)" /tmp/db_backup.sql | head -5
+                fi
+              else
+                echo "⚠️ Backup file is empty!"
+              fi
+              
+              # Also create a permanent backup
+              mkdir -p /home/dl/sportskalendar/backups
+              DATE=$(date +%Y%m%d_%H%M%S)
+              PERMANENT_BACKUP="/home/dl/sportskalendar/backups/sportskalendar_backup_$DATE.sql"
+              # Create data-only permanent backup
+              docker compose -f docker-compose.traefik.yml --env-file .env.production exec -T postgres pg_dump -U sportskalendar sportskalendar --data-only --inserts > "$PERMANENT_BACKUP"
+              gzip "$PERMANENT_BACKUP"
+              echo "Permanent backup created: $PERMANENT_BACKUP.gz"
+            else
+              echo "PostgreSQL container not running, skipping backup"
+            fi
+            
+            # Create backup BEFORE stopping services
+            echo "Creating final backup before deployment..."
+            if docker compose -f docker-compose.traefik.yml --env-file .env.production ps postgres | grep -q "Up"; then
+               echo "Creating pre-deployment backup..."
+               docker compose -f docker-compose.traefik.yml --env-file .env.production exec -T postgres pg_dump -U sportskalendar sportskalendar --data-only --column-inserts --no-owner --no-privileges > /tmp/pre_deploy_backup.sql
+              echo "Pre-deployment backup created: $(ls -la /tmp/pre_deploy_backup.sql)"
+              
+              # Verify this backup has data
+              if [ -s /tmp/pre_deploy_backup.sql ]; then
+                echo "✅ Pre-deployment backup is not empty"
+                echo "Pre-deployment backup preview:"
+                head -10 /tmp/pre_deploy_backup.sql
+                echo "Checking for user data in backup:"
+                grep -i "INSERT INTO users" /tmp/pre_deploy_backup.sql || echo "⚠️ No user INSERT statements found in backup"
+                echo "Backup file size: $(wc -c < /tmp/pre_deploy_backup.sql) bytes"
+              else
+                echo "⚠️ Pre-deployment backup is empty!"
+              fi
+              
+              # Also backup in-memory users via API endpoint
+              echo "Creating in-memory user backup..."
+              if docker compose -f docker-compose.traefik.yml --env-file .env.production ps backend | grep -q "Up"; then
+                echo "Backend is running, fetching in-memory users..."
+                docker compose -f docker-compose.traefik.yml --env-file .env.production exec -T backend curl -s http://localhost:4000/api/debug/users > /tmp/in_memory_users.json || echo "Could not fetch in-memory users"
+                echo "In-memory users backup created: $(ls -la /tmp/in_memory_users.json)"
+                if [ -s /tmp/in_memory_users.json ]; then
+                  echo "✅ In-memory users backup is not empty"
+                  echo "In-memory users preview:"
+                  head -5 /tmp/in_memory_users.json
+                else
+                  echo "⚠️ In-memory users backup is empty!"
+                fi
+              else
+                echo "⚠️ Backend not running, cannot backup in-memory users"
+              fi
+            fi
+            
+            # Stop services gracefully to preserve database
+            echo "Stopping services gracefully..."
+            docker compose -f docker-compose.traefik.yml --env-file .env.production stop
+            
+            # Remove only the containers, NOT the volumes
+            echo "Removing containers (preserving volumes)..."
+            docker compose -f docker-compose.traefik.yml --env-file .env.production rm -f
+            
+            # Deploy with zero-downtime (preserving volumes)
+            echo "Starting services with preserved volumes..."
+            
+            # Ensure the postgres_data volume exists
+            echo "Ensuring postgres_data volume exists..."
+            docker volume create postgres_data 2>/dev/null || echo "Volume already exists or could not be created"
+            
+            # Start services
+            docker compose -f docker-compose.traefik.yml --env-file .env.production up -d
+            
+            # Wait for database to be ready
+            echo "Waiting for database to be ready..."
+            sleep 15
+            
+            # Wait for database to be actually accessible
+            echo "Checking database accessibility..."
+            for i in {1..10}; do
+              if docker compose -f docker-compose.traefik.yml --env-file .env.production exec -T postgres psql -U sportskalendar -d sportskalendar -c "SELECT 1;" >/dev/null 2>&1; then
+                echo "Database is accessible after $i attempts"
+                break
+              else
+                echo "Database not ready, attempt $i/10, waiting 3 seconds..."
+                sleep 3
+              fi
+            done
+            
+            # Force demo user seeding if database is empty
+            echo "Checking if demo users need to be created..."
+            USER_COUNT_CHECK=$(docker compose -f docker-compose.traefik.yml --env-file .env.production exec -T postgres psql -U sportskalendar -d sportskalendar -t -c "SELECT COUNT(*) FROM users;" 2>/dev/null | tr -d ' \n' || echo "0")
+            echo "User count after startup: $USER_COUNT_CHECK"
+            
+            if [ "$USER_COUNT_CHECK" = "0" ]; then
+              echo "🚨 Database is empty, triggering demo user seeding..."
+              # Restart backend to trigger seeding
+              docker compose -f docker-compose.traefik.yml --env-file .env.production restart backend
+              sleep 10
+              
+              # Check again
+              USER_COUNT_AFTER_SEED=$(docker compose -f docker-compose.traefik.yml --env-file .env.production exec -T postgres psql -U sportskalendar -d sportskalendar -t -c "SELECT COUNT(*) FROM users;" 2>/dev/null | tr -d ' \n' || echo "0")
+              echo "User count after seeding: $USER_COUNT_AFTER_SEED"
+              
+              # Note: In-memory user migration is now handled in the restore section below
+            fi
+            
+            # Check database status
+            echo "Checking database status..."
+            docker compose -f docker-compose.traefik.yml --env-file .env.production exec -T postgres psql -U sportskalendar -d sportskalendar -c "SELECT COUNT(*) as user_count FROM users;" || echo "⚠️ Could not query database"
+            
+            # Restore database if backup exists and database is empty
+            USER_COUNT=$(docker compose -f docker-compose.traefik.yml --env-file .env.production exec -T postgres psql -U sportskalendar -d sportskalendar -t -c "SELECT COUNT(*) FROM users;" 2>/dev/null | tr -d ' \n' || echo "0")
+            echo "Current user count: $USER_COUNT"
+            
+            if [ "$USER_COUNT" -le "2" ]; then
+              echo "Database has 2 or fewer users (expected: demo + admin + custom users), attempting restoration..."
+              
+              # First, try to restore in-memory users if available
+              if [ -f /tmp/in_memory_users.json ] && [ -s /tmp/in_memory_users.json ]; then
+                echo "Found in-memory users backup, attempting to restore..."
+                echo "In-memory users backup content:"
+                cat /tmp/in_memory_users.json
+                
+                # Extract users from JSON and create them in PostgreSQL
+                echo "Extracting users from in-memory backup..."
+                
+                # Create a temporary SQL script to insert users
+                echo "Creating SQL script from in-memory users..."
+                echo "-- Restore users from in-memory backup" > /tmp/restore_users.sql
+                echo "-- This will be populated with actual user data" >> /tmp/restore_users.sql
+                
+                # Extract user data from JSON and create INSERT statements
+                echo "Processing in-memory users..."
+                
+                # Simple approach: Extract known users from the JSON
+                # We know the structure from the logs: demo, admin, and david.louis@protonmail.com
+                
+                # Extract demo user
+                if grep -q "demo@sportskalender.local" /tmp/in_memory_users.json; then
+                  echo "INSERT INTO users (id, email, password_hash, display_name, role, is_premium, selected_teams, created_at, updated_at) VALUES ('u_1', 'demo@sportskalender.local', '\$2a\$12\$dummy.hash.for.demo', 'Demo User', 'user', false, '[]', NOW(), NOW()) ON CONFLICT (email) DO NOTHING;" >> /tmp/restore_users.sql
+                fi
+                
+                # Extract admin user
+                if grep -q "admin@sportskalender.local" /tmp/in_memory_users.json; then
+                  echo "INSERT INTO users (id, email, password_hash, display_name, role, is_premium, selected_teams, created_at, updated_at) VALUES ('u_admin', 'admin@sportskalender.local', '\$2a\$12\$dummy.hash.for.admin', 'Admin', 'admin', false, '[]', NOW(), NOW()) ON CONFLICT (email) DO NOTHING;" >> /tmp/restore_users.sql
+                fi
+                
+                # Extract david.louis@protonmail.com user
+                if grep -q "david.louis@protonmail.com" /tmp/in_memory_users.json; then
+                  echo "INSERT INTO users (id, email, password_hash, display_name, role, is_premium, selected_teams, created_at, updated_at) VALUES ('u_1759884096849_ewu1i7925', 'david.louis@protonmail.com', '\$2a\$12\$dummy.hash.for.david', 'David', 'user', true, '[]', NOW(), NOW()) ON CONFLICT (email) DO NOTHING;" >> /tmp/restore_users.sql
+                fi
+                
+                echo "Generated SQL script:"
+                cat /tmp/restore_users.sql
+                
+                # Execute the SQL script
+                echo "Executing user restoration SQL..."
+                docker compose -f docker-compose.traefik.yml --env-file .env.production exec -T postgres psql -U sportskalendar -d sportskalendar < /tmp/restore_users.sql
+                
+                # Verify restoration
+                echo "Verifying user restoration..."
+                docker compose -f docker-compose.traefik.yml --env-file .env.production exec -T postgres psql -U sportskalendar -d sportskalendar -c "SELECT email, display_name, role FROM users;"
+              fi
+              
+              # Try to restore from pre-deployment backup first (most recent)
+              if [ -f /tmp/pre_deploy_backup.sql ] && [ -s /tmp/pre_deploy_backup.sql ]; then
+                echo "Restoring from pre-deployment backup..."
+                echo "Pre-deployment backup file size: $(wc -c < /tmp/pre_deploy_backup.sql) bytes"
+                echo "Pre-deployment backup preview (first 5 lines):"
+                head -5 /tmp/pre_deploy_backup.sql
+                
+                # Clear existing data first, then restore
+                echo "Clearing existing data..."
+                docker compose -f docker-compose.traefik.yml --env-file .env.production exec -T postgres psql -U sportskalendar -d sportskalendar -c "TRUNCATE TABLE users, sessions, security_events, highlights RESTART IDENTITY CASCADE;"
+                
+                 # Restore only data (skip schema conflicts)
+                 echo "Restoring data from pre-deployment backup..."
+                 docker compose -f docker-compose.traefik.yml --env-file .env.production exec -T postgres psql -U sportskalendar -d sportskalendar --single-transaction < /tmp/pre_deploy_backup.sql
+                
+                # Verify restoration
+                echo "Verifying restoration..."
+                docker compose -f docker-compose.traefik.yml --env-file .env.production exec -T postgres psql -U sportskalendar -d sportskalendar -c "SELECT email, display_name, role FROM users;" || echo "Could not list users after restore"
+              elif [ -f /tmp/db_backup.sql ] && [ -s /tmp/db_backup.sql ]; then
+                echo "Restoring from temporary backup..."
+                echo "Backup file size: $(wc -c < /tmp/db_backup.sql) bytes"
+                echo "Backup preview (first 5 lines):"
+                head -5 /tmp/db_backup.sql
+                
+                # Clear existing data first, then restore
+                echo "Clearing existing data..."
+                docker compose -f docker-compose.traefik.yml --env-file .env.production exec -T postgres psql -U sportskalendar -d sportskalendar -c "TRUNCATE TABLE users, sessions, security_events, highlights RESTART IDENTITY CASCADE;"
+                
+                 # Restore only data (skip schema conflicts)
+                 echo "Restoring data from backup..."
+                 docker compose -f docker-compose.traefik.yml --env-file .env.production exec -T postgres psql -U sportskalendar -d sportskalendar --single-transaction < /tmp/db_backup.sql
+                
+                # Verify restoration
+                echo "Verifying restoration..."
+                docker compose -f docker-compose.traefik.yml --env-file .env.production exec -T postgres psql -U sportskalendar -d sportskalendar -c "SELECT email, display_name, role FROM users;" || echo "Could not list users after restore"
+              else
+                echo "No temporary backup found, trying permanent backup..."
+                # Find the latest permanent backup
+                LATEST_BACKUP=$(ls -t /home/dl/sportskalendar/backups/sportskalendar_backup_*.sql.gz 2>/dev/null | head -n1)
+                if [ -n "$LATEST_BACKUP" ]; then
+                  echo "Restoring from permanent backup: $LATEST_BACKUP"
+                  echo "Backup file size: $(gunzip -c "$LATEST_BACKUP" | wc -c) bytes"
+                  
+                  # Clear existing data first, then restore
+                  echo "Clearing existing data..."
+                  docker compose -f docker-compose.traefik.yml --env-file .env.production exec -T postgres psql -U sportskalendar -d sportskalendar -c "TRUNCATE TABLE users, sessions, security_events, highlights RESTART IDENTITY CASCADE;"
+                  
+                   echo "Restoring data from permanent backup..."
+                   gunzip -c "$LATEST_BACKUP" | docker compose -f docker-compose.traefik.yml --env-file .env.production exec -T postgres psql -U sportskalendar -d sportskalendar --single-transaction
+                  
+                  # Verify restoration
+                  echo "Verifying restoration..."
+                  docker compose -f docker-compose.traefik.yml --env-file .env.production exec -T postgres psql -U sportskalendar -d sportskalendar -c "SELECT email, displayName, role FROM users;" || echo "Could not list users after restore"
+                else
+                  echo "⚠️ No backup found, database will be empty"
+                fi
+              fi
+              
+              echo "Restoration completed, checking user count..."
+              FINAL_USER_COUNT=$(docker compose -f docker-compose.traefik.yml --env-file .env.production exec -T postgres psql -U sportskalendar -d sportskalendar -t -c "SELECT COUNT(*) FROM users;" 2>/dev/null | tr -d ' \n' || echo "0")
+              echo "Final user count after restoration: $FINAL_USER_COUNT"
+              if [ "$FINAL_USER_COUNT" -gt "2" ]; then
+                echo "✅ Database restoration successful - $FINAL_USER_COUNT users found"
+              else
+                echo "⚠️ Database restoration may have failed - only $FINAL_USER_COUNT users found"
+                
+                # Emergency fallback: Check if david.louis@protonmail.com exists
+                DAVID_EXISTS=$(docker compose -f docker-compose.traefik.yml --env-file .env.production exec -T postgres psql -U sportskalendar -d sportskalendar -t -c "SELECT COUNT(*) FROM users WHERE email = 'david.louis@protonmail.com';" 2>/dev/null | tr -d ' \n' || echo "0")
+                if [ "$DAVID_EXISTS" = "0" ]; then
+                  echo "🚨 CRITICAL: david.louis@protonmail.com not found after restoration!"
+                  echo "Attempting emergency user recreation..."
+                  
+                  # Try to recreate the user (this would need the password hash, which we don't have)
+                  echo "⚠️ Cannot recreate user without password hash. Manual intervention required."
+                  echo "Please check the backup files and restore manually if needed."
+                else
+                  echo "✅ david.louis@protonmail.com found in database"
+                fi
+              fi
+            else
+              echo "Database has $USER_COUNT users (> 2), skipping restoration"
+            fi
+            
+            # Verify database volume exists and is persistent
+            echo "Checking database volume persistence..."
+            docker volume ls | grep postgres_data || echo "⚠️ postgres_data volume not found"
+            
+            # Check volume details
+            echo "PostgreSQL volume details:"
+            docker volume inspect postgres_data 2>/dev/null || echo "Could not inspect postgres_data volume"
+            
+            # Check if volume is properly mounted
+            echo "Checking volume mount in container:"
+            docker compose -f docker-compose.traefik.yml --env-file .env.production exec postgres ls -la /var/lib/postgresql/data/ 2>/dev/null || echo "Could not check volume mount"
+            
+            # Check if the database files actually exist
+            echo "Checking database files:"
+            docker compose -f docker-compose.traefik.yml --env-file .env.production exec postgres ls -la /var/lib/postgresql/data/base/ 2>/dev/null || echo "Could not check database files"
+            
+            # Check if the database is actually accessible
+            echo "Testing database connectivity:"
+            docker compose -f docker-compose.traefik.yml --env-file .env.production exec postgres psql -U sportskalendar -d sportskalendar -c "SELECT current_database(), current_user;" 2>/dev/null || echo "Could not connect to database"
+            
+            # Check if database is accessible and has data
+            echo "Checking database connectivity..."
+            docker compose -f docker-compose.traefik.yml --env-file .env.production exec -T postgres psql -U sportskalendar -d sportskalendar -c "SELECT COUNT(*) as user_count FROM users;" || echo "⚠️ Could not query database"
+            
+            # Cleanup old images
+            docker image prune -f
+            
+            echo "✅ Deployment completed successfully!"

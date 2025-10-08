@@ -137,14 +137,18 @@ authRouter.post('/register', authRateLimit, async (req, res) => {
       });
     }
 
-    // Check if user already exists (check both PostgreSQL and in-memory)
-    let existingUser = null;
-    try {
-      existingUser = await getUserByEmail(email);
-    } catch (error) {
-      console.log('⚠️ Error checking existing user, continuing with registration:', error);
+    // Check if user already exists in PostgreSQL
+    if (!process.env.DATABASE_URL) {
+      return res.status(500).json({ 
+        error: 'Database not available',
+        message: 'Registration is currently unavailable' 
+      });
     }
+
+    const { UserRepository } = await import('../database/repositories/userRepository');
     
+    // Check if user already exists
+    const existingUser = await UserRepository.findByEmail(email);
     if (existingUser) {
       return res.status(409).json({ 
         error: 'User already exists',
@@ -154,34 +158,16 @@ authRouter.post('/register', authRateLimit, async (req, res) => {
 
     // Hash password with higher salt rounds
     const passwordHash = await bcrypt.hash(password, 12);
-    const user: User = { 
-      id: `u_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`, 
-      email, 
-      passwordHash, 
-      displayName, 
-      role: 'user' 
-    };
     
-    // Store in both PostgreSQL and in-memory
-    if (process.env.DATABASE_URL) {
-      try {
-        const { UserRepository } = await import('../database/repositories/userRepository');
-        await UserRepository.create({
-          email: user.email,
-          passwordHash: user.passwordHash,
-          displayName: user.displayName,
-          role: user.role
-        });
-        console.log(`✅ User created in PostgreSQL: ${user.email}`);
-      } catch (error) {
-        console.error('❌ Failed to create user in PostgreSQL:', error);
-        // Don't fail the registration if PostgreSQL fails, just log it
-        console.log('⚠️ Continuing with in-memory storage only');
-      }
-    }
+    // Create user ONLY in PostgreSQL
+    const user = await UserRepository.create({
+      email,
+      passwordHash,
+      displayName,
+      role: 'user'
+    });
     
-    // Also store in in-memory for consistency
-    db.users.set(email, user);
+    console.log(`✅ User created in PostgreSQL: ${user.email}`);
     
     // Don't return sensitive data
     return res.status(201).json({ 
@@ -239,8 +225,16 @@ authRouter.post('/login', authRateLimit, async (req: Request, res: Response) => 
 
     const { email, password } = parsed.data;
     
-    // Find user
-    const user = await getUserByEmail(email);
+    // Find user in PostgreSQL
+    if (!process.env.DATABASE_URL) {
+      return res.status(500).json({ 
+        error: 'Database not available',
+        message: 'Login is currently unavailable' 
+      });
+    }
+
+    const { UserRepository } = await import('../database/repositories/userRepository');
+    const user = await UserRepository.findByEmail(email);
     if (!user) {
       // Simulate password check to prevent timing attacks
       await bcrypt.compare(password, '$2a$12$dummy.hash.to.prevent.timing.attacks');

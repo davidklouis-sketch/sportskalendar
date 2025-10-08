@@ -37,92 +37,59 @@ export interface HighlightItem {
 export async function seedDevUser() {
   console.log('🌱 Starting demo user seeding...');
   
-  // Check if we're using PostgreSQL and if users already exist
-  if (process.env.DATABASE_URL) {
-    console.log('📊 Using PostgreSQL database');
-    try {
-      const { UserRepository } = await import('../database/repositories/userRepository');
-      const existingUsers = await UserRepository.findAll();
-      console.log(`📊 Found ${existingUsers.length} existing users in PostgreSQL`);
-      
-      // Always create demo users if we have less than 2 users (demo + admin)
-      if (existingUsers.length < 2) {
-        console.log('📊 Less than 2 users found, creating demo users...');
-        // Continue with seeding
-      } else {
-        console.log('✅ PostgreSQL database already has sufficient users, skipping demo user seeding');
-        return;
-      }
-    } catch (error) {
-      console.log('⚠️ Could not check PostgreSQL users, falling back to in-memory check:', error);
-    }
-  } else {
-    console.log('📊 Using in-memory storage');
-  }
-  
-  // Fallback to in-memory check
-  if (db.users.size > 0) {
-    console.log(`✅ In-memory store already has ${db.users.size} users, skipping seeding`);
+  // Only work with PostgreSQL - no fallbacks
+  if (!process.env.DATABASE_URL) {
+    console.log('⚠️ No DATABASE_URL found, skipping demo user seeding');
     return;
   }
-  const passwordHash = await bcrypt.hash('password', 10);
-  const user: User = {
-    id: 'u_1',
-    email: 'demo@sportskalender.local',
-    passwordHash,
-    displayName: 'Demo User',
-    role: 'user',
-  };
-  db.users.set(user.email, user);
 
-  const adminHash = await bcrypt.hash('admin123', 10);
-  const admin: User = {
-    id: 'u_admin',
-    email: 'admin@sportskalender.local',
-    passwordHash: adminHash,
-    displayName: 'Admin',
-    role: 'admin',
-  };
-  db.users.set(admin.email, admin);
-
-  // If using PostgreSQL, also create users in database
-  if (process.env.DATABASE_URL) {
-    console.log('📊 Creating demo users in PostgreSQL database...');
-    try {
-      const { UserRepository } = await import('../database/repositories/userRepository');
-      
-      // Check if demo user already exists
-      const existingDemo = await UserRepository.findByEmail(user.email);
-      if (!existingDemo) {
-        await UserRepository.create({
-          email: user.email,
-          passwordHash: user.passwordHash,
-          displayName: user.displayName,
-          role: user.role
-        });
-        console.log(`✅ Created demo user: ${user.email}`);
-      } else {
-        console.log(`✅ Demo user already exists: ${user.email}`);
-      }
-      
-      // Check if admin user already exists
-      const existingAdmin = await UserRepository.findByEmail(admin.email);
-      if (!existingAdmin) {
-        await UserRepository.create({
-          email: admin.email,
-          passwordHash: admin.passwordHash,
-          displayName: admin.displayName,
-          role: admin.role
-        });
-        console.log(`✅ Created admin user: ${admin.email}`);
-      } else {
-        console.log(`✅ Admin user already exists: ${admin.email}`);
-      }
-      
-      console.log('✅ Demo users ensured in PostgreSQL database');
-    } catch (error) {
-      console.log('⚠️ Could not create demo users in PostgreSQL:', error);
+  console.log('📊 Using PostgreSQL database');
+  try {
+    const { UserRepository } = await import('../database/repositories/userRepository');
+    const existingUsers = await UserRepository.findAll();
+    console.log(`📊 Found ${existingUsers.length} existing users in PostgreSQL`);
+    
+    // Always create demo users if we have less than 2 users (demo + admin)
+    if (existingUsers.length < 2) {
+      console.log('📊 Less than 2 users found, creating demo users...');
+    } else {
+      console.log('✅ PostgreSQL database already has sufficient users, skipping demo user seeding');
+      return;
     }
+    
+    // Create demo user
+    const demoPasswordHash = await bcrypt.hash('password', 10);
+    const existingDemo = await UserRepository.findByEmail('demo@sportskalender.local');
+    if (!existingDemo) {
+      await UserRepository.create({
+        email: 'demo@sportskalender.local',
+        passwordHash: demoPasswordHash,
+        displayName: 'Demo User',
+        role: 'user'
+      });
+      console.log('✅ Created demo user: demo@sportskalender.local');
+    } else {
+      console.log('✅ Demo user already exists: demo@sportskalender.local');
+    }
+    
+    // Create admin user
+    const adminPasswordHash = await bcrypt.hash('admin123', 10);
+    const existingAdmin = await UserRepository.findByEmail('admin@sportskalender.local');
+    if (!existingAdmin) {
+      await UserRepository.create({
+        email: 'admin@sportskalender.local',
+        passwordHash: adminPasswordHash,
+        displayName: 'Admin',
+        role: 'admin'
+      });
+      console.log('✅ Created admin user: admin@sportskalender.local');
+    } else {
+      console.log('✅ Admin user already exists: admin@sportskalender.local');
+    }
+    
+    console.log('✅ Demo users ensured in PostgreSQL database');
+  } catch (error) {
+    console.error('❌ Failed to seed demo users in PostgreSQL:', error);
   }
 }
 
@@ -137,5 +104,3 @@ export function seedHighlights() {
     db.highlights.set(it.id, it);
   }
 }
-
-
