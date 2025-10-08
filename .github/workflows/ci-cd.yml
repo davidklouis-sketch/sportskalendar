@@ -268,6 +268,10 @@ jobs:
           echo "🔍 Testing backend health endpoint..."
           curl -f http://localhost:4000/api/health || echo "Backend health check failed"
           
+          # Debug: Test backend from within container network
+          echo "🔍 Testing backend from container network..."
+          docker compose -f docker-compose.traefik.yml --env-file .env.production exec backend curl -f http://localhost:4000/api/health || echo "Backend health check from container failed"
+          
           # Debug: Check environment variables in backend container
           echo "🔍 Checking backend environment variables..."
           docker compose -f docker-compose.traefik.yml --env-file .env.production exec backend env | grep -E "(DATABASE_URL|JWT_SECRET|DB_)" || echo "Could not check environment variables"
@@ -294,6 +298,13 @@ jobs:
             -H "Content-Type: application/json" \
             -d '{"email":"test@example.com","password":"Test123!","displayName":"Test User"}' \
             -v || echo "Registration endpoint test failed"
+          
+          # Debug: Test registration from container network
+          echo "🔍 Testing registration from container network..."
+          docker compose -f docker-compose.traefik.yml --env-file .env.production exec backend curl -X POST http://localhost:4000/api/auth/register \
+            -H "Content-Type: application/json" \
+            -d '{"email":"test@example.com","password":"Test123!","displayName":"Test User"}' \
+            -v || echo "Registration endpoint test from container failed"
           
           # Debug: Test login endpoint directly
           echo "🔍 Testing login endpoint..."
