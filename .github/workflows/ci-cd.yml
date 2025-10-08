@@ -206,7 +206,8 @@ jobs:
               docker compose -f docker-compose.traefik.yml --env-file .env.production exec -T postgres psql -U sportskalendar -d sportskalendar -c "SELECT email, display_name, role FROM users;" || echo "Could not list users"
               
               # Create data-only backup to avoid schema conflicts
-              docker compose -f docker-compose.traefik.yml --env-file .env.production exec -T postgres pg_dump -U sportskalendar sportskalendar --data-only --inserts > /tmp/db_backup.sql
+              # Use --no-owner and --no-privileges to avoid permission issues
+              docker compose -f docker-compose.traefik.yml --env-file .env.production exec -T postgres pg_dump -U sportskalendar sportskalendar --data-only --inserts --no-owner --no-privileges > /tmp/db_backup.sql
               echo "Backup created: $(ls -la /tmp/db_backup.sql)"
               
               # Verify backup contains data
@@ -268,6 +269,12 @@ jobs:
             
             # Deploy with zero-downtime (preserving volumes)
             echo "Starting services with preserved volumes..."
+            
+            # Ensure the postgres_data volume exists
+            echo "Ensuring postgres_data volume exists..."
+            docker volume create postgres_data 2>/dev/null || echo "Volume already exists or could not be created"
+            
+            # Start services
             docker compose -f docker-compose.traefik.yml --env-file .env.production up -d
             
             # Wait for database to be ready
@@ -285,6 +292,22 @@ jobs:
                 sleep 3
               fi
             done
+            
+            # Force demo user seeding if database is empty
+            echo "Checking if demo users need to be created..."
+            USER_COUNT_CHECK=$(docker compose -f docker-compose.traefik.yml --env-file .env.production exec -T postgres psql -U sportskalendar -d sportskalendar -t -c "SELECT COUNT(*) FROM users;" 2>/dev/null | tr -d ' \n' || echo "0")
+            echo "User count after startup: $USER_COUNT_CHECK"
+            
+            if [ "$USER_COUNT_CHECK" = "0" ]; then
+              echo "🚨 Database is empty, triggering demo user seeding..."
+              # Restart backend to trigger seeding
+              docker compose -f docker-compose.traefik.yml --env-file .env.production restart backend
+              sleep 10
+              
+              # Check again
+              USER_COUNT_AFTER_SEED=$(docker compose -f docker-compose.traefik.yml --env-file .env.production exec -T postgres psql -U sportskalendar -d sportskalendar -t -c "SELECT COUNT(*) FROM users;" 2>/dev/null | tr -d ' \n' || echo "0")
+              echo "User count after seeding: $USER_COUNT_AFTER_SEED"
+            fi
             
             # Check database status
             echo "Checking database status..."

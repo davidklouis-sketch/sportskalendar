@@ -44,8 +44,12 @@ export async function seedDevUser() {
       const { UserRepository } = await import('../database/repositories/userRepository');
       const existingUsers = await UserRepository.findAll();
       console.log(`📊 Found ${existingUsers.length} existing users in PostgreSQL`);
-      if (existingUsers.length > 0) {
-        console.log('✅ PostgreSQL database already has users, skipping demo user seeding');
+      
+      // Always create demo users if we have less than 2 users (demo + admin)
+      if (existingUsers.length < 2) {
+        console.log('📊 Less than 2 users found, creating demo users...');
+      } else {
+        console.log('✅ PostgreSQL database already has sufficient users, skipping demo user seeding');
         return;
       }
     } catch (error) {
