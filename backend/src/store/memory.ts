@@ -48,6 +48,7 @@ export async function seedDevUser() {
       // Always create demo users if we have less than 2 users (demo + admin)
       if (existingUsers.length < 2) {
         console.log('📊 Less than 2 users found, creating demo users...');
+        // Continue with seeding
       } else {
         console.log('✅ PostgreSQL database already has sufficient users, skipping demo user seeding');
         return;
@@ -89,22 +90,36 @@ export async function seedDevUser() {
     console.log('📊 Creating demo users in PostgreSQL database...');
     try {
       const { UserRepository } = await import('../database/repositories/userRepository');
-      await UserRepository.create({
-        email: user.email,
-        passwordHash: user.passwordHash,
-        displayName: user.displayName,
-        role: user.role
-      });
-      console.log(`✅ Created demo user: ${user.email}`);
       
-      await UserRepository.create({
-        email: admin.email,
-        passwordHash: admin.passwordHash,
-        displayName: admin.displayName,
-        role: admin.role
-      });
-      console.log(`✅ Created admin user: ${admin.email}`);
-      console.log('✅ Demo users created in PostgreSQL database');
+      // Check if demo user already exists
+      const existingDemo = await UserRepository.findByEmail(user.email);
+      if (!existingDemo) {
+        await UserRepository.create({
+          email: user.email,
+          passwordHash: user.passwordHash,
+          displayName: user.displayName,
+          role: user.role
+        });
+        console.log(`✅ Created demo user: ${user.email}`);
+      } else {
+        console.log(`✅ Demo user already exists: ${user.email}`);
+      }
+      
+      // Check if admin user already exists
+      const existingAdmin = await UserRepository.findByEmail(admin.email);
+      if (!existingAdmin) {
+        await UserRepository.create({
+          email: admin.email,
+          passwordHash: admin.passwordHash,
+          displayName: admin.displayName,
+          role: admin.role
+        });
+        console.log(`✅ Created admin user: ${admin.email}`);
+      } else {
+        console.log(`✅ Admin user already exists: ${admin.email}`);
+      }
+      
+      console.log('✅ Demo users ensured in PostgreSQL database');
     } catch (error) {
       console.log('⚠️ Could not create demo users in PostgreSQL:', error);
     }

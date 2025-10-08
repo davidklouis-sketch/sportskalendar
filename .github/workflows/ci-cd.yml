@@ -207,7 +207,8 @@ jobs:
               
               # Create data-only backup to avoid schema conflicts
               # Use --no-owner and --no-privileges to avoid permission issues
-              docker compose -f docker-compose.traefik.yml --env-file .env.production exec -T postgres pg_dump -U sportskalendar sportskalendar --data-only --inserts --no-owner --no-privileges > /tmp/db_backup.sql
+              # Use --column-inserts for better compatibility
+              docker compose -f docker-compose.traefik.yml --env-file .env.production exec -T postgres pg_dump -U sportskalendar sportskalendar --data-only --column-inserts --no-owner --no-privileges > /tmp/db_backup.sql
               echo "Backup created: $(ls -la /tmp/db_backup.sql)"
               
               # Verify backup contains data
@@ -245,15 +246,18 @@ jobs:
             # Create backup BEFORE stopping services
             echo "Creating final backup before deployment..."
             if docker compose -f docker-compose.traefik.yml --env-file .env.production ps postgres | grep -q "Up"; then
-              echo "Creating pre-deployment backup..."
-              docker compose -f docker-compose.traefik.yml --env-file .env.production exec -T postgres pg_dump -U sportskalendar sportskalendar --data-only --inserts > /tmp/pre_deploy_backup.sql
+               echo "Creating pre-deployment backup..."
+               docker compose -f docker-compose.traefik.yml --env-file .env.production exec -T postgres pg_dump -U sportskalendar sportskalendar --data-only --column-inserts --no-owner --no-privileges > /tmp/pre_deploy_backup.sql
               echo "Pre-deployment backup created: $(ls -la /tmp/pre_deploy_backup.sql)"
               
               # Verify this backup has data
               if [ -s /tmp/pre_deploy_backup.sql ]; then
                 echo "✅ Pre-deployment backup is not empty"
                 echo "Pre-deployment backup preview:"
-                head -5 /tmp/pre_deploy_backup.sql
+                head -10 /tmp/pre_deploy_backup.sql
+                echo "Checking for user data in backup:"
+                grep -i "INSERT INTO users" /tmp/pre_deploy_backup.sql || echo "⚠️ No user INSERT statements found in backup"
+                echo "Backup file size: $(wc -c < /tmp/pre_deploy_backup.sql) bytes"
               else
                 echo "⚠️ Pre-deployment backup is empty!"
               fi
@@ -331,9 +335,9 @@ jobs:
                 echo "Clearing existing data..."
                 docker compose -f docker-compose.traefik.yml --env-file .env.production exec -T postgres psql -U sportskalendar -d sportskalendar -c "TRUNCATE TABLE users, sessions, security_events, highlights RESTART IDENTITY CASCADE;"
                 
-                # Restore only data (skip schema conflicts)
-                echo "Restoring data from pre-deployment backup..."
-                docker compose -f docker-compose.traefik.yml --env-file .env.production exec -T postgres psql -U sportskalendar -d sportskalendar --single-transaction --on-error-stop=off < /tmp/pre_deploy_backup.sql
+                 # Restore only data (skip schema conflicts)
+                 echo "Restoring data from pre-deployment backup..."
+                 docker compose -f docker-compose.traefik.yml --env-file .env.production exec -T postgres psql -U sportskalendar -d sportskalendar --single-transaction < /tmp/pre_deploy_backup.sql
                 
                 # Verify restoration
                 echo "Verifying restoration..."
@@ -348,9 +352,9 @@ jobs:
                 echo "Clearing existing data..."
                 docker compose -f docker-compose.traefik.yml --env-file .env.production exec -T postgres psql -U sportskalendar -d sportskalendar -c "TRUNCATE TABLE users, sessions, security_events, highlights RESTART IDENTITY CASCADE;"
                 
-                # Restore only data (skip schema conflicts)
-                echo "Restoring data from backup..."
-                docker compose -f docker-compose.traefik.yml --env-file .env.production exec -T postgres psql -U sportskalendar -d sportskalendar --single-transaction --on-error-stop=off < /tmp/db_backup.sql
+                 # Restore only data (skip schema conflicts)
+                 echo "Restoring data from backup..."
+                 docker compose -f docker-compose.traefik.yml --env-file .env.production exec -T postgres psql -U sportskalendar -d sportskalendar --single-transaction < /tmp/db_backup.sql
                 
                 # Verify restoration
                 echo "Verifying restoration..."
@@ -367,8 +371,8 @@ jobs:
                   echo "Clearing existing data..."
                   docker compose -f docker-compose.traefik.yml --env-file .env.production exec -T postgres psql -U sportskalendar -d sportskalendar -c "TRUNCATE TABLE users, sessions, security_events, highlights RESTART IDENTITY CASCADE;"
                   
-                  echo "Restoring data from permanent backup..."
-                  gunzip -c "$LATEST_BACKUP" | docker compose -f docker-compose.traefik.yml --env-file .env.production exec -T postgres psql -U sportskalendar -d sportskalendar --single-transaction --on-error-stop=off
+                   echo "Restoring data from permanent backup..."
+                   gunzip -c "$LATEST_BACKUP" | docker compose -f docker-compose.traefik.yml --env-file .env.production exec -T postgres psql -U sportskalendar -d sportskalendar --single-transaction
                   
                   # Verify restoration
                   echo "Verifying restoration..."
