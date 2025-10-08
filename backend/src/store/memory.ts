@@ -16,6 +16,7 @@ export interface HighlightItem {
   views?: number;
   priority?: 'high' | 'medium' | 'low';
   source?: string;
+  type?: 'video' | 'news';
 }
 
 export async function seedDevUser() {

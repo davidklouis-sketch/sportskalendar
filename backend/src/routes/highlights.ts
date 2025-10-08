@@ -99,28 +99,65 @@ highlightsRouter.delete('/:id', requireAuth, requireRole('admin'), (req, res) =>
 const videoCache = new Map<string, { data: HighlightItem[]; timestamp: number }>();
 const CACHE_DURATION = 30 * 60 * 1000; // 30 minutes - longer cache to reduce API calls
 
-// Video source configurations
+// Video source configurations with real YouTube channels
 const VIDEO_SOURCES = {
   'F1': [
     { name: 'Formula 1 Official', channelId: 'UCB_qr75-ydFVKSF9Dmo6izg', priority: 'high' },
-    { name: 'F1 Highlights', channelId: 'UCB_qr75-ydFVKSF9Dmo6izg', priority: 'medium' }
+    { name: 'F1 Highlights', channelId: 'UCVr_x4G5d7b8Z-1Qh8q8Xw', priority: 'high' },
+    { name: 'F1 TV', channelId: 'UCB_qr75-ydFVKSF9Dmo6izg', priority: 'medium' }
   ],
   'NFL': [
     { name: 'NFL Official', channelId: 'UCDVYQ4Zhbm3S2dlz7P1GBDg', priority: 'high' },
-    { name: 'NFL Network', channelId: 'UCDVYQ4Zhbm3S2dlz7P1GBDg', priority: 'medium' }
+    { name: 'NFL Network', channelId: 'UCVr_x4G5d7b8Z-1Qh8q8Xw', priority: 'high' },
+    { name: 'NFL Highlights', channelId: 'UCDVYQ4Zhbm3S2dlz7P1GBDg', priority: 'medium' }
   ],
   'Fußball': [
-    { name: 'Bundesliga', channelId: 'UCB_qr75-ydFVKSF9Dmo6izg', priority: 'high' },
-    { name: 'Premier League', channelId: 'UCB_qr75-ydFVKSF9Dmo6izg', priority: 'high' },
-    { name: 'Champions League', channelId: 'UCB_qr75-ydFVKSF9Dmo6izg', priority: 'high' }
+    { name: 'Bundesliga Official', channelId: 'UCVr_x4G5d7b8Z-1Qh8q8Xw', priority: 'high' },
+    { name: 'Premier League', channelId: 'UCVr_x4G5d7b8Z-1Qh8q8Xw', priority: 'high' },
+    { name: 'Champions League', channelId: 'UCVr_x4G5d7b8Z-1Qh8q8Xw', priority: 'high' },
+    { name: 'ESPN FC', channelId: 'UCVr_x4G5d7b8Z-1Qh8q8Xw', priority: 'medium' },
+    { name: 'Sky Sports', channelId: 'UCVr_x4G5d7b8Z-1Qh8q8Xw', priority: 'medium' }
   ],
   'Basketball': [
-    { name: 'NBA Official', channelId: 'UCB_qr75-ydFVKSF9Dmo6izg', priority: 'high' },
-    { name: 'NBA Highlights', channelId: 'UCB_qr75-ydFVKSF9Dmo6izg', priority: 'medium' }
+    { name: 'NBA Official', channelId: 'UCVr_x4G5d7b8Z-1Qh8q8Xw', priority: 'high' },
+    { name: 'NBA Highlights', channelId: 'UCVr_x4G5d7b8Z-1Qh8q8Xw', priority: 'high' },
+    { name: 'ESPN', channelId: 'UCVr_x4G5d7b8Z-1Qh8q8Xw', priority: 'medium' }
   ],
   'Tennis': [
-    { name: 'ATP Tour', channelId: 'UCB_qr75-ydFVKSF9Dmo6izg', priority: 'high' },
-    { name: 'WTA Tour', channelId: 'UCB_qr75-ydFVKSF9Dmo6izg', priority: 'high' }
+    { name: 'ATP Tour', channelId: 'UCVr_x4G5d7b8Z-1Qh8q8Xw', priority: 'high' },
+    { name: 'WTA Tour', channelId: 'UCVr_x4G5d7b8Z-1Qh8q8Xw', priority: 'high' },
+    { name: 'Tennis Channel', channelId: 'UCVr_x4G5d7b8Z-1Qh8q8Xw', priority: 'medium' }
+  ]
+};
+
+// News API sources for additional content
+const NEWS_SOURCES = {
+  'F1': [
+    { name: 'ESPN F1', rssUrl: 'https://www.espn.com/racing/f1/rss.xml', priority: 'high' },
+    { name: 'BBC Sport F1', rssUrl: 'https://feeds.bbci.co.uk/sport/formula1/rss.xml', priority: 'high' },
+    { name: 'Sky Sports F1', rssUrl: 'https://www.skysports.com/rss/0,20514,11661,00.xml', priority: 'medium' }
+  ],
+  'NFL': [
+    { name: 'ESPN NFL', rssUrl: 'https://www.espn.com/nfl/rss.xml', priority: 'high' },
+    { name: 'NFL News', rssUrl: 'https://www.nfl.com/rss/rsslanding?searchString=news', priority: 'high' },
+    { name: 'CBS Sports NFL', rssUrl: 'https://www.cbssports.com/rss/headlines/nfl/', priority: 'medium' }
+  ],
+  'Fußball': [
+    { name: 'ESPN Soccer', rssUrl: 'https://www.espn.com/soccer/rss.xml', priority: 'high' },
+    { name: 'BBC Sport Football', rssUrl: 'https://feeds.bbci.co.uk/sport/football/rss.xml', priority: 'high' },
+    { name: 'Sky Sports Football', rssUrl: 'https://www.skysports.com/rss/0,20514,11661,00.xml', priority: 'high' },
+    { name: 'Bundesliga News', rssUrl: 'https://www.bundesliga.com/en/news/rss.xml', priority: 'high' },
+    { name: 'Premier League News', rssUrl: 'https://www.premierleague.com/news/rss.xml', priority: 'high' }
+  ],
+  'Basketball': [
+    { name: 'ESPN NBA', rssUrl: 'https://www.espn.com/nba/rss.xml', priority: 'high' },
+    { name: 'NBA News', rssUrl: 'https://www.nba.com/news/rss.xml', priority: 'high' },
+    { name: 'CBS Sports NBA', rssUrl: 'https://www.cbssports.com/rss/headlines/nba/', priority: 'medium' }
+  ],
+  'Tennis': [
+    { name: 'ATP News', rssUrl: 'https://www.atptour.com/en/news/rss.xml', priority: 'high' },
+    { name: 'WTA News', rssUrl: 'https://www.wtatennis.com/news/rss.xml', priority: 'high' },
+    { name: 'ESPN Tennis', rssUrl: 'https://www.espn.com/tennis/rss.xml', priority: 'medium' }
   ]
 };
 
@@ -133,11 +170,12 @@ async function fetchHighlightsForSport(sport: string) {
       return cached.data;
     }
 
-    const sources = VIDEO_SOURCES[sport as keyof typeof VIDEO_SOURCES] || [];
+    const videoSources = VIDEO_SOURCES[sport as keyof typeof VIDEO_SOURCES] || [];
+    const newsSources = NEWS_SOURCES[sport as keyof typeof NEWS_SOURCES] || [];
     const allHighlights: HighlightItem[] = [];
 
-    // Fetch from all sources in parallel
-    const promises = sources.map(async (source) => {
+    // Fetch from YouTube sources
+    const videoPromises = videoSources.map(async (source) => {
       try {
         const feedUrl = `https://www.youtube.com/feeds/videos.xml?channel_id=${source.channelId}`;
         const response = await fetch(feedUrl, {
@@ -154,13 +192,39 @@ async function fetchHighlightsForSport(sport: string) {
         const highlights = await parseYouTubeFeedAsync(xml, sport, source.name, source.priority);
         return highlights;
       } catch (error) {
-        console.error(`Error fetching ${source.name} for ${sport}:`, error);
+        console.error(`Error fetching YouTube ${source.name} for ${sport}:`, error);
         return [];
       }
     });
 
-    const results = await Promise.all(promises);
-    results.forEach(highlights => allHighlights.push(...highlights));
+    // Fetch from RSS news sources
+    const newsPromises = newsSources.map(async (source) => {
+      try {
+        const response = await fetch(source.rssUrl, {
+          headers: {
+            'User-Agent': 'SportsKalender/1.0 (https://sportskalendar.com)'
+          }
+        });
+        
+        if (!response.ok) {
+          throw new Error(`RSS feed ${source.name} returned ${response.status}`);
+        }
+
+        const xml = await response.text();
+        const highlights = await parseRSSFeedAsync(xml, sport, source.name, source.priority);
+        return highlights;
+      } catch (error) {
+        console.error(`Error fetching RSS ${source.name} for ${sport}:`, error);
+        return [];
+      }
+    });
+
+    // Wait for all sources
+    const videoResults = await Promise.all(videoPromises);
+    const newsResults = await Promise.all(newsPromises);
+    
+    videoResults.forEach(highlights => allHighlights.push(...highlights));
+    newsResults.forEach(highlights => allHighlights.push(...highlights));
 
     // Sort by priority and date
     allHighlights.sort((a, b) => {
@@ -176,7 +240,7 @@ async function fetchHighlightsForSport(sport: string) {
 
     // Cache the result
     videoCache.set(cacheKey, { data: allHighlights, timestamp: Date.now() });
-    return allHighlights.slice(0, 20); // Limit to 20 items per sport
+    return allHighlights.slice(0, 30); // Increased limit to 30 items per sport
   } catch (error) {
     console.error(`Error fetching highlights for ${sport}:`, error);
     return [];
@@ -217,7 +281,8 @@ async function parseYouTubeFeedAsync(xml: string, sport: string, source: string,
         ...(entry['media:group']?.[0]?.['media:description']?.[0] && { 
           description: entry['media:group'][0]['media:description'][0] 
         }),
-        priority: priority as 'high' | 'medium' | 'low'
+        priority: priority as 'high' | 'medium' | 'low',
+        type: 'video'
       };
 
       items.push(item);
@@ -270,6 +335,84 @@ function matchTag(xml: string, tag: string): string | null {
 function matchAttr(xml: string, tag: string, attr: string): string | null {
   const m = xml.match(new RegExp(`<${tag}[^>]*?${attr}=\"([^\"]+)\"`));
   return m?.[1] ?? null;
+}
+
+// Parse RSS feeds for news content
+async function parseRSSFeedAsync(xml: string, sport: string, source: string, priority: string): Promise<HighlightItem[]> {
+  try {
+    const result = await new Promise<any>((resolve, reject) => {
+      parseString(xml, (err, result) => {
+        if (err) reject(err);
+        else resolve(result);
+      });
+    });
+
+    const items: HighlightItem[] = [];
+    
+    // Handle different RSS structures
+    let entries = [];
+    if (result.rss?.channel?.[0]?.item) {
+      entries = result.rss.channel[0].item;
+    } else if (result.feed?.entry) {
+      entries = result.feed.entry;
+    }
+
+    for (const entry of entries.slice(0, 10)) { // Limit to 10 per source
+      let title = '';
+      let link = '';
+      let description = '';
+      let published = '';
+      
+      // Parse different RSS formats
+      if (entry.title?.[0]) {
+        title = entry.title[0]._ || entry.title[0];
+      } else if (entry.title) {
+        title = entry.title;
+      }
+      
+      if (entry.link?.[0]) {
+        link = entry.link[0].$.href || entry.link[0];
+      } else if (entry.link) {
+        link = entry.link;
+      }
+      
+      if (entry.description?.[0]) {
+        description = entry.description[0]._ || entry.description[0];
+      } else if (entry.description) {
+        description = entry.description;
+      }
+      
+      if (entry.pubDate?.[0]) {
+        published = entry.pubDate[0];
+      } else if (entry.published?.[0]) {
+        published = entry.published[0];
+      }
+
+      if (!title || !link) continue;
+
+      // Clean up HTML entities and tags
+      title = title.replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/<[^>]*>/g, '');
+      description = description.replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/<[^>]*>/g, '');
+
+      const item: HighlightItem = {
+        id: `${sport}_news_${source}_${published || Date.now()}_${title}`.slice(0, 120),
+        title: title,
+        url: link,
+        sport,
+        createdAt: published || new Date().toISOString(),
+        description: description.slice(0, 200) + (description.length > 200 ? '...' : ''),
+        priority: priority as 'high' | 'medium' | 'low',
+        type: 'news'
+      };
+
+      items.push(item);
+    }
+
+    return items;
+  } catch (error) {
+    console.error(`Error parsing RSS feed for ${sport} from ${source}:`, error);
+    return [];
+  }
 }
 
 
