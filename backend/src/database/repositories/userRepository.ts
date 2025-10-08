@@ -144,6 +144,10 @@ export class UserRepository {
         fields.push(`display_name = $${paramCount++}`);
         values.push(userData.displayName);
       }
+      if (userData.role !== undefined) {
+        fields.push(`role = $${paramCount++}`);
+        values.push(userData.role);
+      }
       if (userData.isPremium !== undefined) {
         fields.push(`is_premium = $${paramCount++}`);
         values.push(userData.isPremium);
