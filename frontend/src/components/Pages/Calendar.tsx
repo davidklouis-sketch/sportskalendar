@@ -70,7 +70,11 @@ export function Calendar() {
         setF1Events(f1Data || []);
       } catch (error) {
         console.error('Failed to load F1 events:', error);
-        setF1Events([]);
+        // Don't set empty array immediately - keep previous data if available
+        // This prevents clearing F1 events when API is temporarily unavailable
+        if (f1Events.length === 0) {
+          setF1Events([]);
+        }
       }
       
       // Load NFL Events

@@ -77,6 +77,8 @@ export function LiveData({ className = '' }: LiveDataProps) {
           }
         } catch (error) {
           console.error(`Failed to load live data for ${team.teamName}:`, error);
+          // Don't fail completely if one team's live data fails
+          // Continue with other teams
         }
       }
       
