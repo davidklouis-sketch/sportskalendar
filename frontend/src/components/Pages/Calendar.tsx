@@ -54,8 +54,8 @@ export function Calendar() {
       
       if (footballLeagues.length > 0) {
         try {
-          const { data: footballData } = await calendarApi.getEvents('football', footballLeagues);
-          let footballEvents = footballData || [];
+          const response = await calendarApi.getEvents('football', footballLeagues);
+          let footballEvents = (response.data as Event[]) || [];
           
           // Filter football events by selected teams
           const footballTeams = teams.filter(t => t.sport === 'football');
@@ -83,8 +83,8 @@ export function Calendar() {
       const f1Teams = teams.filter(t => t.sport === 'f1');
       if (f1Teams.length > 0) {
         try {
-          const { data: f1Data } = await calendarApi.getEvents('f1');
-          setF1Events(f1Data || []);
+          const response = await calendarApi.getEvents('f1');
+          setF1Events((response.data as Event[]) || []);
         } catch (error) {
           console.error('Failed to load F1 events:', error);
           // Don't set empty array immediately - keep previous data if available
@@ -101,8 +101,8 @@ export function Calendar() {
       const nflTeams = teams.filter(t => t.sport === 'nfl');
       if (nflTeams.length > 0) {
         try {
-          const { data: nflData } = await calendarApi.getEvents('nfl');
-          let nflEvents = nflData || [];
+          const response = await calendarApi.getEvents('nfl');
+          let nflEvents = (response.data as Event[]) || [];
           
           // Filter NFL events by selected teams
           nflEvents = nflEvents.filter((event: Event) => {
@@ -186,9 +186,9 @@ export function Calendar() {
         
         try {
           const highlightsPromise = highlightsApi.getHighlights(sportMapping[sport]);
-          const { data } = await Promise.race([highlightsPromise, timeoutPromise]);
+          const response = await Promise.race([highlightsPromise, timeoutPromise]);
           
-          let sportHighlights = data.items || [];
+          let sportHighlights = ((response as any)?.data?.items as Highlight[]) || [];
           
           // Filter highlights by team names for this sport
           const teamsForSport = localTeams.filter(t => t.sport === sport);
