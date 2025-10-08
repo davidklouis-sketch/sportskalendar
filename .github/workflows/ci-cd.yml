@@ -184,6 +184,14 @@ jobs:
             echo "Checking database volume persistence..."
             docker volume ls | grep postgres_data || echo "⚠️ postgres_data volume not found"
             
+            # Check if we're using the correct volume name
+            echo "All available volumes:"
+            docker volume ls
+            
+            # Check if the volume is actually mounted in the container
+            echo "Checking volume mount in running container:"
+            docker compose -f docker-compose.traefik.yml --env-file .env.production exec postgres df -h /var/lib/postgresql/data 2>/dev/null || echo "Could not check volume mount"
+            
             # Create database backup if container is running
             echo "Creating database backup..."
             if docker compose -f docker-compose.traefik.yml --env-file .env.production ps postgres | grep -q "Up"; then
@@ -195,7 +203,7 @@ jobs:
               
               # List all users before backup
               echo "Users before backup:"
-              docker compose -f docker-compose.traefik.yml --env-file .env.production exec -T postgres psql -U sportskalendar -d sportskalendar -c "SELECT email, displayName, role FROM users;" || echo "Could not list users"
+              docker compose -f docker-compose.traefik.yml --env-file .env.production exec -T postgres psql -U sportskalendar -d sportskalendar -c "SELECT email, display_name, role FROM users;" || echo "Could not list users"
               
               # Create data-only backup to avoid schema conflicts
               docker compose -f docker-compose.traefik.yml --env-file .env.production exec -T postgres pg_dump -U sportskalendar sportskalendar --data-only --inserts > /tmp/db_backup.sql
@@ -206,6 +214,17 @@ jobs:
                 echo "✅ Backup file is not empty"
                 echo "Backup preview (first 10 lines):"
                 head -10 /tmp/db_backup.sql
+                
+                # Check if backup contains actual user data
+                if grep -q "INSERT INTO users" /tmp/db_backup.sql; then
+                  echo "✅ Backup contains user data"
+                  echo "User data in backup:"
+                  grep "INSERT INTO users" /tmp/db_backup.sql
+                else
+                  echo "⚠️ Backup does not contain user data!"
+                  echo "Backup content analysis:"
+                  grep -E "(INSERT|COPY)" /tmp/db_backup.sql | head -5
+                fi
               else
                 echo "⚠️ Backup file is empty!"
               fi
@@ -220,6 +239,23 @@ jobs:
               echo "Permanent backup created: $PERMANENT_BACKUP.gz"
             else
               echo "PostgreSQL container not running, skipping backup"
+            fi
+            
+            # Create backup BEFORE stopping services
+            echo "Creating final backup before deployment..."
+            if docker compose -f docker-compose.traefik.yml --env-file .env.production ps postgres | grep -q "Up"; then
+              echo "Creating pre-deployment backup..."
+              docker compose -f docker-compose.traefik.yml --env-file .env.production exec -T postgres pg_dump -U sportskalendar sportskalendar --data-only --inserts > /tmp/pre_deploy_backup.sql
+              echo "Pre-deployment backup created: $(ls -la /tmp/pre_deploy_backup.sql)"
+              
+              # Verify this backup has data
+              if [ -s /tmp/pre_deploy_backup.sql ]; then
+                echo "✅ Pre-deployment backup is not empty"
+                echo "Pre-deployment backup preview:"
+                head -5 /tmp/pre_deploy_backup.sql
+              else
+                echo "⚠️ Pre-deployment backup is empty!"
+              fi
             fi
             
             # Stop services gracefully to preserve database
@@ -261,8 +297,25 @@ jobs:
             if [ "$USER_COUNT" -le "2" ]; then
               echo "Database has 2 or fewer users (expected: demo + admin + custom users), attempting restoration..."
               
-              # Try to restore from temporary backup first
-              if [ -f /tmp/db_backup.sql ] && [ -s /tmp/db_backup.sql ]; then
+              # Try to restore from pre-deployment backup first (most recent)
+              if [ -f /tmp/pre_deploy_backup.sql ] && [ -s /tmp/pre_deploy_backup.sql ]; then
+                echo "Restoring from pre-deployment backup..."
+                echo "Pre-deployment backup file size: $(wc -c < /tmp/pre_deploy_backup.sql) bytes"
+                echo "Pre-deployment backup preview (first 5 lines):"
+                head -5 /tmp/pre_deploy_backup.sql
+                
+                # Clear existing data first, then restore
+                echo "Clearing existing data..."
+                docker compose -f docker-compose.traefik.yml --env-file .env.production exec -T postgres psql -U sportskalendar -d sportskalendar -c "TRUNCATE TABLE users, sessions, security_events, highlights RESTART IDENTITY CASCADE;"
+                
+                # Restore only data (skip schema conflicts)
+                echo "Restoring data from pre-deployment backup..."
+                docker compose -f docker-compose.traefik.yml --env-file .env.production exec -T postgres psql -U sportskalendar -d sportskalendar --single-transaction --on-error-stop=off < /tmp/pre_deploy_backup.sql
+                
+                # Verify restoration
+                echo "Verifying restoration..."
+                docker compose -f docker-compose.traefik.yml --env-file .env.production exec -T postgres psql -U sportskalendar -d sportskalendar -c "SELECT email, display_name, role FROM users;" || echo "Could not list users after restore"
+              elif [ -f /tmp/db_backup.sql ] && [ -s /tmp/db_backup.sql ]; then
                 echo "Restoring from temporary backup..."
                 echo "Backup file size: $(wc -c < /tmp/db_backup.sql) bytes"
                 echo "Backup preview (first 5 lines):"
@@ -278,7 +331,7 @@ jobs:
                 
                 # Verify restoration
                 echo "Verifying restoration..."
-                docker compose -f docker-compose.traefik.yml --env-file .env.production exec -T postgres psql -U sportskalendar -d sportskalendar -c "SELECT email, displayName, role FROM users;" || echo "Could not list users after restore"
+                docker compose -f docker-compose.traefik.yml --env-file .env.production exec -T postgres psql -U sportskalendar -d sportskalendar -c "SELECT email, display_name, role FROM users;" || echo "Could not list users after restore"
               else
                 echo "No temporary backup found, trying permanent backup..."
                 # Find the latest permanent backup
@@ -338,6 +391,14 @@ jobs:
             # Check if volume is properly mounted
             echo "Checking volume mount in container:"
             docker compose -f docker-compose.traefik.yml --env-file .env.production exec postgres ls -la /var/lib/postgresql/data/ 2>/dev/null || echo "Could not check volume mount"
+            
+            # Check if the database files actually exist
+            echo "Checking database files:"
+            docker compose -f docker-compose.traefik.yml --env-file .env.production exec postgres ls -la /var/lib/postgresql/data/base/ 2>/dev/null || echo "Could not check database files"
+            
+            # Check if the database is actually accessible
+            echo "Testing database connectivity:"
+            docker compose -f docker-compose.traefik.yml --env-file .env.production exec postgres psql -U sportskalendar -d sportskalendar -c "SELECT current_database(), current_user;" 2>/dev/null || echo "Could not connect to database"
             
             # Check if database is accessible and has data
             echo "Checking database connectivity..."
