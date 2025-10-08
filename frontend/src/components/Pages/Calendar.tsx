@@ -27,26 +27,6 @@ export function Calendar() {
   // Local teams state to ensure UI updates work
   const [localTeams, setLocalTeams] = useState<Array<{ sport: string; teamName: string; teamId?: string; leagueId?: number }>>([]);
 
-  useEffect(() => {
-    // Always update local teams when user teams change
-    if (user?.selectedTeams) {
-      setLocalTeams(user.selectedTeams);
-    }
-  }, [user?.selectedTeams]); // Only depend on selectedTeams, not selectedSport
-
-  // Load events when teams change
-  useEffect(() => {
-    loadAllEvents();
-  }, [loadAllEvents]);
-
-  // Separate effect for initial sport selection
-  useEffect(() => {
-    // Set initial sport from user's selected teams only if no sport is currently selected
-    if (user?.selectedTeams?.length && !selectedSport) {
-      setSelectedSport(user.selectedTeams[0].sport);
-    }
-  }, [user?.selectedTeams?.length]); // Only depend on length to avoid overriding manual selection
-
   // Load all events separately for better organization
   const loadAllEvents = useCallback(async () => {
     setIsLoading(true);
@@ -124,6 +104,26 @@ export function Calendar() {
       setIsLoading(false);
     }
   }, [localTeams]);
+
+  useEffect(() => {
+    // Always update local teams when user teams change
+    if (user?.selectedTeams) {
+      setLocalTeams(user.selectedTeams);
+    }
+  }, [user?.selectedTeams]); // Only depend on selectedTeams, not selectedSport
+
+  // Load events when teams change
+  useEffect(() => {
+    loadAllEvents();
+  }, [loadAllEvents]);
+
+  // Separate effect for initial sport selection
+  useEffect(() => {
+    // Set initial sport from user's selected teams only if no sport is currently selected
+    if (user?.selectedTeams?.length && !selectedSport) {
+      setSelectedSport(user.selectedTeams[0].sport);
+    }
+  }, [user?.selectedTeams?.length]); // Only depend on length to avoid overriding manual selection
 
   // Removed loadHighlights - not used anymore
 
