@@ -26,12 +26,19 @@ export function Calendar() {
   const [localTeams, setLocalTeams] = useState<Array<{ sport: string; teamName: string; teamId?: string; leagueId?: number }>>([]);
 
   useEffect(() => {
-    // Set initial sport from user's selected teams
-    if (user?.selectedTeams?.length) {
-      setSelectedSport(user.selectedTeams[0].sport);
+    // Always update local teams when user teams change
+    if (user?.selectedTeams) {
       setLocalTeams(user.selectedTeams);
     }
-  }, [user?.selectedTeams]); // Include the full selectedTeams dependency
+  }, [user?.selectedTeams]); // Only depend on selectedTeams, not selectedSport
+
+  // Separate effect for initial sport selection
+  useEffect(() => {
+    // Set initial sport from user's selected teams only if no sport is currently selected
+    if (user?.selectedTeams?.length && !selectedSport) {
+      setSelectedSport(user.selectedTeams[0].sport);
+    }
+  }, [user?.selectedTeams?.length]); // Only depend on length to avoid overriding manual selection
 
   const loadEvents = useCallback(async () => {
     if (!selectedSport) {
