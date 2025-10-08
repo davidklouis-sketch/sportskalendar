@@ -84,6 +84,28 @@ export const calendarApi = {
   getReminders: () => api.get('/calendar/reminder'),
   addReminder: (eventId: string) => api.post('/calendar/reminder', { eventId }),
   removeReminder: (eventId: string) => api.delete('/calendar/reminder', { data: { eventId } }),
+  exportICS: async () => {
+    // Download ICS file
+    const response = await api.get('/calendar/export.ics', {
+      responseType: 'blob',
+      headers: {
+        'Accept': 'text/calendar',
+      }
+    });
+    
+    // Create download link
+    const blob = new Blob([response.data], { type: 'text/calendar; charset=utf-8' });
+    const url = window.URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = 'sportskalendar.ics';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    window.URL.revokeObjectURL(url);
+    
+    return response;
+  },
 };
 
 // Live

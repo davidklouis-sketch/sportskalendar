@@ -54,13 +54,8 @@ export function requireAuth(req: Request, res: Response, next: NextFunction) {
       });
     }
     
-    // Check token age (additional security)
-    if (payload.iat && Date.now() - (payload.iat * 1000) > 15 * 60 * 1000) {
-      return res.status(401).json({ 
-        error: 'Token expired',
-        message: 'Access token has expired' 
-      });
-    }
+    // Note: JWT expiry is already checked by jwt.verify() above
+    // No need for additional iat check - JWT exp claim handles this correctly
     
     (req as any).user = payload;
     next();

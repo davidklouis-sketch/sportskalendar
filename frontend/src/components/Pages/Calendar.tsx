@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { useAuthStore } from '../../store/useAuthStore';
-import { calendarApi, userApi } from '../../lib/api';
+import { calendarApi, userApi, highlightsApi } from '../../lib/api';
 import { format } from 'date-fns';
 import { FOOTBALL_LEAGUES, FOOTBALL_TEAMS, F1_DRIVERS, NFL_TEAMS } from '../../data/teams';
 import { LiveData } from '../LiveData';
@@ -12,7 +12,17 @@ interface Event {
   startsAt: string;
 }
 
-// Removed Highlight interface - not used anymore
+interface Highlight {
+  id: string;
+  title: string;
+  url: string;
+  sport: string;
+  description?: string;
+  createdAt: string;
+  thumbnail?: string;
+  duration?: string;
+  views?: number;
+}
 
 export function Calendar() {
   const { user, updateUser, setUser } = useAuthStore();
@@ -26,6 +36,9 @@ export function Calendar() {
   const [selectedTeamId, setSelectedTeamId] = useState<string>('');
   // Local teams state to ensure UI updates work
   const [localTeams, setLocalTeams] = useState<Array<{ sport: string; teamName: string; teamId?: string; leagueId?: number }>>([]);
+  // Highlights state
+  const [highlights, setHighlights] = useState<Highlight[]>([]);
+  const [isLoadingHighlights, setIsLoadingHighlights] = useState(false);
 
   // Load all events separately for better organization
   const loadAllEvents = useCallback(async () => {
@@ -139,11 +152,76 @@ export function Calendar() {
     }
   }, [user?.selectedTeams?.length]); // Only depend on length to avoid overriding manual selection
 
-  // Removed loadHighlights - not used anymore
+  // Load highlights for selected teams
+  const loadHighlights = useCallback(async () => {
+    if (!localTeams || localTeams.length === 0) {
+      setHighlights([]);
+      return;
+    }
+
+    setIsLoadingHighlights(true);
+    try {
+      const allHighlights: Highlight[] = [];
+      
+      // Load highlights for each sport that user has teams in
+      const uniqueSports = [...new Set(localTeams.map(t => t.sport))];
+      
+      for (const sport of uniqueSports) {
+        const sportMapping: Record<string, string> = {
+          football: 'Fußball',
+          nfl: 'NFL',
+          f1: 'F1',
+        };
+        
+        try {
+          const { data } = await highlightsApi.getHighlights(sportMapping[sport]);
+          let sportHighlights = data.items || [];
+          
+          // Filter highlights by team names for this sport
+          const teamsForSport = localTeams.filter(t => t.sport === sport);
+          if (teamsForSport.length > 0) {
+            sportHighlights = sportHighlights.filter((highlight: Highlight) => {
+              const searchText = (highlight.title + ' ' + (highlight.description || '')).toLowerCase();
+              return teamsForSport.some(team => searchText.includes(team.teamName.toLowerCase()));
+            });
+          }
+          
+          allHighlights.push(...sportHighlights);
+        } catch (error) {
+          console.error(`Failed to load ${sport} highlights:`, error);
+        }
+      }
+      
+      // Sort by date, newest first
+      allHighlights.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+      
+      // Limit to 6 highlights for the preview
+      setHighlights(allHighlights.slice(0, 6));
+    } catch (error) {
+      console.error('Failed to load highlights:', error);
+      setHighlights([]);
+    } finally {
+      setIsLoadingHighlights(false);
+    }
+  }, [localTeams]);
+
+  // Load highlights when teams change
+  useEffect(() => {
+    if (localTeams && localTeams.length > 0) {
+      loadHighlights();
+    } else {
+      setHighlights([]);
+    }
+  }, [localTeams, loadHighlights]);
 
   // Events are now loaded automatically when localTeams change
 
-  // Removed formatViews - not used anymore
+  const formatViews = (views?: number) => {
+    if (!views) return '';
+    if (views >= 1000000) return `${(views / 1000000).toFixed(1)}M`;
+    if (views >= 1000) return `${(views / 1000).toFixed(1)}K`;
+    return views.toString();
+  };
 
   const handleAddTeam = async () => {
     if (!selectedSport) return;
@@ -303,23 +381,120 @@ export function Calendar() {
     }
   };
 
+  const handleExportCalendar = async () => {
+    try {
+      await calendarApi.exportICS();
+      alert('✅ Kalender erfolgreich exportiert! Die Datei wurde heruntergeladen und kann jetzt in deine Kalender-App importiert werden.');
+    } catch (err) {
+      console.error('Failed to export calendar:', err);
+      alert('Fehler beim Exportieren des Kalenders. Bitte stelle sicher, dass du Teams ausgewählt hast.');
+    }
+  };
+
   return (
     <div className="max-w-7xl mx-auto">
       {/* Live Data Section - Show at top if there are live games */}
       <LiveData className="mb-6" />
+
+      {/* Highlights Section - Show at top if user has teams selected */}
+      {localTeams && localTeams.length > 0 && highlights.length > 0 && (
+        <div className="card p-6 mb-6">
+          <div className="mb-4">
+            <h2 className="text-2xl font-bold mb-2">🎥 Highlights & News</h2>
+            <p className="text-sm text-gray-600 dark:text-gray-400">
+              Aktuelle Highlights für deine Teams
+            </p>
+          </div>
+          
+          {isLoadingHighlights ? (
+            <div className="text-center py-8">
+              <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-primary-600"></div>
+              <p className="mt-2 text-sm text-gray-500 dark:text-gray-400">Lade Highlights...</p>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {highlights.map((highlight) => (
+                <a
+                  key={highlight.id}
+                  href={highlight.url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="group card p-0 overflow-hidden hover:shadow-lg transition-all"
+                >
+                  {/* Thumbnail */}
+                  {highlight.thumbnail ? (
+                    <div className="relative aspect-video bg-gray-200 dark:bg-gray-700">
+                      <img
+                        src={highlight.thumbnail}
+                        alt={highlight.title}
+                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                      />
+                      {highlight.duration && (
+                        <div className="absolute bottom-2 right-2 px-2 py-1 bg-black/80 text-white text-xs rounded">
+                          {highlight.duration}
+                        </div>
+                      )}
+                    </div>
+                  ) : (
+                    <div className="aspect-video bg-gradient-to-br from-primary-400 to-primary-600 flex items-center justify-center">
+                      <svg className="w-12 h-12 text-white opacity-50" fill="currentColor" viewBox="0 0 20 20">
+                        <path d="M10 18a8 8 0 100-16 8 8 0 000 16zM9.555 7.168A1 1 0 008 8v4a1 1 0 001.555.832l3-2a1 1 0 000-1.664l-3-2z" />
+                      </svg>
+                    </div>
+                  )}
+
+                  {/* Content */}
+                  <div className="p-3">
+                    <h3 className="font-semibold text-sm mb-1 line-clamp-2 group-hover:text-primary-600 dark:group-hover:text-primary-400 transition-colors">
+                      {highlight.title}
+                    </h3>
+
+                    <div className="flex items-center justify-between text-xs text-gray-500 dark:text-gray-400">
+                      <span>{new Date(highlight.createdAt).toLocaleDateString('de-DE')}</span>
+                      {highlight.views && (
+                        <span className="flex items-center gap-1">
+                          <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
+                            <path d="M10 12a2 2 0 100-4 2 2 0 000 4z" />
+                            <path fillRule="evenodd" d="M.458 10C1.732 5.943 5.522 3 10 3s8.268 2.943 9.542 7c-1.274 4.057-5.064 7-9.542 7S1.732 14.057.458 10zM14 10a4 4 0 11-8 0 4 4 0 018 0z" clipRule="evenodd" />
+                          </svg>
+                          {formatViews(highlight.views)}
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                </a>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
       
       {/* Team Selection Section */}
       <div className="card p-6 mb-6">
         <div className="flex items-center justify-between mb-4">
           <h2 className="text-2xl font-bold">Meine Teams</h2>
-          {!user?.isPremium && (
-            <button
-              onClick={handleUpgradePremium}
-              className="px-4 py-2 bg-gradient-to-r from-yellow-400 to-orange-500 text-white rounded-lg font-semibold hover:shadow-lg transition-all"
-            >
-              Upgrade zu Premium
-            </button>
-          )}
+          <div className="flex gap-2">
+            {localTeams && localTeams.length > 0 && (
+              <button
+                onClick={handleExportCalendar}
+                className="px-4 py-2 bg-blue-600 text-white rounded-lg font-semibold hover:bg-blue-700 transition-colors flex items-center gap-2"
+                title="Kalender exportieren und in Google Calendar, Outlook, Apple Calendar etc. importieren"
+              >
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                </svg>
+                Kalender Sync
+              </button>
+            )}
+            {!user?.isPremium && (
+              <button
+                onClick={handleUpgradePremium}
+                className="px-4 py-2 bg-gradient-to-r from-yellow-400 to-orange-500 text-white rounded-lg font-semibold hover:shadow-lg transition-all"
+              >
+                Upgrade zu Premium
+              </button>
+            )}
+          </div>
         </div>
 
         {/* Selected Teams */}

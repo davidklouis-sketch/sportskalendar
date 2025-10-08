@@ -82,7 +82,7 @@ export function setAuthCookies(res: Response, tokens: { access: string; refresh:
     secure: isHttps,
     sameSite: 'lax',
     path: '/',
-    maxAge: 15 * 60 * 1000,
+    maxAge: 24 * 60 * 60 * 1000, // 24 hours to match JWT expiry
   });
   res.cookie('refresh_token', tokens.refresh, {
     httpOnly: true,
@@ -351,7 +351,7 @@ authRouter.post('/logout', (req: Request, res: Response) => {
   }
 });
 
-authRouter.post('/refresh', (req: Request, res: Response) => {
+authRouter.post('/refresh', async (req: Request, res: Response) => {
   try {
     const { refresh_token } = (req as any).cookies || {};
     if (!refresh_token) {
@@ -392,9 +392,26 @@ authRouter.post('/refresh', (req: Request, res: Response) => {
     // Blacklist the old refresh token
     SessionManager.blacklistToken(refresh_token);
     
-    // Generate new tokens
-    const access = signAccess(payload);
-    const refresh = signRefresh(payload);
+    // Load fresh user data from database to get current role
+    let userPayload: { id: string; email: string; role?: 'user' | 'admin' } = payload;
+    try {
+      const { UserRepository } = await import('../database/repositories/userRepository');
+      const freshUser = await UserRepository.findByEmail(payload.email);
+      if (freshUser) {
+        userPayload = {
+          id: freshUser.id,
+          email: freshUser.email,
+          role: freshUser.role as 'user' | 'admin'
+        };
+      }
+    } catch (error) {
+      console.error('Failed to load fresh user data during refresh:', error);
+      // Continue with existing payload if database load fails
+    }
+    
+    // Generate new tokens with fresh user data
+    const access = signAccess(userPayload);
+    const refresh = signRefresh(userPayload);
     
     // Set new cookies
     setAuthCookies(res, { access, refresh });

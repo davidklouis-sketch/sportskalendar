@@ -476,12 +476,9 @@ function generateDemoFootballEvents(leagues: number[] = []): EventItem[] {
         const matchDate = new Date(now.getTime() + dayOffset * 24 * 60 * 60 * 1000);
         matchDate.setHours(15 + timeOffset + Math.floor(Math.random() * 2), Math.floor(Math.random() * 60), 0, 0);
         
-        // Add some variation to team names for repeated matches
-        const suffix = i >= leagueTeams.length ? ' (R2)' : '';
-        
         items.push({
           id: `demo_${league}_${i}`,
-          title: `${leagueName} · ${match[0]}${suffix} vs ${match[1]}${suffix}`,
+          title: `${leagueName} · ${match[0]} vs ${match[1]}`,
           sport: 'Fußball',
           startsAt: matchDate.toISOString()
         });
@@ -646,6 +643,128 @@ calendarRouter.post('/custom', requireAuth, (req, res) => {
   res.status(201).json({ ok: true, id });
 });
 
-// ICS import functionality removed - was unnecessary complexity
+// ------------------ ICS Export for Calendar Sync ------------------
+
+calendarRouter.get('/export.ics', requireAuth, async (req, res) => {
+  try {
+    const user = (req as any).user as { id: string; email: string };
+    
+    // Get user's selected teams from database
+    const { UserRepository } = await import('../database/repositories/userRepository');
+    const userRecord = await UserRepository.findByEmail(user.email);
+    
+    if (!userRecord || !userRecord.selectedTeams || userRecord.selectedTeams.length === 0) {
+      return res.status(404).json({ error: 'No teams selected. Please select teams first.' });
+    }
+    
+    const selectedTeams = userRecord.selectedTeams as Array<{
+      sport: 'football' | 'nfl' | 'f1';
+      teamName: string;
+      leagueId?: number;
+    }>;
+    
+    // Aggregate events for user's teams
+    const allEvents: EventItem[] = [];
+    
+    for (const team of selectedTeams) {
+      const opts: AggregateOptions = {
+        sport: team.sport,
+        leagues: team.leagueId ? [team.leagueId] : undefined
+      };
+      
+      const events = await aggregateUpcomingEvents(undefined, opts);
+      
+      // Filter events by team name
+      const teamEvents = events.filter(event => {
+        const eventTitle = event.title.toLowerCase();
+        const teamName = team.teamName.toLowerCase();
+        return eventTitle.includes(teamName);
+      });
+      
+      allEvents.push(...teamEvents);
+    }
+    
+    // Remove duplicates
+    const seen = new Set<string>();
+    const uniqueEvents = allEvents.filter(event => {
+      if (seen.has(event.id)) return false;
+      seen.add(event.id);
+      return true;
+    });
+    
+    // Sort by date
+    uniqueEvents.sort((a, b) => new Date(a.startsAt).getTime() - new Date(b.startsAt).getTime());
+    
+    // Generate ICS file
+    const icsContent = generateICS(uniqueEvents, userRecord.displayName || user.email);
+    
+    // Set headers for ICS download
+    res.setHeader('Content-Type', 'text/calendar; charset=utf-8');
+    res.setHeader('Content-Disposition', 'attachment; filename="sportskalendar.ics"');
+    res.send(icsContent);
+    
+  } catch (error) {
+    console.error('ICS export error:', error);
+    res.status(500).json({ error: 'Failed to generate calendar file' });
+  }
+});
+
+function generateICS(events: EventItem[], calendarName: string): string {
+  const now = new Date();
+  const timestamp = formatICSDate(now);
+  
+  let ics = [
+    'BEGIN:VCALENDAR',
+    'VERSION:2.0',
+    'PRODID:-//Sportskalendar//DE',
+    'CALSCALE:GREGORIAN',
+    'METHOD:PUBLISH',
+    `X-WR-CALNAME:${escapeICS(calendarName)} - Sportskalendar`,
+    'X-WR-TIMEZONE:Europe/Berlin',
+    'X-WR-CALDESC:Spieltermine für deine ausgewählten Teams',
+  ].join('\r\n');
+  
+  for (const event of events) {
+    const startDate = new Date(event.startsAt);
+    const endDate = new Date(startDate.getTime() + 2 * 60 * 60 * 1000); // 2 hours duration
+    
+    ics += '\r\n' + [
+      'BEGIN:VEVENT',
+      `UID:${escapeICS(event.id)}@sportskalendar.de`,
+      `DTSTAMP:${timestamp}`,
+      `DTSTART:${formatICSDate(startDate)}`,
+      `DTEND:${formatICSDate(endDate)}`,
+      `SUMMARY:${escapeICS(event.title)}`,
+      `DESCRIPTION:${escapeICS(event.title)} - Angesetzt für ${startDate.toLocaleString('de-DE')}`,
+      'STATUS:CONFIRMED',
+      'SEQUENCE:0',
+      'TRANSP:OPAQUE',
+      'END:VEVENT',
+    ].join('\r\n');
+  }
+  
+  ics += '\r\nEND:VCALENDAR';
+  
+  return ics;
+}
+
+function formatICSDate(date: Date): string {
+  const year = date.getUTCFullYear();
+  const month = String(date.getUTCMonth() + 1).padStart(2, '0');
+  const day = String(date.getUTCDate()).padStart(2, '0');
+  const hours = String(date.getUTCHours()).padStart(2, '0');
+  const minutes = String(date.getUTCMinutes()).padStart(2, '0');
+  const seconds = String(date.getUTCSeconds()).padStart(2, '0');
+  return `${year}${month}${day}T${hours}${minutes}${seconds}Z`;
+}
+
+function escapeICS(text: string): string {
+  return text
+    .replace(/\\/g, '\\\\')
+    .replace(/;/g, '\\;')
+    .replace(/,/g, '\\,')
+    .replace(/\n/g, '\\n')
+    .replace(/\r/g, '');
+}
 
 
