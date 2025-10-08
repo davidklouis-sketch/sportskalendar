@@ -52,6 +52,7 @@ export interface CreateUserData {
 export interface UpdateUserData {
   email?: string;
   displayName?: string;
+  role?: 'user' | 'admin';
   isPremium?: boolean;
   selectedTeams?: Array<{
     sport: 'football' | 'nfl' | 'f1';
