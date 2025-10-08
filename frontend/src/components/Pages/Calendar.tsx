@@ -83,6 +83,15 @@ export function Calendar() {
           }
           
           console.log('🎯 Final football events:', footballEvents);
+          
+          // Show warning if no events found
+          if (footballEvents.length === 0) {
+            console.warn('⚠️ No football events found. This might be because:');
+            console.warn('1. No API keys configured for external football APIs');
+            console.warn('2. API rate limits exceeded');
+            console.warn('3. Selected teams not found in current events');
+          }
+          
           setFootballEvents(footballEvents);
         } catch (error) {
           console.error('❌ Failed to load football events:', error);

@@ -324,9 +324,20 @@ async function fetchNFL(debug?: DebugBuffer): Promise<EventItem[]> {
 async function fetchSoccerApiFootball(debug?: DebugBuffer, leagues: number[] = []): Promise<EventItem[]> {
   debug?.logs.push(`Fetching soccer events for leagues: ${leagues.join(', ')}`);
   
-  // Try football-data.org first (free tier available)
+  // Try OpenLigaDB first (completely free, no API key needed)
+  if (leagues.includes(78)) { // Bundesliga
+    debug?.logs.push('Trying OpenLigaDB API (free, no key required)');
+    const openLigaDBItems = await fetchOpenLigaDB(debug);
+    if (openLigaDBItems.length > 0) {
+      debug?.logs.push(`OpenLigaDB returned ${openLigaDBItems.length} events`);
+      return openLigaDBItems;
+    }
+    debug?.logs.push('OpenLigaDB returned no events');
+  }
+  
+  // Try football-data.org (free tier available)
   const footballDataKey = process.env.FOOTBALL_DATA_KEY || '';
-  if (footballDataKey) {
+  if (footballDataKey && footballDataKey !== 'your_football_data_api_key') {
     debug?.logs.push('Trying football-data.org API');
     const footballDataItems = await fetchFootballDataOrg(footballDataKey, debug, leagues);
     if (footballDataItems.length > 0) {
@@ -338,8 +349,8 @@ async function fetchSoccerApiFootball(debug?: DebugBuffer, leagues: number[] = [
 
   // Fallback to API-FOOTBALL
   const key = process.env.API_FOOTBALL_KEY || '';
-  if (!key) { 
-    debug?.logs.push('No API keys available (FOOTBALL_DATA_KEY or API_FOOTBALL_KEY), returning empty array'); 
+  if (!key || key === 'your_api_football_key') { 
+    debug?.logs.push('No API keys available and no free API returned data, returning empty array'); 
     return [];
   }
   
@@ -402,7 +413,53 @@ async function fetchSoccerApiFootball(debug?: DebugBuffer, leagues: number[] = [
   return items;
 }
 
-// Demo football function removed - only live API data is used
+// OpenLigaDB API - Free API without API key for German Bundesliga
+async function fetchOpenLigaDB(debug?: DebugBuffer): Promise<EventItem[]> {
+  try {
+    // Current season (2024/2025)
+    const season = 2024;
+    const url = `https://api.openligadb.de/getmatchdata/bl1/${season}`;
+    
+    debug?.logs.push(`Calling OpenLigaDB API: ${url}`);
+    const response = await fetchWithLog(url, {}, debug, 'OpenLigaDB');
+    
+    if (!response.ok) {
+      debug?.logs.push(`OpenLigaDB API failed with status ${response.status}`);
+      return [];
+    }
+    
+    const matches = await response.json();
+    debug?.logs.push(`OpenLigaDB returned ${matches.length} total matches`);
+    
+    const items: EventItem[] = [];
+    const now = new Date();
+    
+    for (const match of matches) {
+      // Only include upcoming matches
+      const matchDate = new Date(match.matchDateTime);
+      if (matchDate < now) continue;
+      
+      const homeTeam = match.team1?.teamName || '';
+      const awayTeam = match.team2?.teamName || '';
+      
+      if (!homeTeam || !awayTeam) continue;
+      
+      items.push({
+        id: `openligadb_${match.matchID}`,
+        title: `Bundesliga · ${homeTeam} vs ${awayTeam}`,
+        sport: 'Fußball',
+        startsAt: matchDate.toISOString()
+      });
+    }
+    
+    debug?.logs.push(`OpenLigaDB upcoming matches: ${items.length}`);
+    return items;
+    
+  } catch (error: any) {
+    debug?.logs.push(`OpenLigaDB error: ${error.message || String(error)}`);
+    return [];
+  }
+}
 
 // New function for football-data.org API
 async function fetchFootballDataOrg(apiKey: string, debug?: DebugBuffer, leagues: number[] = []): Promise<EventItem[]> {
