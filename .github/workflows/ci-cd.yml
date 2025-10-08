@@ -295,6 +295,13 @@ jobs:
             -d '{"email":"test@example.com","password":"Test123!","displayName":"Test User"}' \
             -v || echo "Registration endpoint test failed"
           
+          # Debug: Test login endpoint directly
+          echo "🔍 Testing login endpoint..."
+          curl -X POST http://localhost:4000/api/auth/login \
+            -H "Content-Type: application/json" \
+            -d '{"email":"demo@sportskalender.local","password":"password"}' \
+            -v || echo "Login endpoint test failed"
+          
           # Debug: Check if postgres container exists
           echo "🔍 All containers:"
           docker ps -a | grep postgres || echo "No postgres containers found"

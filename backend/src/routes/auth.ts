@@ -213,15 +213,25 @@ authRouter.post('/login', authRateLimit, async (req: Request, res: Response) => 
       });
     }
 
+    console.log('🔍 Login request received');
+    console.log('🔍 Request body type:', typeof req.body);
+    console.log('🔍 Request body:', req.body);
+    console.log('🔍 Content-Type:', req.headers['content-type']);
+    
     let body: any = req.body;
     if (typeof body === 'string') {
+      console.log('🔍 Body is string, attempting to parse...');
       try {
         body = JSON.parse(body);
+        console.log('✅ JSON parsing successful:', body);
       } catch {
+        console.log('❌ JSON parsing failed, trying URLSearchParams...');
         try {
           const params = new URLSearchParams(body);
           body = Object.fromEntries(params.entries());
+          console.log('✅ URLSearchParams parsing successful:', body);
         } catch {
+          console.log('❌ All parsing methods failed');
           return res.status(400).json({ 
             error: 'Invalid request format',
             message: 'Request body must be valid JSON' 
@@ -230,13 +240,16 @@ authRouter.post('/login', authRateLimit, async (req: Request, res: Response) => 
       }
     }
     
+    console.log('🔍 Final body for validation:', body);
     const parsed = loginSchema.safeParse(body);
     if (!parsed.success) {
+      console.log('❌ Schema validation failed:', parsed.error.flatten());
       return res.status(400).json({ 
         error: 'Invalid input',
         details: parsed.error.flatten() 
       });
     }
+    console.log('✅ Schema validation successful:', parsed.data);
 
     const { email, password } = parsed.data;
     
