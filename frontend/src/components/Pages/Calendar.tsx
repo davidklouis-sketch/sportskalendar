@@ -65,17 +65,22 @@ export function Calendar() {
         setFootballEvents([]);
       }
       
-      // Load F1 Events - Show ALL F1 races for all users (since all drivers participate)
-      try {
-        const { data: f1Data } = await calendarApi.getEvents('f1');
-        setF1Events(f1Data || []);
-      } catch (error) {
-        console.error('Failed to load F1 events:', error);
-        // Don't set empty array immediately - keep previous data if available
-        // This prevents clearing F1 events when API is temporarily unavailable
-        if (f1Events.length === 0) {
-          setF1Events([]);
+      // Load F1 Events - Only show F1 races if user has selected F1 drivers
+      const f1Teams = teams.filter(t => t.sport === 'f1');
+      if (f1Teams.length > 0) {
+        try {
+          const { data: f1Data } = await calendarApi.getEvents('f1');
+          setF1Events(f1Data || []);
+        } catch (error) {
+          console.error('Failed to load F1 events:', error);
+          // Don't set empty array immediately - keep previous data if available
+          // This prevents clearing F1 events when API is temporarily unavailable
+          if (f1Events.length === 0) {
+            setF1Events([]);
+          }
         }
+      } else {
+        setF1Events([]);
       }
       
       // Load NFL Events
@@ -543,7 +548,7 @@ export function Calendar() {
                 🏎️ Formel 1 Events
               </h2>
               <p className="text-sm text-gray-600 dark:text-gray-400">
-                {f1Events.length} kommende Rennen - Alle Fahrer starten
+                {f1Events.length} kommende Rennen für ausgewählte Fahrer
               </p>
             </div>
             <div className="space-y-3">
@@ -616,12 +621,12 @@ export function Calendar() {
             <p className="text-gray-500 dark:text-gray-400 mb-6">
               {user?.selectedTeams?.length ? 
                 'Keine kommenden Events für deine ausgewählten Teams.' : 
-                'Füge Teams hinzu, um Events zu sehen. F1 Events werden für alle angezeigt!'
+                'Füge Teams hinzu, um Events zu sehen!'
               }
             </p>
             {!user?.selectedTeams?.length && (
               <p className="text-sm text-blue-600 dark:text-blue-400">
-                💡 Tipp: F1 Events werden automatisch für alle angezeigt, da alle Fahrer starten!
+                💡 Tipp: Wähle Teams aus verschiedenen Sportarten aus, um deren Events zu sehen!
               </p>
             )}
           </div>
