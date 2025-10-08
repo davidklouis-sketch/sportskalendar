@@ -2,8 +2,7 @@ import { useEffect, useState } from 'react';
 import { useAuthStore } from './store/useAuthStore';
 import { useThemeStore } from './store/useThemeStore';
 import { userApi } from './lib/api';
-import { Login } from './components/Auth/Login';
-import { Register } from './components/Auth/Register';
+import { AuthModal } from './components/Auth/AuthModal';
 import { Header } from './components/Layout/Header';
 import { Footer } from './components/Layout/Footer';
 import { CookieBanner } from './components/Layout/CookieBanner';
@@ -12,10 +11,11 @@ import { Live } from './components/Pages/Live';
 import { Highlights } from './components/Pages/Highlights';
 import { Admin } from './components/Pages/Admin';
 import { Settings } from './components/Pages/Settings';
+import { LandingPage } from './components/Pages/LandingPage';
 import Privacy from './components/Pages/Privacy';
 import Contact from './components/Pages/Contact';
 
-type AuthView = 'login' | 'register';
+type AuthView = 'login' | 'register' | null;
 type Page = 'calendar' | 'live' | 'highlights' | 'admin' | 'settings' | 'privacy' | 'contact';
 
 function App() {
@@ -66,18 +66,6 @@ function App() {
     checkAuth();
   }, [isAuthenticated, setLoading, setUser, user]);
 
-  const handleLoginSuccess = () => {
-    setAuthView(null);
-    setCurrentPage('calendar');
-    // Force a small delay to ensure state updates are processed
-    setTimeout(() => {
-      // Additional cleanup if needed
-    }, 100);
-  };
-
-  const handleRegisterSuccess = () => {
-    setAuthView('login');
-  };
 
   if (isInitializing) {
   return (
@@ -90,25 +78,23 @@ function App() {
     );
   }
 
-  // Show login/register only if user explicitly wants to authenticate
-  // Otherwise, show public content
+  // Show auth modal if user wants to authenticate
   if (authView === 'login' || authView === 'register') {
     return (
-      <div className="min-h-screen flex items-center justify-center p-4">
-        <div className="w-full">
-          {authView === 'login' ? (
-            <Login
-              onSwitchToRegister={() => setAuthView('register')}
-              onSuccess={handleLoginSuccess}
+      <>
+        <div className="min-h-screen flex items-center justify-center p-4">
+          <div className="w-full">
+            <LandingPage 
+              onShowLogin={() => setAuthView('login')} 
+              onShowRegister={() => setAuthView('register')} 
             />
-          ) : (
-            <Register
-              onSwitchToLogin={() => setAuthView('login')}
-              onSuccess={handleRegisterSuccess}
-            />
-          )}
+          </div>
         </div>
-      </div>
+        <AuthModal
+          onClose={() => setAuthView(null)}
+          initialMode={authView}
+        />
+      </>
     );
   }
 
@@ -122,9 +108,9 @@ function App() {
       />
       
       <main className="flex-1">
-        {currentPage === 'calendar' && <Calendar />}
-        {currentPage === 'live' && <Live />}
-        {currentPage === 'highlights' && <Highlights />}
+        {currentPage === 'calendar' && (user ? <Calendar /> : <LandingPage onShowLogin={() => setAuthView('login')} onShowRegister={() => setAuthView('register')} />)}
+        {currentPage === 'live' && (user ? <Live /> : <LandingPage onShowLogin={() => setAuthView('login')} onShowRegister={() => setAuthView('register')} />)}
+        {currentPage === 'highlights' && (user ? <Highlights /> : <LandingPage onShowLogin={() => setAuthView('login')} onShowRegister={() => setAuthView('register')} />)}
         {currentPage === 'admin' && user?.role === 'admin' ? (
           <Admin />
         ) : currentPage === 'admin' ? (
