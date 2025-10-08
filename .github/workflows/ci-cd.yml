@@ -184,8 +184,37 @@ jobs:
           echo "Ensuring postgres_data volume exists..."
           docker volume create postgres_data 2>/dev/null || echo "Volume already exists or could not be created"
           
+          # Debug: Check volume details
+          echo "🔍 Volume details:"
+          docker volume inspect postgres_data || echo "Could not inspect postgres_data volume"
+          
+          # Debug: Check volume permissions
+          echo "🔍 Volume permissions:"
+          ls -la /var/lib/docker/volumes/postgres_data/_data/ || echo "Could not check volume permissions"
+          
           # Start services
           docker compose -f docker-compose.traefik.yml --env-file .env.production up -d
+          
+          # Debug: Check container status
+          echo "🔍 Checking container status..."
+          docker compose -f docker-compose.traefik.yml --env-file .env.production ps
+          
+          # Debug: Check PostgreSQL container logs
+          echo "🔍 PostgreSQL container logs:"
+          docker compose -f docker-compose.traefik.yml --env-file .env.production logs postgres || echo "Could not get postgres logs"
+          
+          # Debug: Check if postgres container exists
+          echo "🔍 All containers:"
+          docker ps -a | grep postgres || echo "No postgres containers found"
+          
+          # Fallback: Try to start postgres container individually if it failed
+          echo "🔧 Attempting to start postgres container individually..."
+          docker compose -f docker-compose.traefik.yml --env-file .env.production up -d postgres
+          
+          # Wait a bit and check again
+          sleep 10
+          echo "🔍 Container status after individual start:"
+          docker compose -f docker-compose.traefik.yml --env-file .env.production ps postgres
           
           # Wait for database to be ready
           echo "⏳ Waiting for database to be ready..."
