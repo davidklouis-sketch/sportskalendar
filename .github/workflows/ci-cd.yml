@@ -1,4 +1,4 @@
-name: CI/CD Pipeline
+name: CI/CD Pipeline v2
 
 on:
   push:
@@ -111,6 +111,8 @@ jobs:
         script: |
           set -e
           
+          # CACHE BUSTER: Force refresh workflow
+          echo "🔄 Workflow refreshed at $(date)"
           echo "🚀 Starting deployment..."
           echo "🔍 Current working directory: $(pwd)"
           echo "🔍 Current user: $(whoami)"
@@ -127,7 +129,9 @@ jobs:
           find /home/dl -name "docker-compose.traefik.yml" 2>/dev/null || echo "❌ docker-compose.traefik.yml not found in /home/dl"
           
           echo "🔍 Attempting to navigate to project directory..."
+          echo "🔍 Target path: /home/dl/sportskalendar/sportskalendar"
           cd /home/dl/sportskalendar/sportskalendar
+          echo "✅ Successfully navigated to: $(pwd)"
           
           # Debug: Check if files exist
           echo "🔍 Checking directory contents..."
