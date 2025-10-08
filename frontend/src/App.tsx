@@ -88,9 +88,10 @@ function App() {
     );
   }
 
-  // Require authentication for all pages
-  if (!isAuthenticated || !user) {
-  return (
+  // Show login/register only if user explicitly wants to authenticate
+  // Otherwise, show public content
+  if (authView === 'login' || authView === 'register') {
+    return (
       <div className="min-h-screen flex items-center justify-center p-4">
         <div className="w-full">
           {authView === 'login' ? (
@@ -105,13 +106,18 @@ function App() {
             />
           )}
         </div>
-    </div>
-  );
+      </div>
+    );
   }
 
   return (
     <div className="min-h-screen flex flex-col">
-      <Header currentPage={currentPage} onNavigate={setCurrentPage} />
+      <Header 
+        currentPage={currentPage} 
+        onNavigate={setCurrentPage}
+        onShowLogin={() => setAuthView('login')}
+        onShowRegister={() => setAuthView('register')}
+      />
       
       <main className="flex-1">
         {currentPage === 'calendar' && <Calendar />}
@@ -133,7 +139,20 @@ function App() {
         </button>
       </div>
         ) : null}
-        {currentPage === 'settings' && <Settings />}
+        {currentPage === 'settings' && user ? <Settings /> : (
+          <div className="card p-12 text-center">
+            <h2 className="text-2xl font-bold mb-4">🔒 Anmeldung erforderlich</h2>
+            <p className="text-gray-600 dark:text-gray-400 mb-6">
+              Bitte melden Sie sich an, um auf die Einstellungen zuzugreifen.
+            </p>
+            <button 
+              onClick={() => setAuthView('login')}
+              className="btn btn-primary"
+            >
+              Anmelden
+            </button>
+          </div>
+        )}
         {currentPage === 'privacy' && <Privacy />}
         {currentPage === 'contact' && <Contact />}
       </main>

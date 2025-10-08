@@ -5,11 +5,13 @@ import { authApi } from '../../lib/api';
 interface HeaderProps {
   currentPage: 'calendar' | 'live' | 'highlights' | 'admin' | 'settings' | 'privacy' | 'contact';
   onNavigate: (page: 'calendar' | 'live' | 'highlights' | 'admin' | 'settings' | 'privacy' | 'contact') => void;
+  onShowLogin?: () => void;
+  onShowRegister?: () => void;
 }
 
-export function Header({ currentPage, onNavigate }: HeaderProps) {
+export function Header({ currentPage, onNavigate, onShowLogin, onShowRegister }: HeaderProps) {
   const { isDark, toggleTheme } = useThemeStore();
-  const { user, logout } = useAuthStore();
+  const { user, logout, isAuthenticated } = useAuthStore();
 
   const handleLogout = async () => {
     try {
@@ -68,49 +70,6 @@ export function Header({ currentPage, onNavigate }: HeaderProps) {
 
           {/* Right side */}
           <div className="flex items-center gap-3">
-            {/* Premium Badge */}
-            {user?.isPremium && (
-              <span className="hidden sm:inline-flex px-3 py-1 bg-gradient-to-r from-yellow-400 to-orange-500 text-white text-xs font-bold rounded-full">
-                PREMIUM
-              </span>
-            )}
-
-            {/* User Info */}
-            <div className="hidden sm:block text-right">
-              <p className="text-sm font-medium">{user?.displayName}</p>
-              <p className="text-xs text-gray-500 dark:text-gray-400">{user?.email}</p>
-            </div>
-
-            {/* Admin Button */}
-            {user?.role === 'admin' && (
-              <button
-                onClick={() => onNavigate('admin')}
-                className={`px-3 py-2 rounded-lg font-medium transition-all text-sm ${
-                  currentPage === 'admin'
-                    ? 'bg-primary-100 dark:bg-primary-900/30 text-primary-700 dark:text-primary-300'
-                    : 'hover:bg-gray-100 dark:hover:bg-gray-700'
-                }`}
-              >
-                Admin
-              </button>
-            )}
-
-            {/* Settings Button */}
-            <button
-              onClick={() => onNavigate('settings')}
-              className={`p-2 rounded-lg transition-all ${
-                currentPage === 'settings'
-                  ? 'bg-primary-100 dark:bg-primary-900/30 text-primary-700 dark:text-primary-300'
-                  : 'hover:bg-gray-100 dark:hover:bg-gray-700'
-              }`}
-              aria-label="Einstellungen"
-            >
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-              </svg>
-            </button>
-
             {/* Dark Mode Toggle */}
             <button
               onClick={toggleTheme}
@@ -128,13 +87,77 @@ export function Header({ currentPage, onNavigate }: HeaderProps) {
               )}
             </button>
 
-            {/* Logout */}
-            <button
-              onClick={handleLogout}
-              className="btn btn-secondary text-sm"
-            >
-              Abmelden
-            </button>
+            {/* Authentication Section */}
+            {isAuthenticated && user ? (
+              <>
+                {/* Premium Badge */}
+                {user.isPremium && (
+                  <span className="hidden sm:inline-flex px-3 py-1 bg-gradient-to-r from-yellow-400 to-orange-500 text-white text-xs font-bold rounded-full">
+                    PREMIUM
+                  </span>
+                )}
+
+                {/* User Info */}
+                <div className="hidden sm:block text-right">
+                  <p className="text-sm font-medium">{user.displayName}</p>
+                  <p className="text-xs text-gray-500 dark:text-gray-400">{user.email}</p>
+                </div>
+
+                {/* Admin Button */}
+                {user.role === 'admin' && (
+                  <button
+                    onClick={() => onNavigate('admin')}
+                    className={`px-3 py-2 rounded-lg font-medium transition-all text-sm ${
+                      currentPage === 'admin'
+                        ? 'bg-primary-100 dark:bg-primary-900/30 text-primary-700 dark:text-primary-300'
+                        : 'hover:bg-gray-100 dark:hover:bg-gray-700'
+                    }`}
+                  >
+                    Admin
+                  </button>
+                )}
+
+                {/* Settings Button */}
+                <button
+                  onClick={() => onNavigate('settings')}
+                  className={`p-2 rounded-lg transition-all ${
+                    currentPage === 'settings'
+                      ? 'bg-primary-100 dark:bg-primary-900/30 text-primary-700 dark:text-primary-300'
+                      : 'hover:bg-gray-100 dark:hover:bg-gray-700'
+                  }`}
+                  aria-label="Einstellungen"
+                >
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                  </svg>
+                </button>
+
+                {/* Logout */}
+                <button
+                  onClick={handleLogout}
+                  className="btn btn-secondary text-sm"
+                >
+                  Abmelden
+                </button>
+              </>
+            ) : (
+              <>
+                {/* Login/Register for non-authenticated users */}
+                <button
+                  onClick={onShowLogin}
+                  className="btn btn-secondary text-sm"
+                >
+                  Anmelden
+                </button>
+                <button
+                  onClick={onShowRegister}
+                  className="btn btn-primary text-sm"
+                >
+                  Registrieren
+                </button>
+              </>
+            )}
           </div>
         </div>
 
@@ -173,28 +196,53 @@ export function Header({ currentPage, onNavigate }: HeaderProps) {
             </button>
           </div>
           <div className="flex items-center gap-1">
-            {user?.role === 'admin' && (
-              <button
-                onClick={() => onNavigate('admin')}
-                className={`flex-1 px-3 py-2 rounded-lg text-sm font-medium transition-all ${
-                  currentPage === 'admin'
-                    ? 'bg-primary-100 dark:bg-primary-900/30 text-primary-700 dark:text-primary-300'
-                    : 'hover:bg-gray-100 dark:hover:bg-gray-700'
-                }`}
-              >
-                Admin
-              </button>
+            {isAuthenticated && user ? (
+              <>
+                {user.role === 'admin' && (
+                  <button
+                    onClick={() => onNavigate('admin')}
+                    className={`flex-1 px-3 py-2 rounded-lg text-sm font-medium transition-all ${
+                      currentPage === 'admin'
+                        ? 'bg-primary-100 dark:bg-primary-900/30 text-primary-700 dark:text-primary-300'
+                        : 'hover:bg-gray-100 dark:hover:bg-gray-700'
+                    }`}
+                  >
+                    Admin
+                  </button>
+                )}
+                <button
+                  onClick={() => onNavigate('settings')}
+                  className={`flex-1 px-3 py-2 rounded-lg text-sm font-medium transition-all ${
+                    currentPage === 'settings'
+                      ? 'bg-primary-100 dark:bg-primary-900/30 text-primary-700 dark:text-primary-300'
+                      : 'hover:bg-gray-100 dark:hover:bg-gray-700'
+                  }`}
+                >
+                  Einstellungen
+                </button>
+                <button
+                  onClick={handleLogout}
+                  className="flex-1 px-3 py-2 rounded-lg text-sm font-medium transition-all hover:bg-gray-100 dark:hover:bg-gray-700"
+                >
+                  Abmelden
+                </button>
+              </>
+            ) : (
+              <>
+                <button
+                  onClick={onShowLogin}
+                  className="flex-1 px-3 py-2 rounded-lg text-sm font-medium transition-all hover:bg-gray-100 dark:hover:bg-gray-700"
+                >
+                  Anmelden
+                </button>
+                <button
+                  onClick={onShowRegister}
+                  className="flex-1 px-3 py-2 rounded-lg text-sm font-medium transition-all bg-primary-600 text-white hover:bg-primary-700"
+                >
+                  Registrieren
+                </button>
+              </>
             )}
-            <button
-              onClick={() => onNavigate('settings')}
-              className={`flex-1 px-3 py-2 rounded-lg text-sm font-medium transition-all ${
-                currentPage === 'settings'
-                  ? 'bg-primary-100 dark:bg-primary-900/30 text-primary-700 dark:text-primary-300'
-                  : 'hover:bg-gray-100 dark:hover:bg-gray-700'
-              }`}
-            >
-              Einstellungen
-            </button>
           </div>
         </nav>
 

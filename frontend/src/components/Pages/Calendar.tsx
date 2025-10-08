@@ -3,6 +3,7 @@ import { useAuthStore } from '../../store/useAuthStore';
 import { calendarApi, userApi } from '../../lib/api';
 import { format } from 'date-fns';
 import { FOOTBALL_LEAGUES, FOOTBALL_TEAMS, F1_DRIVERS, NFL_TEAMS } from '../../data/teams';
+import { LiveData } from '../LiveData';
 
 interface Event {
   id: string;
@@ -15,8 +16,9 @@ interface Event {
 
 export function Calendar() {
   const { user, updateUser, setUser } = useAuthStore();
-  const [events, setEvents] = useState<Event[]>([]);
-  // Removed highlights state - not used anymore
+  const [footballEvents, setFootballEvents] = useState<Event[]>([]);
+  const [f1Events, setF1Events] = useState<Event[]>([]);
+  const [nflEvents, setNflEvents] = useState<Event[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [selectedSport, setSelectedSport] = useState<'football' | 'nfl' | 'f1' | null>(null);
   const [showTeamSelector, setShowTeamSelector] = useState(false);
@@ -32,6 +34,11 @@ export function Calendar() {
     }
   }, [user?.selectedTeams]); // Only depend on selectedTeams, not selectedSport
 
+  // Load events when teams change
+  useEffect(() => {
+    loadAllEvents();
+  }, [loadAllEvents]);
+
   // Separate effect for initial sport selection
   useEffect(() => {
     // Set initial sport from user's selected teams only if no sport is currently selected
@@ -40,161 +47,90 @@ export function Calendar() {
     }
   }, [user?.selectedTeams?.length]); // Only depend on length to avoid overriding manual selection
 
-  const loadEvents = useCallback(async () => {
-    if (!selectedSport) {
-      console.log('🔍 Debug - No selectedSport, skipping loadEvents');
-      return;
-    }
-    
-    console.log('🔍 Debug - Starting loadEvents for sport:', selectedSport);
+  // Load all events separately for better organization
+  const loadAllEvents = useCallback(async () => {
     setIsLoading(true);
     try {
       const teams = localTeams || [];
-      const leagues = selectedSport === 'football' 
-        ? teams
-            .filter(t => t.sport === 'football' && t.leagueId)
-            .map(t => t.leagueId!)
-        : undefined;
-
-      console.log('🔍 Debug - Making API call to calendar with leagues:', leagues);
-      console.log('🔍 Debug - Teams for sport football:', teams.filter(t => t.sport === 'football'));
-      const { data } = await calendarApi.getEvents(selectedSport, leagues);
-      let allEvents = data || [];
       
-      console.log('🔍 Debug - API response received:', allEvents.length, 'events');
+      // Load Football Events
+      const footballLeagues = teams
+        .filter(t => t.sport === 'football' && t.leagueId)
+        .map(t => t.leagueId!);
       
-      // Filter events by ALL selected teams for the current sport
-      const sportTeams = teams.filter(t => t.sport === selectedSport);
-      console.log('🔍 Debug - Sport teams to filter by:', sportTeams.map(t => ({ name: t.teamName, sport: t.sport })));
-      
-      if (sportTeams.length > 0) {
-        const beforeFilter = allEvents.length;
-        console.log('🔍 Debug - All event titles before filtering:', allEvents.map((e: Event) => e.title));
-        
-        allEvents = allEvents.filter((event: Event) => {
-          const matches = sportTeams.some(team => {
-            const teamName = team.teamName.toLowerCase();
-            const eventTitle = event.title.toLowerCase();
-            
-            console.log(`🔍 Debug - Checking event "${eventTitle}" against team "${teamName}"`);
-            
-            // For F1, also check for last name only (e.g., "Verstappen" instead of "Max Verstappen")
-            if (selectedSport === 'f1' && teamName.includes(' ')) {
-              const lastName = teamName.split(' ').pop() || '';
-              const matchesFull = eventTitle.includes(teamName);
-              const matchesLast = eventTitle.includes(lastName);
-              console.log(`🔍 Debug - F1 check: full="${matchesFull}", last="${matchesLast}"`);
-              return matchesFull || matchesLast;
-            }
-            
-            const matches = eventTitle.includes(teamName);
-            console.log(`🔍 Debug - Regular check: "${matches}"`);
-            return matches;
-          });
+      if (footballLeagues.length > 0) {
+        try {
+          const { data: footballData } = await calendarApi.getEvents('football', footballLeagues);
+          let footballEvents = footballData || [];
           
-          if (matches) {
-            console.log(`🔍 Debug - Event "${event.title}" MATCHES`);
-          } else {
-            console.log(`🔍 Debug - Event "${event.title}" NO MATCH`);
+          // Filter football events by selected teams
+          const footballTeams = teams.filter(t => t.sport === 'football');
+          if (footballTeams.length > 0) {
+            footballEvents = footballEvents.filter((event: Event) => {
+              return footballTeams.some(team => {
+                const teamName = team.teamName.toLowerCase();
+                const eventTitle = event.title.toLowerCase();
+                return eventTitle.includes(teamName);
+              });
+            });
           }
           
-          return matches;
-        });
-        
-        console.log('🔍 Debug - Filtered events:', beforeFilter, '->', allEvents.length, 'for teams:', sportTeams.map(t => t.teamName));
-        console.log('🔍 Debug - Sample event titles:', allEvents.slice(0, 3).map((e: Event) => e.title));
+          setFootballEvents(footballEvents);
+        } catch (error) {
+          console.error('Failed to load football events:', error);
+          setFootballEvents([]);
+        }
+      } else {
+        setFootballEvents([]);
       }
       
-      setEvents(allEvents);
-      console.log('🔍 Debug - Events state updated:', allEvents.length, 'events');
+      // Load F1 Events - Show ALL F1 races for all users (since all drivers participate)
+      try {
+        const { data: f1Data } = await calendarApi.getEvents('f1');
+        setF1Events(f1Data || []);
+      } catch (error) {
+        console.error('Failed to load F1 events:', error);
+        setF1Events([]);
+      }
+      
+      // Load NFL Events
+      const nflTeams = teams.filter(t => t.sport === 'nfl');
+      if (nflTeams.length > 0) {
+        try {
+          const { data: nflData } = await calendarApi.getEvents('nfl');
+          let nflEvents = nflData || [];
+          
+          // Filter NFL events by selected teams
+          nflEvents = nflEvents.filter((event: Event) => {
+            return nflTeams.some(team => {
+              const teamName = team.teamName.toLowerCase();
+              const eventTitle = event.title.toLowerCase();
+              return eventTitle.includes(teamName);
+            });
+          });
+          
+          setNflEvents(nflEvents);
+        } catch (error) {
+          console.error('Failed to load NFL events:', error);
+          setNflEvents([]);
+        }
+      } else {
+        setNflEvents([]);
+      }
+      
     } catch (error) {
       console.error('❌ Failed to load events:', error);
-      const err = error as { message?: string; response?: { status?: number; data?: unknown } };
-      console.error('❌ Error details:', {
-        message: err.message,
-        status: err.response?.status,
-        data: err.response?.data
-      });
-      setEvents([]);
     } finally {
-      console.log('🔍 Debug - Setting isLoading to false');
       setIsLoading(false);
     }
-  }, [selectedSport, localTeams]);
+  }, [localTeams]);
 
   // Removed loadHighlights - not used anymore
 
-  // Manual load function - only called when needed
-  const manualLoadEvents = useCallback((teamsOverride?: Array<{ sport: string; teamName: string; teamId?: string; leagueId?: number }>) => {
-    console.log('🔍 Debug - Manual load events triggered');
-    if (selectedSport) {
-      // Use override teams if provided, otherwise use local teams
-      const teamsToUse = teamsOverride || localTeams || [];
-      console.log('🔍 Debug - Using teams:', teamsToUse);
-      
-      // Direct API call with teams
-      const leagues = selectedSport === 'football' 
-        ? teamsToUse
-            .filter(t => t.sport === 'football' && t.leagueId)
-            .map(t => t.leagueId!)
-        : undefined;
-      
-      console.log('🔍 Debug - Direct API call with leagues:', leagues);
-      calendarApi.getEvents(selectedSport, leagues).then(({ data }) => {
-        let allEvents = data || [];
-        console.log('🔍 Debug - Direct API response:', allEvents.length, 'events');
-        console.log('🔍 Debug - All event titles:', allEvents.map((e: Event) => e.title));
-        
-        // Filter events by ALL selected teams for the current sport
-        const sportTeams = teamsToUse.filter(t => t.sport === selectedSport);
-        console.log('🔍 Debug - Sport teams to filter by:', sportTeams.map(t => ({ name: t.teamName, sport: t.sport })));
-        if (sportTeams.length > 0) {
-          const beforeFilter = allEvents.length;
-          console.log('🔍 Debug - All event titles before filtering:', allEvents.map((e: Event) => e.title));
-          
-          allEvents = allEvents.filter((event: Event) => {
-            const matches = sportTeams.some(team => {
-              const teamName = team.teamName.toLowerCase();
-              const eventTitle = event.title.toLowerCase();
-              
-              console.log(`🔍 Debug - Checking event "${eventTitle}" against team "${teamName}"`);
-              
-              // For F1, also check for last name only (e.g., "Verstappen" instead of "Max Verstappen")
-              if (selectedSport === 'f1' && teamName.includes(' ')) {
-                const lastName = teamName.split(' ').pop() || '';
-                const matchesFull = eventTitle.includes(teamName);
-                const matchesLast = eventTitle.includes(lastName);
-                console.log(`🔍 Debug - F1 check: full="${matchesFull}", last="${matchesLast}"`);
-                return matchesFull || matchesLast;
-              }
-              
-              const matches = eventTitle.includes(teamName);
-              console.log(`🔍 Debug - Regular check: "${matches}"`);
-              return matches;
-            });
-            
-            if (matches) {
-              console.log(`🔍 Debug - Event "${event.title}" MATCHES`);
-            } else {
-              console.log(`🔍 Debug - Event "${event.title}" NO MATCH`);
-            }
-            
-            return matches;
-          });
-          
-          console.log('🔍 Debug - Filtered events:', beforeFilter, '->', allEvents.length, 'for teams:', sportTeams.map(t => t.teamName));
-          console.log('🔍 Debug - Sample event titles:', allEvents.slice(0, 3).map((e: Event) => e.title));
-        }
-        
-        setEvents(allEvents);
-        setIsLoading(false);
-      }).catch(error => {
-        console.error('❌ Direct API call failed:', error);
-        setEvents([]);
-        setIsLoading(false);
-      });
-    }
-  }, [selectedSport, localTeams]);
+  // Manual load function - reload all events
+  const manualLoadEvents = useCallback(() => {
+    loadAllEvents();
+  }, [loadAllEvents]);
 
   // Removed formatViews - not used anymore
 
@@ -319,7 +255,7 @@ export function Calendar() {
       setTimeout(() => {
         console.log('🔍 Debug - Manual reload after team addition');
         console.log('🔍 Debug - Updated teams:', response.data.selectedTeams || updatedTeams);
-        manualLoadEvents(response.data.selectedTeams || updatedTeams);
+        manualLoadEvents();
       }, 100);
     } catch (error) {
       const err = error as { response?: { status?: number; data?: { message?: string } }; message?: string };
@@ -338,7 +274,7 @@ export function Calendar() {
     try {
       await userApi.updateTeams(updatedTeams);
       updateUser({ selectedTeams: updatedTeams });
-      loadEvents();
+      manualLoadEvents();
     } catch (err) {
       console.error('Failed to remove team:', err);
       alert('Fehler beim Entfernen des Teams');
@@ -358,6 +294,9 @@ export function Calendar() {
 
   return (
     <div className="max-w-7xl mx-auto">
+      {/* Live Data Section - Show at top if there are live games */}
+      <LiveData className="mb-6" />
+      
       {/* Team Selection Section */}
       <div className="card p-6 mb-6">
         <div className="flex items-center justify-between mb-4">
@@ -542,54 +481,142 @@ export function Calendar() {
         )}
       </div>
 
-      {/* Events List */}
-      <div className="card p-6">
-        <div className="mb-6">
-          <h2 className="text-2xl font-bold mb-2">Kommende Events</h2>
-          {user?.selectedTeams?.find(t => t.sport === selectedSport) && (
-            <p className="text-sm text-gray-600 dark:text-gray-400">
-              Zeige Events für: <span className="font-semibold">
-                {user.selectedTeams.find(t => t.sport === selectedSport)?.teamName}
-              </span>
-            </p>
-          )}
-        </div>
+      {/* Events List - Separated by Sport */}
+      <div className="space-y-6">
+        {/* Football Events */}
+        {footballEvents.length > 0 && (
+          <div className="card p-6">
+            <div className="mb-4">
+              <h2 className="text-2xl font-bold mb-2 flex items-center gap-2">
+                ⚽ Fußball Events
+              </h2>
+              <p className="text-sm text-gray-600 dark:text-gray-400">
+                {footballEvents.length} kommende Spiele
+              </p>
+            </div>
+            <div className="space-y-3">
+              {footballEvents.map((event) => {
+                const eventDate = new Date(event.startsAt);
+                return (
+                  <div
+                    key={event.id}
+                    className="p-4 bg-gray-50 dark:bg-gray-700/50 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+                  >
+                    <div className="flex items-start justify-between">
+                      <div className="flex-1">
+                        <h3 className="font-semibold text-lg">{event.title}</h3>
+                        <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
+                          {format(eventDate, "dd.MM.yyyy HH:mm")} Uhr
+                        </p>
+                      </div>
+                      <span className="ml-4 px-3 py-1 bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300 rounded-full text-sm font-medium">
+                        ⚽ Fußball
+                      </span>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        )}
 
-        {/* Removed debug logs that were causing infinite loop */}
-        {isLoading ? (
-          <div className="text-center py-12">
+        {/* F1 Events - Show for all users */}
+        {f1Events.length > 0 && (
+          <div className="card p-6">
+            <div className="mb-4">
+              <h2 className="text-2xl font-bold mb-2 flex items-center gap-2">
+                🏎️ Formel 1 Events
+              </h2>
+              <p className="text-sm text-gray-600 dark:text-gray-400">
+                {f1Events.length} kommende Rennen - Alle Fahrer starten
+              </p>
+            </div>
+            <div className="space-y-3">
+              {f1Events.map((event) => {
+                const eventDate = new Date(event.startsAt);
+                return (
+                  <div
+                    key={event.id}
+                    className="p-4 bg-gray-50 dark:bg-gray-700/50 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+                  >
+                    <div className="flex items-start justify-between">
+                      <div className="flex-1">
+                        <h3 className="font-semibold text-lg">{event.title}</h3>
+                        <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
+                          {format(eventDate, "dd.MM.yyyy HH:mm")} Uhr
+                        </p>
+                      </div>
+                      <span className="ml-4 px-3 py-1 bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-300 rounded-full text-sm font-medium">
+                        🏎️ F1
+                      </span>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        )}
+
+        {/* NFL Events */}
+        {nflEvents.length > 0 && (
+          <div className="card p-6">
+            <div className="mb-4">
+              <h2 className="text-2xl font-bold mb-2 flex items-center gap-2">
+                🏈 NFL Events
+              </h2>
+              <p className="text-sm text-gray-600 dark:text-gray-400">
+                {nflEvents.length} kommende Spiele
+              </p>
+            </div>
+            <div className="space-y-3">
+              {nflEvents.map((event) => {
+                const eventDate = new Date(event.startsAt);
+                return (
+                  <div
+                    key={event.id}
+                    className="p-4 bg-gray-50 dark:bg-gray-700/50 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+                  >
+                    <div className="flex items-start justify-between">
+                      <div className="flex-1">
+                        <h3 className="font-semibold text-lg">{event.title}</h3>
+                        <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
+                          {format(eventDate, "dd.MM.yyyy HH:mm")} Uhr
+                        </p>
+                      </div>
+                      <span className="ml-4 px-3 py-1 bg-orange-100 dark:bg-orange-900/30 text-orange-700 dark:text-orange-300 rounded-full text-sm font-medium">
+                        🏈 NFL
+                      </span>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        )}
+
+        {/* No Events Message */}
+        {!isLoading && footballEvents.length === 0 && f1Events.length === 0 && nflEvents.length === 0 && (
+          <div className="card p-12 text-center">
+            <h2 className="text-2xl font-bold mb-4">Keine Events gefunden</h2>
+            <p className="text-gray-500 dark:text-gray-400 mb-6">
+              {user?.selectedTeams?.length ? 
+                'Keine kommenden Events für deine ausgewählten Teams.' : 
+                'Füge Teams hinzu, um Events zu sehen. F1 Events werden für alle angezeigt!'
+              }
+            </p>
+            {!user?.selectedTeams?.length && (
+              <p className="text-sm text-blue-600 dark:text-blue-400">
+                💡 Tipp: F1 Events werden automatisch für alle angezeigt, da alle Fahrer starten!
+              </p>
+            )}
+          </div>
+        )}
+
+        {/* Loading State */}
+        {isLoading && (
+          <div className="card p-12 text-center">
             <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600"></div>
             <p className="mt-4 text-gray-500 dark:text-gray-400">Lade Events...</p>
-          </div>
-        ) : events.length === 0 ? (
-          <div className="text-center py-12">
-            <p className="text-gray-500 dark:text-gray-400">
-              Keine Events gefunden. Füge ein Team hinzu, um Events zu sehen.
-            </p>
-          </div>
-        ) : (
-          <div className="space-y-3">
-            {events.map((event) => {
-              const eventDate = new Date(event.startsAt);
-              return (
-                <div
-                  key={event.id}
-                  className="p-4 bg-gray-50 dark:bg-gray-700/50 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
-                >
-                  <div className="flex items-start justify-between">
-                    <div className="flex-1">
-                      <h3 className="font-semibold text-lg">{event.title}</h3>
-                      <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
-                        {format(eventDate, "dd.MM.yyyy HH:mm")} Uhr
-                      </p>
-                    </div>
-                    <span className="ml-4 px-3 py-1 bg-primary-100 dark:bg-primary-900/30 text-primary-700 dark:text-primary-300 rounded-full text-sm font-medium">
-                      {event.sport}
-                    </span>
-                  </div>
-                </div>
-              );
-            })}
           </div>
         )}
       </div>
