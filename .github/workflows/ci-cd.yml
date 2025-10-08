@@ -114,7 +114,12 @@ jobs:
           echo "🚀 Starting deployment..."
           
           # Navigate to project directory
-          cd /home/***/sportskalendar/sportskalendar
+          echo "🔍 Checking if directory exists..."
+          ls -la /home/dl/sportskalendar/ || echo "❌ /home/dl/sportskalendar/ does not exist"
+          ls -la /home/dl/sportskalendar/sportskalendar/ || echo "❌ /home/dl/sportskalendar/sportskalendar/ does not exist"
+          
+          echo "🔍 Attempting to navigate to project directory..."
+          cd /home/dl/sportskalendar/sportskalendar
           
           # Debug: Check if files exist
           echo "🔍 Checking directory contents..."
