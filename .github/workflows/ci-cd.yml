@@ -124,6 +124,16 @@ jobs:
           echo "🔍 Checking for .env.production..."
           ls -la .env.production
           
+          # Login to GitHub Container Registry
+          echo "🔐 Logging in to GitHub Container Registry..."
+          echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
+          
+          # Set environment variables for correct image tags
+          export BACKEND_IMAGE="ghcr.io/davidklouis-sketch/sportskalendar/backend:${{ github.sha }}"
+          export FRONTEND_IMAGE="ghcr.io/davidklouis-sketch/sportskalendar/frontend:${{ github.sha }}"
+          echo "🔍 Using backend image: $BACKEND_IMAGE"
+          echo "🔍 Using frontend image: $FRONTEND_IMAGE"
+          
           # Pull latest images
           echo "📥 Pulling latest images..."
           docker compose -f docker-compose.traefik.yml --env-file .env.production pull
