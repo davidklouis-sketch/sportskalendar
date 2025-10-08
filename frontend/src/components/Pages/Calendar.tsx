@@ -113,7 +113,7 @@ export function Calendar() {
     } finally {
       setIsLoading(false);
     }
-  }, []); // Remove localTeams dependency to prevent infinite loops
+  }, [localTeams]); // Include localTeams dependency to load events when teams change
 
   useEffect(() => {
     // Always update local teams when user teams change
@@ -122,19 +122,7 @@ export function Calendar() {
     }
   }, [user?.selectedTeams]); // Only depend on selectedTeams, not selectedSport
 
-  // Load events when teams change (but prevent infinite loops)
-  const teamsStringRef = useRef<string>('');
-  
-  useEffect(() => {
-    const currentTeamsString = JSON.stringify(localTeams || []);
-    
-    // Only load if teams actually changed
-    if (currentTeamsString !== teamsStringRef.current) {
-      teamsStringRef.current = currentTeamsString;
-      console.log('🔄 Teams changed, loading events for:', localTeams);
-      loadAllEvents();
-    }
-  }, [localTeams]);
+  // Events are now loaded automatically when localTeams change via loadAllEvents dependency
 
   // Separate effect for initial sport selection
   useEffect(() => {
@@ -146,11 +134,7 @@ export function Calendar() {
 
   // Removed loadHighlights - not used anymore
 
-  // Manual load function - reload all events (only called explicitly)
-  const manualLoadEvents = useCallback(() => {
-    console.log('🔄 Manual load events triggered');
-    loadAllEvents();
-  }, [loadAllEvents]);
+  // Events are now loaded automatically when localTeams change
 
   // Removed formatViews - not used anymore
 
@@ -273,9 +257,9 @@ export function Calendar() {
       // setSelectedSport(null);
       // Force reload events after team addition
       setTimeout(() => {
-        console.log('🔍 Debug - Manual reload after team addition');
+        console.log('🔍 Debug - Team added successfully');
         console.log('🔍 Debug - Updated teams:', response.data.selectedTeams || updatedTeams);
-        manualLoadEvents();
+        // Events will be loaded automatically when localTeams state updates
       }, 100);
     } catch (error) {
       const err = error as { response?: { status?: number; data?: { message?: string } }; message?: string };
@@ -294,7 +278,7 @@ export function Calendar() {
     try {
       await userApi.updateTeams(updatedTeams);
       updateUser({ selectedTeams: updatedTeams });
-      manualLoadEvents();
+      // Events will be loaded automatically when localTeams state updates
     } catch (err) {
       console.error('Failed to remove team:', err);
       alert('Fehler beim Entfernen des Teams');
