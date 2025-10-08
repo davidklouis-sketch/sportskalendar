@@ -40,8 +40,12 @@ calendarRouter.get('/', async (req, res) => {
     const leagues = leaguesParam
       ? leaguesParam.split(',').map(s => parseInt(s.trim(), 10)).filter(n => Number.isFinite(n))
       : undefined;
+    
+    console.log(`🔍 Calendar API called: sport=${sport}, leagues=${leagues}, debug=${debugEnabled}`);
+    
     if (!sport) {
-      if (debugEnabled) return res.json({ items: [], debug: [ 'No sport selected' ] });
+      debug.logs.push('No sport selected');
+      if (debugEnabled) return res.json({ items: [], debug: debug.logs });
       return res.json([]);
     }
     // Create cache key based on sport and leagues
@@ -54,6 +58,12 @@ calendarRouter.get('/', async (req, res) => {
     const items = await aggregateUpcomingEvents(debug, { sport, leagues });
     items.sort((a, b) => new Date(a.startsAt).getTime() - new Date(b.startsAt).getTime());
     const result = items;
+    
+    console.log(`📊 Calendar API result: ${result.length} events for ${sport} leagues ${leagues}`);
+    if (result.length > 0) {
+      console.log('🎯 Sample events:', result.slice(0, 3).map(e => `${e.title} - ${e.startsAt}`));
+    }
+    
     cacheMap[cacheKey] = { ts: Date.now(), items: result };
     saveCalendarCache(result);
     if (debugEnabled) return res.json({ items: result, debug: debug.logs });

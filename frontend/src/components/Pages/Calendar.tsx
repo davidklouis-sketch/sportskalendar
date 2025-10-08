@@ -54,28 +54,42 @@ export function Calendar() {
       
       if (footballLeagues.length > 0) {
         try {
+          console.log('🔄 Loading football events for leagues:', footballLeagues);
           const response = await calendarApi.getEvents('football', footballLeagues);
           let footballEvents = (response.data as Event[]) || [];
+          console.log('📊 Raw football events from API:', footballEvents.length, footballEvents);
           
           // Filter football events by selected teams
           const footballTeams = teams.filter(t => t.sport === 'football');
+          console.log('🏈 Football teams to filter by:', footballTeams);
           
           if (footballTeams.length > 0) {
+            const originalCount = footballEvents.length;
             footballEvents = footballEvents.filter((event: Event) => {
-              return footballTeams.some(team => {
+              const matches = footballTeams.some(team => {
                 const teamName = team.teamName.toLowerCase();
                 const eventTitle = event.title.toLowerCase();
-                return eventTitle.includes(teamName);
+                const match = eventTitle.includes(teamName);
+                if (match) {
+                  console.log(`✅ Event "${event.title}" matches team "${team.teamName}"`);
+                } else {
+                  console.log(`❌ Event "${event.title}" does NOT match team "${team.teamName}"`);
+                }
+                return match;
               });
+              return matches;
             });
+            console.log(`🔍 Filtered ${originalCount} events to ${footballEvents.length} for teams`);
           }
           
+          console.log('🎯 Final football events:', footballEvents);
           setFootballEvents(footballEvents);
         } catch (error) {
-          console.error('Failed to load football events:', error);
+          console.error('❌ Failed to load football events:', error);
           setFootballEvents([]);
         }
       } else {
+        console.log('⚠️ No football leagues selected');
         setFootballEvents([]);
       }
       
