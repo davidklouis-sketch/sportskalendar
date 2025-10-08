@@ -69,6 +69,19 @@ export async function initializeDatabase(): Promise<void> {
       )
     `);
 
+    // Migration: Add is_premium column if it doesn't exist
+    await client.query(`
+      DO $$
+      BEGIN
+        IF NOT EXISTS (SELECT 1 FROM information_schema.columns 
+                      WHERE table_name = 'users' AND column_name = 'is_premium') THEN
+          ALTER TABLE users ADD COLUMN is_premium BOOLEAN DEFAULT FALSE;
+          RAISE NOTICE 'Added is_premium column to users table';
+        END IF;
+      END
+      $$;
+    `);
+
     // Create security_events table
     await client.query(`
       CREATE TABLE IF NOT EXISTS security_events (
