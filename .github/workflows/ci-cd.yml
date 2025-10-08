@@ -354,10 +354,8 @@ jobs:
                 
                 # Create a temporary SQL script to insert users
                 echo "Creating SQL script from in-memory users..."
-                cat > /tmp/restore_users.sql << 'EOF'
--- Restore users from in-memory backup
--- This will be populated with actual user data
-EOF
+                echo "-- Restore users from in-memory backup" > /tmp/restore_users.sql
+                echo "-- This will be populated with actual user data" >> /tmp/restore_users.sql
                 
                 # Extract user data from JSON and create INSERT statements
                 echo "Processing in-memory users..."
