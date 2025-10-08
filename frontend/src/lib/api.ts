@@ -31,11 +31,11 @@ api.interceptors.response.use(
         console.log('✅ Token refreshed successfully');
         return api(originalRequest);
       } catch (refreshError) {
-        console.log('❌ Token refresh failed, redirecting to login');
-        // Clear any stored tokens and redirect to login
+        console.log('❌ Token refresh failed, clearing auth state');
+        // Clear any stored tokens and auth state
         localStorage.removeItem('accessToken');
         localStorage.removeItem('refreshToken');
-        window.location.href = '/login';
+        // Don't redirect in SPA - let the app handle auth state
         return Promise.reject(refreshError);
       }
     }

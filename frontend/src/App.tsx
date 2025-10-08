@@ -69,6 +69,10 @@ function App() {
   const handleLoginSuccess = () => {
     setAuthView(null);
     setCurrentPage('calendar');
+    // Force a small delay to ensure state updates are processed
+    setTimeout(() => {
+      // Additional cleanup if needed
+    }, 100);
   };
 
   const handleRegisterSuccess = () => {
@@ -137,20 +141,28 @@ function App() {
         </button>
       </div>
         ) : null}
-        {currentPage === 'settings' && user ? <Settings /> : (
+        {currentPage === 'settings' && user ? <Settings /> : currentPage === 'settings' ? (
           <div className="card p-12 text-center">
             <h2 className="text-2xl font-bold mb-4">🔒 Anmeldung erforderlich</h2>
             <p className="text-gray-600 dark:text-gray-400 mb-6">
               Bitte melden Sie sich an, um auf die Einstellungen zuzugreifen.
             </p>
-            <button 
-              onClick={() => setAuthView('login')}
-              className="btn btn-primary"
-            >
-              Anmelden
-            </button>
+            <div className="flex gap-3 justify-center">
+              <button 
+                onClick={() => setAuthView('login')}
+                className="btn btn-primary"
+              >
+                Anmelden
+              </button>
+              <button 
+                onClick={() => setCurrentPage('calendar')}
+                className="btn btn-secondary"
+              >
+                Zurück zum Kalender
+              </button>
+            </div>
           </div>
-        )}
+        ) : null}
         {currentPage === 'privacy' && <Privacy />}
         {currentPage === 'contact' && <Contact />}
       </main>
