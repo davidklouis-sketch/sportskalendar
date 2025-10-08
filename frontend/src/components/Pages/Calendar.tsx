@@ -65,15 +65,51 @@ export function Calendar() {
           
           if (footballTeams.length > 0) {
             const originalCount = footballEvents.length;
+            
+            // Helper function to normalize team names for matching
+            const normalizeTeamName = (name: string): string[] => {
+              const normalized = name.toLowerCase().trim();
+              const variations: string[] = [normalized];
+              
+              // Common team name mappings
+              const mappings: Record<string, string[]> = {
+                'bayern munich': ['fc bayern', 'bayern münchen', 'fc bayern münchen', 'bayern'],
+                'borussia dortmund': ['bvb', 'borussia', 'bvb dortmund', 'dortmund'],
+                'rb leipzig': ['rasenballsport leipzig', 'leipzig'],
+                'bayer leverkusen': ['bayer 04', 'leverkusen', 'bayer 04 leverkusen'],
+                'borussia mönchengladbach': ['gladbach', 'borussia m', "borussia m'gladbach"],
+                'eintracht frankfurt': ['frankfurt', 'sge'],
+                'vfb stuttgart': ['stuttgart'],
+                'vfl wolfsburg': ['wolfsburg'],
+                'sc freiburg': ['freiburg'],
+                'union berlin': ['1. fc union berlin', 'fc union berlin'],
+                'mainz': ['1. fsv mainz 05', 'fsv mainz'],
+                'hoffenheim': ['tsg hoffenheim', 'tsg 1899 hoffenheim'],
+                'werder bremen': ['sv werder bremen', 'bremen'],
+                'augsburg': ['fc augsburg'],
+                'heidenheim': ['1. fc heidenheim 1846'],
+              };
+              
+              // Check if the normalized name matches any key in mappings
+              for (const [key, values] of Object.entries(mappings)) {
+                if (normalized.includes(key)) {
+                  variations.push(...values);
+                  break;
+                }
+              }
+              
+              return variations;
+            };
+            
             footballEvents = footballEvents.filter((event: Event) => {
               const matches = footballTeams.some(team => {
-                const teamName = team.teamName.toLowerCase();
                 const eventTitle = event.title.toLowerCase();
-                const match = eventTitle.includes(teamName);
+                const teamVariations = normalizeTeamName(team.teamName);
+                
+                const match = teamVariations.some(variation => eventTitle.includes(variation));
+                
                 if (match) {
                   console.log(`✅ Event "${event.title}" matches team "${team.teamName}"`);
-                } else {
-                  console.log(`❌ Event "${event.title}" does NOT match team "${team.teamName}"`);
                 }
                 return match;
               });
