@@ -107,13 +107,22 @@ jobs:
         host: ${{ secrets.HOST }}
         username: ${{ secrets.USERNAME }}
         key: ${{ secrets.SSH_KEY }}
+        port: ${{ secrets.SSH_PORT || '22' }}
         script: |
           set -e
           
           echo "🚀 Starting deployment..."
           
           # Navigate to project directory
-          cd /home/dl/sportskalendar
+          cd /home/***/sportskalendar
+          
+          # Debug: Check if files exist
+          echo "🔍 Checking directory contents..."
+          ls -la
+          echo "🔍 Checking for docker-compose files..."
+          ls -la docker-compose*.yml
+          echo "🔍 Checking for .env.production..."
+          ls -la .env.production
           
           # Pull latest images
           echo "📥 Pulling latest images..."
