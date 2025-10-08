@@ -137,8 +137,9 @@ authRouter.post('/register', authRateLimit, async (req, res) => {
       });
     }
 
-    // Check if user already exists
-    if (db.users.has(email)) {
+    // Check if user already exists (check both PostgreSQL and in-memory)
+    const existingUser = await getUserByEmail(email);
+    if (existingUser) {
       return res.status(409).json({ 
         error: 'User already exists',
         message: 'An account with this email already exists' 
@@ -155,6 +156,27 @@ authRouter.post('/register', authRateLimit, async (req, res) => {
       role: 'user' 
     };
     
+    // Store in both PostgreSQL and in-memory
+    if (process.env.DATABASE_URL) {
+      try {
+        const { UserRepository } = await import('../database/repositories/userRepository');
+        await UserRepository.create({
+          email: user.email,
+          passwordHash: user.passwordHash,
+          displayName: user.displayName,
+          role: user.role
+        });
+        console.log(`✅ User created in PostgreSQL: ${user.email}`);
+      } catch (error) {
+        console.error('❌ Failed to create user in PostgreSQL:', error);
+        return res.status(500).json({ 
+          error: 'Failed to create user in database',
+          message: 'User registration failed' 
+        });
+      }
+    }
+    
+    // Also store in in-memory for consistency
     db.users.set(email, user);
     
     // Don't return sensitive data

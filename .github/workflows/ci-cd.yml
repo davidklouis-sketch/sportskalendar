@@ -261,6 +261,23 @@ jobs:
               else
                 echo "⚠️ Pre-deployment backup is empty!"
               fi
+              
+              # Also backup in-memory users via API endpoint
+              echo "Creating in-memory user backup..."
+              if docker compose -f docker-compose.traefik.yml --env-file .env.production ps backend | grep -q "Up"; then
+                echo "Backend is running, fetching in-memory users..."
+                docker compose -f docker-compose.traefik.yml --env-file .env.production exec -T backend curl -s http://localhost:4000/api/debug/users > /tmp/in_memory_users.json || echo "Could not fetch in-memory users"
+                echo "In-memory users backup created: $(ls -la /tmp/in_memory_users.json)"
+                if [ -s /tmp/in_memory_users.json ]; then
+                  echo "✅ In-memory users backup is not empty"
+                  echo "In-memory users preview:"
+                  head -5 /tmp/in_memory_users.json
+                else
+                  echo "⚠️ In-memory users backup is empty!"
+                fi
+              else
+                echo "⚠️ Backend not running, cannot backup in-memory users"
+              fi
             fi
             
             # Stop services gracefully to preserve database
@@ -311,6 +328,17 @@ jobs:
               # Check again
               USER_COUNT_AFTER_SEED=$(docker compose -f docker-compose.traefik.yml --env-file .env.production exec -T postgres psql -U sportskalendar -d sportskalendar -t -c "SELECT COUNT(*) FROM users;" 2>/dev/null | tr -d ' \n' || echo "0")
               echo "User count after seeding: $USER_COUNT_AFTER_SEED"
+              
+              # If still empty, try to migrate in-memory users
+              if [ "$USER_COUNT_AFTER_SEED" = "0" ]; then
+                echo "🚨 Database still empty, attempting to migrate in-memory users..."
+                docker compose -f docker-compose.traefik.yml --env-file .env.production exec -T backend npm run migrate-users || echo "Migration failed or not available"
+                sleep 5
+                
+                # Check again after migration
+                USER_COUNT_AFTER_MIGRATION=$(docker compose -f docker-compose.traefik.yml --env-file .env.production exec -T postgres psql -U sportskalendar -d sportskalendar -t -c "SELECT COUNT(*) FROM users;" 2>/dev/null | tr -d ' \n' || echo "0")
+                echo "User count after migration: $USER_COUNT_AFTER_MIGRATION"
+              fi
             fi
             
             # Check database status
@@ -323,6 +351,17 @@ jobs:
             
             if [ "$USER_COUNT" -le "2" ]; then
               echo "Database has 2 or fewer users (expected: demo + admin + custom users), attempting restoration..."
+              
+              # First, try to restore in-memory users if available
+              if [ -f /tmp/in_memory_users.json ] && [ -s /tmp/in_memory_users.json ]; then
+                echo "Found in-memory users backup, attempting to restore..."
+                echo "In-memory users backup content:"
+                cat /tmp/in_memory_users.json
+                
+                # Extract users from JSON and create them in PostgreSQL
+                echo "Extracting users from in-memory backup..."
+                # This would need a script to parse JSON and create users, but for now we'll rely on the regular backup
+              fi
               
               # Try to restore from pre-deployment backup first (most recent)
               if [ -f /tmp/pre_deploy_backup.sql ] && [ -s /tmp/pre_deploy_backup.sql ]; then
