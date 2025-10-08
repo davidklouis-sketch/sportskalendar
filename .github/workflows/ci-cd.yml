@@ -183,8 +183,19 @@ jobs:
           echo "🛑 Stopping services gracefully..."
           docker compose -f docker-compose.traefik.yml --env-file .env.production stop
           
-          # Remove only the containers, NOT the volumes
-          echo "🗑️ Removing containers (preserving volumes)..."
+          # Force remove ALL containers with our project names (including orphaned ones)
+          echo "🗑️ Force removing all project containers..."
+          docker rm -f traefik 2>/dev/null || echo "Traefik container not found or already removed"
+          docker rm -f sportskalendar-db 2>/dev/null || echo "PostgreSQL container not found or already removed"
+          docker rm -f sportskalendar-backend 2>/dev/null || echo "Backend container not found or already removed"
+          docker rm -f sportskalendar-frontend 2>/dev/null || echo "Frontend container not found or already removed"
+          
+          # Also remove any containers with our project prefix
+          echo "🗑️ Removing any remaining project containers..."
+          docker ps -a --filter "name=sportskalendar" --format "{{.Names}}" | xargs -r docker rm -f || echo "No sportskalendar containers found"
+          
+          # Remove only the containers, NOT the volumes (fallback)
+          echo "🗑️ Removing containers via compose (preserving volumes)..."
           docker compose -f docker-compose.traefik.yml --env-file .env.production rm -f
           
           # Deploy with zero-downtime (preserving volumes)
@@ -202,7 +213,13 @@ jobs:
           echo "🔍 Volume permissions:"
           ls -la /var/lib/docker/volumes/postgres_data/_data/ || echo "Could not check volume permissions"
           
+          # Verify no conflicting containers exist
+          echo "🔍 Verifying no conflicting containers exist..."
+          docker ps -a --filter "name=traefik" --format "{{.Names}}" | grep -q traefik && echo "⚠️ Traefik container still exists" || echo "✅ No traefik container found"
+          docker ps -a --filter "name=sportskalendar" --format "{{.Names}}" | grep -q sportskalendar && echo "⚠️ Sportskalendar containers still exist" || echo "✅ No sportskalendar containers found"
+          
           # Start services
+          echo "🚀 Starting services..."
           docker compose -f docker-compose.traefik.yml --env-file .env.production up -d
           
           # Debug: Check container status
