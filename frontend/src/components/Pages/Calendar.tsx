@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { useAuthStore } from '../../store/useAuthStore';
 import { calendarApi, userApi } from '../../lib/api';
 import { format } from 'date-fns';
@@ -32,6 +32,7 @@ export function Calendar() {
     setIsLoading(true);
     try {
       const teams = localTeams || [];
+      console.log('🔄 Loading events for teams:', teams);
       
       // Load Football Events
       const footballLeagues = teams
@@ -107,7 +108,7 @@ export function Calendar() {
     } finally {
       setIsLoading(false);
     }
-  }, [localTeams]);
+  }, []); // Remove localTeams dependency to prevent infinite loops
 
   useEffect(() => {
     // Always update local teams when user teams change
@@ -116,10 +117,15 @@ export function Calendar() {
     }
   }, [user?.selectedTeams]); // Only depend on selectedTeams, not selectedSport
 
-  // Load events when teams change
+  // Load events only once on mount and when teams are explicitly changed
+  const [hasLoadedInitial, setHasLoadedInitial] = useState(false);
+  
   useEffect(() => {
-    loadAllEvents();
-  }, [localTeams]); // Use localTeams instead of loadAllEvents to prevent infinite loop
+    if (!hasLoadedInitial) {
+      setHasLoadedInitial(true);
+      loadAllEvents();
+    }
+  }, [hasLoadedInitial]);
 
   // Separate effect for initial sport selection
   useEffect(() => {
@@ -131,8 +137,9 @@ export function Calendar() {
 
   // Removed loadHighlights - not used anymore
 
-  // Manual load function - reload all events
+  // Manual load function - reload all events (only called explicitly)
   const manualLoadEvents = useCallback(() => {
+    console.log('🔄 Manual load events triggered');
     loadAllEvents();
   }, [loadAllEvents]);
 
