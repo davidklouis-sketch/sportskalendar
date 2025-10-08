@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { useAuthStore } from '../../store/useAuthStore';
 import { calendarApi, userApi } from '../../lib/api';
 import { format } from 'date-fns';
@@ -117,15 +117,19 @@ export function Calendar() {
     }
   }, [user?.selectedTeams]); // Only depend on selectedTeams, not selectedSport
 
-  // Load events only once on mount and when teams are explicitly changed
-  const [hasLoadedInitial, setHasLoadedInitial] = useState(false);
+  // Load events when teams change (but prevent infinite loops)
+  const teamsStringRef = useRef<string>('');
   
   useEffect(() => {
-    if (!hasLoadedInitial) {
-      setHasLoadedInitial(true);
+    const currentTeamsString = JSON.stringify(localTeams || []);
+    
+    // Only load if teams actually changed
+    if (currentTeamsString !== teamsStringRef.current) {
+      teamsStringRef.current = currentTeamsString;
+      console.log('🔄 Teams changed, loading events for:', localTeams);
       loadAllEvents();
     }
-  }, [hasLoadedInitial]);
+  }, [localTeams]);
 
   // Separate effect for initial sport selection
   useEffect(() => {
