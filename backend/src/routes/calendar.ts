@@ -416,44 +416,89 @@ async function fetchSoccerApiFootball(debug?: DebugBuffer, leagues: number[] = [
 // OpenLigaDB API - Free API without API key for German Bundesliga
 async function fetchOpenLigaDB(debug?: DebugBuffer): Promise<EventItem[]> {
   try {
-    // Current season (2024/2025)
-    const season = 2024;
-    const url = `https://api.openligadb.de/getmatchdata/bl1/${season}`;
-    
-    debug?.logs.push(`Calling OpenLigaDB API: ${url}`);
-    const response = await fetchWithLog(url, {}, debug, 'OpenLigaDB');
-    
-    if (!response.ok) {
-      debug?.logs.push(`OpenLigaDB API failed with status ${response.status}`);
-      return [];
-    }
-    
-    const matches = await response.json();
-    debug?.logs.push(`OpenLigaDB returned ${matches.length} total matches`);
-    
     const items: EventItem[] = [];
     const now = new Date();
     
-    for (const match of matches) {
-      // Only include upcoming matches
-      const matchDate = new Date(match.matchDateTime);
-      if (matchDate < now) continue;
+    // Try to get next 5 matchdays to ensure we have upcoming matches
+    for (let offset = 0; offset < 5; offset++) {
+      const url = `https://api.openligadb.de/getnextmatchbyleagueid/4607`;
       
-      const homeTeam = match.team1?.teamName || '';
-      const awayTeam = match.team2?.teamName || '';
+      if (offset === 0) {
+        debug?.logs.push(`Calling OpenLigaDB API for next matches`);
+      }
       
-      if (!homeTeam || !awayTeam) continue;
-      
-      items.push({
-        id: `openligadb_${match.matchID}`,
-        title: `Bundesliga · ${homeTeam} vs ${awayTeam}`,
-        sport: 'Fußball',
-        startsAt: matchDate.toISOString()
-      });
+      try {
+        const response = await fetchWithLog(url, {}, debug, 'OpenLigaDB');
+        
+        if (!response.ok) {
+          debug?.logs.push(`OpenLigaDB API failed with status ${response.status}`);
+          continue;
+        }
+        
+        const match = await response.json();
+        
+        if (!match || !match.matchID) {
+          debug?.logs.push('OpenLigaDB returned no valid match data');
+          continue;
+        }
+        
+        const matchDate = new Date(match.matchDateTime);
+        const homeTeam = match.team1?.teamName || '';
+        const awayTeam = match.team2?.teamName || '';
+        
+        if (!homeTeam || !awayTeam) continue;
+        
+        // Only include future matches
+        if (matchDate > now) {
+          items.push({
+            id: `openligadb_${match.matchID}`,
+            title: `Bundesliga · ${homeTeam} vs ${awayTeam}`,
+            sport: 'Fußball',
+            startsAt: matchDate.toISOString()
+          });
+        }
+        
+      } catch (innerError: any) {
+        debug?.logs.push(`OpenLigaDB request error: ${innerError.message}`);
+      }
     }
     
-    debug?.logs.push(`OpenLigaDB upcoming matches: ${items.length}`);
-    return items;
+    // Try alternative endpoint for current season matches
+    if (items.length === 0) {
+      debug?.logs.push('Trying OpenLigaDB season endpoint as fallback');
+      const seasonUrl = 'https://api.openligadb.de/getmatchdata/bl1/2025';
+      
+      try {
+        const response = await fetchWithLog(seasonUrl, {}, debug, 'OpenLigaDB Season');
+        
+        if (response.ok) {
+          const matches = await response.json();
+          debug?.logs.push(`OpenLigaDB season returned ${matches.length} total matches`);
+          
+          for (const match of matches) {
+            const matchDate = new Date(match.matchDateTime);
+            if (matchDate < now) continue;
+            
+            const homeTeam = match.team1?.teamName || '';
+            const awayTeam = match.team2?.teamName || '';
+            
+            if (!homeTeam || !awayTeam) continue;
+            
+            items.push({
+              id: `openligadb_${match.matchID}`,
+              title: `Bundesliga · ${homeTeam} vs ${awayTeam}`,
+              sport: 'Fußball',
+              startsAt: matchDate.toISOString()
+            });
+          }
+        }
+      } catch (seasonError: any) {
+        debug?.logs.push(`OpenLigaDB season error: ${seasonError.message}`);
+      }
+    }
+    
+    debug?.logs.push(`OpenLigaDB total upcoming matches: ${items.length}`);
+    return items.sort((a, b) => new Date(a.startsAt).getTime() - new Date(b.startsAt).getTime());
     
   } catch (error: any) {
     debug?.logs.push(`OpenLigaDB error: ${error.message || String(error)}`);
