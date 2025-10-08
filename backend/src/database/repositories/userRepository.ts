@@ -284,16 +284,33 @@ export class UserRepository {
   }
 
   // Safe JSON parsing helper
-  private static safeJsonParse(jsonString: string | null | undefined, defaultValue: any = []): any {
-    if (!jsonString || jsonString.trim() === '') {
+  private static safeJsonParse(jsonString: any, defaultValue: any = []): any {
+    // Handle null, undefined, or empty values
+    if (jsonString === null || jsonString === undefined) {
       return defaultValue;
     }
-    try {
-      return JSON.parse(jsonString);
-    } catch (error) {
-      console.warn('Failed to parse JSON:', jsonString, 'Error:', error);
-      return defaultValue;
+    
+    // If it's already an object/array, return it
+    if (typeof jsonString === 'object') {
+      return jsonString;
     }
+    
+    // If it's a string, try to parse it
+    if (typeof jsonString === 'string') {
+      if (jsonString.trim() === '') {
+        return defaultValue;
+      }
+      try {
+        return JSON.parse(jsonString);
+      } catch (error) {
+        console.warn('Failed to parse JSON string:', jsonString, 'Error:', error);
+        return defaultValue;
+      }
+    }
+    
+    // For any other type, return default
+    console.warn('Unexpected type for JSON parsing:', typeof jsonString, jsonString);
+    return defaultValue;
   }
 
   // Map database row to User object
