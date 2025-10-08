@@ -230,6 +230,14 @@ jobs:
           echo "🔍 PostgreSQL container logs:"
           docker compose -f docker-compose.traefik.yml --env-file .env.production logs postgres || echo "Could not get postgres logs"
           
+          # Debug: Check Backend container logs
+          echo "🔍 Backend container logs:"
+          docker compose -f docker-compose.traefik.yml --env-file .env.production logs backend || echo "Could not get backend logs"
+          
+          # Debug: Test backend health endpoint
+          echo "🔍 Testing backend health endpoint..."
+          curl -f http://localhost:4000/api/health || echo "Backend health check failed"
+          
           # Debug: Check if postgres container exists
           echo "🔍 All containers:"
           docker ps -a | grep postgres || echo "No postgres containers found"

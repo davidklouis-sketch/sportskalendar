@@ -139,27 +139,36 @@ authRouter.post('/register', authRateLimit, async (req, res) => {
 
     // Check if user already exists in PostgreSQL
     if (!process.env.DATABASE_URL) {
+      console.error('❌ DATABASE_URL not configured');
       return res.status(500).json({ 
         error: 'Database not available',
         message: 'Registration is currently unavailable' 
       });
     }
 
+    console.log('🔍 Attempting to import UserRepository...');
     const { UserRepository } = await import('../database/repositories/userRepository');
+    console.log('✅ UserRepository imported successfully');
     
     // Check if user already exists
+    console.log(`🔍 Checking if user ${email} already exists...`);
     const existingUser = await UserRepository.findByEmail(email);
     if (existingUser) {
+      console.log(`❌ User ${email} already exists`);
       return res.status(409).json({ 
         error: 'User already exists',
         message: 'An account with this email already exists' 
       });
     }
+    console.log(`✅ User ${email} does not exist, proceeding with registration`);
 
     // Hash password with higher salt rounds
+    console.log('🔐 Hashing password...');
     const passwordHash = await bcrypt.hash(password, 12);
+    console.log('✅ Password hashed successfully');
     
     // Create user ONLY in PostgreSQL
+    console.log('📝 Creating user in PostgreSQL...');
     const user = await UserRepository.create({
       email,
       passwordHash,
@@ -175,10 +184,16 @@ authRouter.post('/register', authRateLimit, async (req, res) => {
       message: 'User registered successfully' 
     });
   } catch (error) {
-    console.error('Registration error:', error);
-    return res.status(500).json({ 
+    console.error('❌ Registration error:', error);
+    console.error('❌ Error details:', {
+      message: error instanceof Error ? error.message : 'Unknown error',
+      stack: error instanceof Error ? error.stack : undefined,
+      name: error instanceof Error ? error.name : undefined
+    });
+    return res.status(500).json({
       error: 'Internal server error',
-      message: 'Registration failed' 
+      message: 'Registration failed',
+      details: error instanceof Error ? error.message : 'Unknown error'
     });
   }
 });
