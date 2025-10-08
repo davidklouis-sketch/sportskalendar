@@ -119,7 +119,7 @@ export function Calendar() {
   // Load events when teams change
   useEffect(() => {
     loadAllEvents();
-  }, [loadAllEvents]);
+  }, [localTeams]); // Use localTeams instead of loadAllEvents to prevent infinite loop
 
   // Separate effect for initial sport selection
   useEffect(() => {

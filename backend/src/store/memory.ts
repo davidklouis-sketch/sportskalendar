@@ -60,15 +60,21 @@ export async function seedDevUser() {
     const adminPasswordHash = await bcrypt.hash('admin123', 10);
     const existingAdmin = await UserRepository.findByEmail('admin@sportskalender.local');
     if (!existingAdmin) {
-      await UserRepository.create({
+      const adminUser = await UserRepository.create({
         email: 'admin@sportskalender.local',
         passwordHash: adminPasswordHash,
         displayName: 'Admin',
         role: 'admin'
       });
-      console.log('✅ Created admin user: admin@sportskalender.local');
+      console.log('✅ Created admin user: admin@sportskalender.local with role:', adminUser.role);
     } else {
-      console.log('✅ Admin user already exists: admin@sportskalender.local');
+      console.log('✅ Admin user already exists: admin@sportskalender.local with role:', existingAdmin.role);
+      // Ensure admin role is set correctly
+      if (existingAdmin.role !== 'admin') {
+        console.log('⚠️ Admin user exists but role is not admin, updating...');
+        await UserRepository.update(existingAdmin.id, { role: 'admin' });
+        console.log('✅ Updated admin user role to admin');
+      }
     }
     
     console.log('✅ Demo users ensured in PostgreSQL database');

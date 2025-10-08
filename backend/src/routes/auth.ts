@@ -281,6 +281,7 @@ authRouter.post('/login', authRateLimit, async (req: Request, res: Response) => 
     }
 
     // Generate tokens
+    console.log('🔍 Login - User role from database:', user.role);
     const access = signAccess(user);
     const refresh = signRefresh(user);
     
@@ -288,14 +289,16 @@ authRouter.post('/login', authRateLimit, async (req: Request, res: Response) => 
     setAuthCookies(res, { access, refresh });
     
     // Return user data (without sensitive information)
+    const userData = { 
+      id: user.id, 
+      email: user.email, 
+      displayName: user.displayName, 
+      role: user.role 
+    };
+    console.log('🔍 Login - Returning user data:', userData);
     res.json({ 
       success: true,
-      user: { 
-        id: user.id, 
-        email: user.email, 
-        displayName: user.displayName, 
-        role: user.role 
-      } 
+      user: userData
     });
   } catch (error) {
     console.error('Login error:', error);
