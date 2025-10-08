@@ -21,9 +21,9 @@ type Page = 'calendar' | 'live' | 'highlights' | 'admin' | 'settings' | 'privacy
 function App() {
   const { user, isAuthenticated, setUser, setLoading } = useAuthStore();
   const { setTheme } = useThemeStore();
-  const [authView, setAuthView] = useState<AuthView>('login');
+  const [authView, setAuthView] = useState<AuthView | null>(null);
   const [currentPage, setCurrentPage] = useState<Page>('calendar');
-  const [isInitializing, setIsInitializing] = useState(true);
+  const [isInitializing, setIsInitializing] = useState(false);
 
   // Initialize theme on mount
   useEffect(() => {
@@ -44,7 +44,7 @@ function App() {
     }
   }, [setTheme]);
 
-  // Check authentication on mount
+  // Check authentication on mount - but don't block the app
   useEffect(() => {
     const checkAuth = async () => {
       if (isAuthenticated && user) {
@@ -55,11 +55,8 @@ function App() {
         } catch (error) {
           console.error('Failed to load user profile:', error);
           // If profile fails to load, user is not actually authenticated
-          // Clear the auth state and force re-login
+          // Clear the auth state but don't block the app
           setUser(null);
-          setLoading(false);
-          setIsInitializing(false);
-          return;
         }
       }
       setLoading(false);
@@ -70,6 +67,7 @@ function App() {
   }, [isAuthenticated, setLoading, setUser, user]);
 
   const handleLoginSuccess = () => {
+    setAuthView(null);
     setCurrentPage('calendar');
   };
 
