@@ -114,7 +114,7 @@ jobs:
           echo "🚀 Starting deployment..."
           
           # Navigate to project directory
-          cd /home/***/sportskalendar
+          cd /home/***/sportskalendar/sportskalendar
           
           # Debug: Check if files exist
           echo "🔍 Checking directory contents..."
@@ -129,7 +129,7 @@ jobs:
           docker compose -f docker-compose.traefik.yml --env-file .env.production pull
           
           # Create backup directory if it doesn't exist
-          mkdir -p /home/dl/sportskalendar/backups
+          mkdir -p /home/dl/sportskalendar/sportskalendar/backups
           
           # Create database backup BEFORE stopping services
           echo "💾 Creating database backup..."
@@ -159,9 +159,9 @@ jobs:
               echo "⚠️ Backup file is empty!"
             fi
             
-            # Create permanent backup
-            TIMESTAMP=$(date +"%Y%m%d_%H%M%S")
-            PERMANENT_BACKUP="/home/dl/sportskalendar/backups/sportskalendar_backup_${TIMESTAMP}.sql"
+          # Create permanent backup
+          TIMESTAMP=$(date +"%Y%m%d_%H%M%S")
+          PERMANENT_BACKUP="/home/dl/sportskalendar/sportskalendar/backups/sportskalendar_backup_${TIMESTAMP}.sql"
             cp /tmp/db_backup.sql "$PERMANENT_BACKUP"
             gzip "$PERMANENT_BACKUP"
             echo "Permanent backup created: $PERMANENT_BACKUP.gz"
