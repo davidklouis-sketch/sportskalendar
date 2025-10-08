@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useRef } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useAuthStore } from '../../store/useAuthStore';
 import { calendarApi, userApi } from '../../lib/api';
 import { format } from 'date-fns';
