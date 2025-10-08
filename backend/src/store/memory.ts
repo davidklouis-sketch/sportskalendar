@@ -1,22 +1,6 @@
 import bcrypt from 'bcryptjs';
 
-export interface User {
-  id: string;
-  email: string;
-  passwordHash: string;
-  displayName: string;
-  role: 'user' | 'admin';
-  isPremium?: boolean;
-  selectedTeams?: Array<{
-    sport: 'football' | 'nfl' | 'f1';
-    teamId?: string;
-    teamName: string;
-    leagueId?: number;
-  }>;
-}
-
 export const db = {
-  users: new Map<string, User>(),
   highlights: new Map<string, HighlightItem>(),
 };
 

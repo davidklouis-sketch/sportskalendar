@@ -14,7 +14,6 @@ import { userRouter } from './routes/user';
 import { liveRouter } from './routes/live';
 
 // Middleware imports
-import { commonSecurityMiddleware } from './middleware/security';
 import { enhancedSecurityMiddleware, validateJwtSecret } from './middleware/security-enhanced';
 import { requireAuth } from './middleware/auth';
 
