@@ -118,8 +118,24 @@ const registerSchema = z.object({
 
 authRouter.post('/register', authRateLimit, async (req, res) => {
   try {
+    // Debug: Log request body
+    console.log('🔍 Registration request body:', JSON.stringify(req.body));
+    console.log('🔍 Request body type:', typeof req.body);
+    console.log('🔍 Request body keys:', Object.keys(req.body || {}));
+    
+    // Check if request body is empty or invalid
+    if (!req.body || typeof req.body !== 'object' || Object.keys(req.body).length === 0) {
+      console.log('❌ Empty or invalid request body');
+      return res.status(400).json({
+        error: 'Invalid request',
+        message: 'Request body is empty or invalid',
+        details: 'Expected JSON with email, password, and displayName fields'
+      });
+    }
+    
     const parsed = registerSchema.safeParse(req.body);
     if (!parsed.success) {
+      console.log('❌ Schema validation failed:', parsed.error.flatten());
       return res.status(400).json({ 
         error: 'Invalid input',
         details: parsed.error.flatten() 
