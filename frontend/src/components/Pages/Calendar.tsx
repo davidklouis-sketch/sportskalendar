@@ -65,23 +65,42 @@ export function Calendar() {
       
       // Filter events by ALL selected teams for the current sport
       const sportTeams = teams.filter(t => t.sport === selectedSport);
+      console.log('🔍 Debug - Sport teams to filter by:', sportTeams.map(t => ({ name: t.teamName, sport: t.sport })));
       
       if (sportTeams.length > 0) {
         const beforeFilter = allEvents.length;
-        allEvents = allEvents.filter((event: Event) => 
-          sportTeams.some(team => {
+        console.log('🔍 Debug - All event titles before filtering:', allEvents.map((e: Event) => e.title));
+        
+        allEvents = allEvents.filter((event: Event) => {
+          const matches = sportTeams.some(team => {
             const teamName = team.teamName.toLowerCase();
             const eventTitle = event.title.toLowerCase();
+            
+            console.log(`🔍 Debug - Checking event "${eventTitle}" against team "${teamName}"`);
             
             // For F1, also check for last name only (e.g., "Verstappen" instead of "Max Verstappen")
             if (selectedSport === 'f1' && teamName.includes(' ')) {
               const lastName = teamName.split(' ').pop() || '';
-              return eventTitle.includes(teamName) || eventTitle.includes(lastName);
+              const matchesFull = eventTitle.includes(teamName);
+              const matchesLast = eventTitle.includes(lastName);
+              console.log(`🔍 Debug - F1 check: full="${matchesFull}", last="${matchesLast}"`);
+              return matchesFull || matchesLast;
             }
             
-            return eventTitle.includes(teamName);
-          })
-        );
+            const matches = eventTitle.includes(teamName);
+            console.log(`🔍 Debug - Regular check: "${matches}"`);
+            return matches;
+          });
+          
+          if (matches) {
+            console.log(`🔍 Debug - Event "${event.title}" MATCHES`);
+          } else {
+            console.log(`🔍 Debug - Event "${event.title}" NO MATCH`);
+          }
+          
+          return matches;
+        });
+        
         console.log('🔍 Debug - Filtered events:', beforeFilter, '->', allEvents.length, 'for teams:', sportTeams.map(t => t.teamName));
         console.log('🔍 Debug - Sample event titles:', allEvents.slice(0, 3).map((e: Event) => e.title));
       }
@@ -131,20 +150,38 @@ export function Calendar() {
         console.log('🔍 Debug - Sport teams to filter by:', sportTeams.map(t => ({ name: t.teamName, sport: t.sport })));
         if (sportTeams.length > 0) {
           const beforeFilter = allEvents.length;
-          allEvents = allEvents.filter((event: Event) => 
-            sportTeams.some(team => {
+          console.log('🔍 Debug - All event titles before filtering:', allEvents.map((e: Event) => e.title));
+          
+          allEvents = allEvents.filter((event: Event) => {
+            const matches = sportTeams.some(team => {
               const teamName = team.teamName.toLowerCase();
               const eventTitle = event.title.toLowerCase();
+              
+              console.log(`🔍 Debug - Checking event "${eventTitle}" against team "${teamName}"`);
               
               // For F1, also check for last name only (e.g., "Verstappen" instead of "Max Verstappen")
               if (selectedSport === 'f1' && teamName.includes(' ')) {
                 const lastName = teamName.split(' ').pop() || '';
-                return eventTitle.includes(teamName) || eventTitle.includes(lastName);
+                const matchesFull = eventTitle.includes(teamName);
+                const matchesLast = eventTitle.includes(lastName);
+                console.log(`🔍 Debug - F1 check: full="${matchesFull}", last="${matchesLast}"`);
+                return matchesFull || matchesLast;
               }
               
-              return eventTitle.includes(teamName);
-            })
-          );
+              const matches = eventTitle.includes(teamName);
+              console.log(`🔍 Debug - Regular check: "${matches}"`);
+              return matches;
+            });
+            
+            if (matches) {
+              console.log(`🔍 Debug - Event "${event.title}" MATCHES`);
+            } else {
+              console.log(`🔍 Debug - Event "${event.title}" NO MATCH`);
+            }
+            
+            return matches;
+          });
+          
           console.log('🔍 Debug - Filtered events:', beforeFilter, '->', allEvents.length, 'for teams:', sportTeams.map(t => t.teamName));
           console.log('🔍 Debug - Sample event titles:', allEvents.slice(0, 3).map((e: Event) => e.title));
         }
