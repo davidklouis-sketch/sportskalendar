@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { useAuthStore } from '../../store/useAuthStore';
 import { calendarApi, userApi } from '../../lib/api';
 import { format } from 'date-fns';
@@ -122,12 +122,14 @@ export function Calendar() {
     }
   }, [user?.selectedTeams]); // Only depend on selectedTeams, not selectedSport
 
-  // Load events when localTeams change
+  // Load events when localTeams change - use a ref to prevent loops
+  const teamsLengthRef = useRef(0);
   useEffect(() => {
-    if (localTeams && localTeams.length > 0) {
+    if (localTeams && localTeams.length > 0 && localTeams.length !== teamsLengthRef.current) {
+      teamsLengthRef.current = localTeams.length;
       loadAllEvents();
     }
-  }, [localTeams, loadAllEvents]);
+  }, [localTeams.length]);
 
   // Separate effect for initial sport selection
   useEffect(() => {
