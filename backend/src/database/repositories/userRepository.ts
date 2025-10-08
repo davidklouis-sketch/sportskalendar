@@ -283,6 +283,19 @@ export class UserRepository {
     return await bcrypt.compare(password, user.passwordHash);
   }
 
+  // Safe JSON parsing helper
+  private static safeJsonParse(jsonString: string | null | undefined, defaultValue: any = []): any {
+    if (!jsonString || jsonString.trim() === '') {
+      return defaultValue;
+    }
+    try {
+      return JSON.parse(jsonString);
+    } catch (error) {
+      console.warn('Failed to parse JSON:', jsonString, 'Error:', error);
+      return defaultValue;
+    }
+  }
+
   // Map database row to User object
   private static mapRowToUser(row: any): DatabaseUser {
     return {
@@ -292,7 +305,7 @@ export class UserRepository {
       displayName: row.display_name,
       role: row.role,
       isPremium: row.is_premium || false,
-      selectedTeams: row.selected_teams ? JSON.parse(row.selected_teams) : [],
+      selectedTeams: this.safeJsonParse(row.selected_teams, []),
       email_verified: row.email_verified,
       two_factor_enabled: row.two_factor_enabled,
       two_factor_secret: row.two_factor_secret,
