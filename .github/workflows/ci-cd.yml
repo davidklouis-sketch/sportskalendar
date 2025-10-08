@@ -268,6 +268,33 @@ jobs:
           echo "🔍 Testing backend health endpoint..."
           curl -f http://localhost:4000/api/health || echo "Backend health check failed"
           
+          # Debug: Check environment variables in backend container
+          echo "🔍 Checking backend environment variables..."
+          docker compose -f docker-compose.traefik.yml --env-file .env.production exec backend env | grep -E "(DATABASE_URL|JWT_SECRET|DB_)" || echo "Could not check environment variables"
+          
+          # Debug: Test database connection from backend
+          echo "🔍 Testing database connection from backend..."
+          docker compose -f docker-compose.traefik.yml --env-file .env.production exec backend node -e "
+            const { Pool } = require('pg');
+            const pool = new Pool({ connectionString: process.env.DATABASE_URL });
+            pool.query('SELECT 1 as test', (err, res) => {
+              if (err) {
+                console.error('❌ Database connection failed:', err.message);
+                process.exit(1);
+              } else {
+                console.log('✅ Database connection successful:', res.rows[0]);
+                process.exit(0);
+              }
+            });
+          " || echo "Database connection test failed"
+          
+          # Debug: Test registration endpoint directly
+          echo "🔍 Testing registration endpoint..."
+          curl -X POST http://localhost:4000/api/auth/register \
+            -H "Content-Type: application/json" \
+            -d '{"email":"test@example.com","password":"Test123!","displayName":"Test User"}' \
+            -v || echo "Registration endpoint test failed"
+          
           # Debug: Check if postgres container exists
           echo "🔍 All containers:"
           docker ps -a | grep postgres || echo "No postgres containers found"
