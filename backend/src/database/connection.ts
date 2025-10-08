@@ -69,14 +69,78 @@ export async function initializeDatabase(): Promise<void> {
       )
     `);
 
-    // Migration: Add is_premium column if it doesn't exist
+    // Migration: Add missing columns if they don't exist
     await client.query(`
       DO $$
       BEGIN
+        -- Add is_premium column
         IF NOT EXISTS (SELECT 1 FROM information_schema.columns 
                       WHERE table_name = 'users' AND column_name = 'is_premium') THEN
           ALTER TABLE users ADD COLUMN is_premium BOOLEAN DEFAULT FALSE;
           RAISE NOTICE 'Added is_premium column to users table';
+        END IF;
+        
+        -- Add selected_teams column
+        IF NOT EXISTS (SELECT 1 FROM information_schema.columns 
+                      WHERE table_name = 'users' AND column_name = 'selected_teams') THEN
+          ALTER TABLE users ADD COLUMN selected_teams JSONB DEFAULT '[]'::jsonb;
+          RAISE NOTICE 'Added selected_teams column to users table';
+        END IF;
+        
+        -- Add email_verified column
+        IF NOT EXISTS (SELECT 1 FROM information_schema.columns 
+                      WHERE table_name = 'users' AND column_name = 'email_verified') THEN
+          ALTER TABLE users ADD COLUMN email_verified BOOLEAN DEFAULT FALSE;
+          RAISE NOTICE 'Added email_verified column to users table';
+        END IF;
+        
+        -- Add two_factor_enabled column
+        IF NOT EXISTS (SELECT 1 FROM information_schema.columns 
+                      WHERE table_name = 'users' AND column_name = 'two_factor_enabled') THEN
+          ALTER TABLE users ADD COLUMN two_factor_enabled BOOLEAN DEFAULT FALSE;
+          RAISE NOTICE 'Added two_factor_enabled column to users table';
+        END IF;
+        
+        -- Add two_factor_secret column
+        IF NOT EXISTS (SELECT 1 FROM information_schema.columns 
+                      WHERE table_name = 'users' AND column_name = 'two_factor_secret') THEN
+          ALTER TABLE users ADD COLUMN two_factor_secret VARCHAR(255);
+          RAISE NOTICE 'Added two_factor_secret column to users table';
+        END IF;
+        
+        -- Add created_at column
+        IF NOT EXISTS (SELECT 1 FROM information_schema.columns 
+                      WHERE table_name = 'users' AND column_name = 'created_at') THEN
+          ALTER TABLE users ADD COLUMN created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW();
+          RAISE NOTICE 'Added created_at column to users table';
+        END IF;
+        
+        -- Add updated_at column
+        IF NOT EXISTS (SELECT 1 FROM information_schema.columns 
+                      WHERE table_name = 'users' AND column_name = 'updated_at') THEN
+          ALTER TABLE users ADD COLUMN updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW();
+          RAISE NOTICE 'Added updated_at column to users table';
+        END IF;
+        
+        -- Add last_login column
+        IF NOT EXISTS (SELECT 1 FROM information_schema.columns 
+                      WHERE table_name = 'users' AND column_name = 'last_login') THEN
+          ALTER TABLE users ADD COLUMN last_login TIMESTAMP WITH TIME ZONE;
+          RAISE NOTICE 'Added last_login column to users table';
+        END IF;
+        
+        -- Add login_attempts column
+        IF NOT EXISTS (SELECT 1 FROM information_schema.columns 
+                      WHERE table_name = 'users' AND column_name = 'login_attempts') THEN
+          ALTER TABLE users ADD COLUMN login_attempts INTEGER DEFAULT 0;
+          RAISE NOTICE 'Added login_attempts column to users table';
+        END IF;
+        
+        -- Add locked_until column
+        IF NOT EXISTS (SELECT 1 FROM information_schema.columns 
+                      WHERE table_name = 'users' AND column_name = 'locked_until') THEN
+          ALTER TABLE users ADD COLUMN locked_until TIMESTAMP WITH TIME ZONE;
+          RAISE NOTICE 'Added locked_until column to users table';
         END IF;
       END
       $$;
