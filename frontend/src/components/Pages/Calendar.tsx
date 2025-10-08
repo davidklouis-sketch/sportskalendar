@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useRef } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useAuthStore } from '../../store/useAuthStore';
 import { calendarApi, userApi } from '../../lib/api';
 import { format } from 'date-fns';
@@ -122,7 +122,12 @@ export function Calendar() {
     }
   }, [user?.selectedTeams]); // Only depend on selectedTeams, not selectedSport
 
-  // Events are now loaded automatically when localTeams change via loadAllEvents dependency
+  // Load events when localTeams change
+  useEffect(() => {
+    if (localTeams && localTeams.length > 0) {
+      loadAllEvents();
+    }
+  }, [localTeams, loadAllEvents]);
 
   // Separate effect for initial sport selection
   useEffect(() => {
