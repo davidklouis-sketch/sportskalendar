@@ -194,6 +194,15 @@ jobs:
           echo "🗑️ Removing any remaining project containers..."
           docker ps -a --filter "name=sportskalendar" --format "{{.Names}}" | xargs -r docker rm -f || echo "No sportskalendar containers found"
           
+          # Additional cleanup: Remove any containers that might be running
+          echo "🗑️ Additional cleanup - removing any running containers..."
+          docker ps -q --filter "name=traefik" | xargs -r docker rm -f || echo "No traefik containers to remove"
+          docker ps -q --filter "name=sportskalendar" | xargs -r docker rm -f || echo "No sportskalendar containers to remove"
+          
+          # Nuclear option: Remove ALL stopped containers (be careful!)
+          echo "🗑️ Removing all stopped containers..."
+          docker container prune -f || echo "No stopped containers to remove"
+          
           # Remove only the containers, NOT the volumes (fallback)
           echo "🗑️ Removing containers via compose (preserving volumes)..."
           docker compose -f docker-compose.traefik.yml --env-file .env.production rm -f
@@ -217,6 +226,10 @@ jobs:
           echo "🔍 Verifying no conflicting containers exist..."
           docker ps -a --filter "name=traefik" --format "{{.Names}}" | grep -q traefik && echo "⚠️ Traefik container still exists" || echo "✅ No traefik container found"
           docker ps -a --filter "name=sportskalendar" --format "{{.Names}}" | grep -q sportskalendar && echo "⚠️ Sportskalendar containers still exist" || echo "✅ No sportskalendar containers found"
+          
+          # Show all containers for debugging
+          echo "🔍 All containers (for debugging):"
+          docker ps -a --format "table {{.Names}}\t{{.Status}}\t{{.Image}}" || echo "Could not list containers"
           
           # Start services
           echo "🚀 Starting services..."
