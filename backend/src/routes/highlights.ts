@@ -97,7 +97,7 @@ highlightsRouter.delete('/:id', requireAuth, requireRole('admin'), (req, res) =>
 
 // Cache for video feeds to avoid rate limiting
 const videoCache = new Map<string, { data: HighlightItem[]; timestamp: number }>();
-const CACHE_DURATION = 10 * 60 * 1000; // 10 minutes
+const CACHE_DURATION = 30 * 60 * 1000; // 30 minutes - longer cache to reduce API calls
 
 // Video source configurations
 const VIDEO_SOURCES = {

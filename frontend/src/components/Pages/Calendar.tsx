@@ -59,6 +59,7 @@ export function Calendar() {
           
           // Filter football events by selected teams
           const footballTeams = teams.filter(t => t.sport === 'football');
+          
           if (footballTeams.length > 0) {
             footballEvents = footballEvents.filter((event: Event) => {
               return footballTeams.some(team => {
@@ -159,12 +160,22 @@ export function Calendar() {
       return;
     }
 
+    // Prevent multiple simultaneous requests
+    if (isLoadingHighlights) {
+      return;
+    }
+
     setIsLoadingHighlights(true);
     try {
       const allHighlights: Highlight[] = [];
       
       // Load highlights for each sport that user has teams in
       const uniqueSports = [...new Set(localTeams.map(t => t.sport))];
+      
+      // Add timeout to prevent hanging requests
+      const timeoutPromise = new Promise((_, reject) => 
+        setTimeout(() => reject(new Error('Highlights request timeout')), 10000)
+      );
       
       for (const sport of uniqueSports) {
         const sportMapping: Record<string, string> = {
@@ -174,7 +185,9 @@ export function Calendar() {
         };
         
         try {
-          const { data } = await highlightsApi.getHighlights(sportMapping[sport]);
+          const highlightsPromise = highlightsApi.getHighlights(sportMapping[sport]);
+          const { data } = await Promise.race([highlightsPromise, timeoutPromise]);
+          
           let sportHighlights = data.items || [];
           
           // Filter highlights by team names for this sport
@@ -189,6 +202,7 @@ export function Calendar() {
           allHighlights.push(...sportHighlights);
         } catch (error) {
           console.error(`Failed to load ${sport} highlights:`, error);
+          // Continue with other sports even if one fails
         }
       }
       
@@ -203,16 +217,22 @@ export function Calendar() {
     } finally {
       setIsLoadingHighlights(false);
     }
-  }, [localTeams]);
+  }, [localTeams, isLoadingHighlights]);
 
-  // Load highlights when teams change
+  // Load highlights when teams change - with debouncing to prevent API spam
   useEffect(() => {
-    if (localTeams && localTeams.length > 0) {
-      loadHighlights();
-    } else {
+    if (!localTeams || localTeams.length === 0) {
       setHighlights([]);
+      return;
     }
-  }, [localTeams, loadHighlights]);
+
+    // Debounce highlights loading to prevent API spam
+    const timeoutId = setTimeout(() => {
+      loadHighlights();
+    }, 1000); // 1 second debounce
+
+    return () => clearTimeout(timeoutId);
+  }, [localTeams.length]); // Only depend on length, not the entire loadHighlights function
 
   // Events are now loaded automatically when localTeams change
 

@@ -128,6 +128,11 @@ async function aggregateUpcomingEvents(debug?: DebugBuffer, opts?: AggregateOpti
     const leagues = opts.leagues && opts.leagues.length ? opts.leagues : [];
     const soccer = await fetchSoccerApiFootball(debug, leagues);
     items.push(...soccer);
+    
+    // If no events from API, log it but don't add demo data
+    if (soccer.length === 0 && leagues.length > 0) {
+      debug?.logs.push('No API events found for football leagues');
+    }
   }
   const upcoming = items.filter(i => new Date(i.startsAt).getTime() <= rangeEnd && new Date(i.startsAt).getTime() >= Date.now());
   debug?.logs.push(`Total items: ${items.length}, upcoming: ${upcoming.length}`);
@@ -170,8 +175,8 @@ async function fetchF1(debug?: DebugBuffer): Promise<EventItem[]> {
     if (!r.ok) {
       debug?.logs.push(`Jolpica F1 API responded with status ${r.status}`);
       if (r.status === 429) {
-        debug?.logs.push('Rate limit exceeded, using fallback F1 data');
-        return getFallbackF1Events();
+        debug?.logs.push('Rate limit exceeded, returning empty array');
+        return [];
       }
       return [];
     }
@@ -203,8 +208,8 @@ async function fetchF1(debug?: DebugBuffer): Promise<EventItem[]> {
   } catch (e: any) {
     debug?.logs.push(`Jolpica F1 API error: ${e?.message || String(e)}`);
     if (e?.message?.includes('429') || e?.message?.includes('rate limit')) {
-      debug?.logs.push('Rate limit detected, using fallback F1 data');
-      return getFallbackF1Events();
+      debug?.logs.push('Rate limit detected, returning empty array');
+      return [];
     }
     return [];
   }
@@ -299,65 +304,36 @@ async function fetchNFL(debug?: DebugBuffer): Promise<EventItem[]> {
     }
   }
   
-  // If all APIs fail, use demo data
-  debug?.logs.push('All NFL APIs failed, using demo data');
-  return generateDemoNFLEvents();
+  // If all APIs fail, return empty array
+  debug?.logs.push('All NFL APIs failed, returning empty array');
+  return [];
 }
 
-function generateDemoNFLEvents(): EventItem[] {
-  const now = new Date();
-  const events: EventItem[] = [];
-  
-  // Generate more upcoming NFL games over 30 days
-  const teams = [
-    ['Kansas City Chiefs', 'Buffalo Bills'],
-    ['Dallas Cowboys', 'Philadelphia Eagles'],
-    ['San Francisco 49ers', 'Seattle Seahawks'],
-    ['Green Bay Packers', 'Chicago Bears'],
-    ['New England Patriots', 'Miami Dolphins'],
-    ['Pittsburgh Steelers', 'Baltimore Ravens'],
-    ['Denver Broncos', 'Las Vegas Raiders'],
-    ['Tampa Bay Buccaneers', 'New Orleans Saints'],
-    ['Los Angeles Rams', 'Arizona Cardinals'],
-    ['Cleveland Browns', 'Cincinnati Bengals']
-  ];
-  
-  // Generate games over 30 days (every 2-3 days)
-  for (let i = 0; i < 15; i++) {
-    const teamPair = teams[i % teams.length];
-    if (!teamPair || teamPair.length < 2) continue;
-    const [home, away] = teamPair;
-    const gameDate = new Date(now);
-    gameDate.setDate(gameDate.getDate() + (i + 1) * 2); // Games every 2 days over 30 days
-    gameDate.setHours(19 + (i % 2), 0, 0, 0); // 7 PM or 8 PM games
-    
-    events.push({
-      id: `demo_nfl_${i + 1}`,
-      title: `NFL · ${home} vs ${away}`,
-      sport: 'NFL',
-      startsAt: gameDate.toISOString()
-    });
-  }
-  
-  return events;
-}
+// Demo NFL function removed - only live API data is used
 
 async function fetchSoccerApiFootball(debug?: DebugBuffer, leagues: number[] = []): Promise<EventItem[]> {
+  debug?.logs.push(`Fetching soccer events for leagues: ${leagues.join(', ')}`);
+  
   // Try football-data.org first (free tier available)
   const footballDataKey = process.env.FOOTBALL_DATA_KEY || '';
   if (footballDataKey) {
+    debug?.logs.push('Trying football-data.org API');
     const footballDataItems = await fetchFootballDataOrg(footballDataKey, debug, leagues);
     if (footballDataItems.length > 0) {
+      debug?.logs.push(`Football-data.org returned ${footballDataItems.length} events`);
       return footballDataItems;
     }
+    debug?.logs.push('Football-data.org returned no events');
   }
 
   // Fallback to API-FOOTBALL
   const key = process.env.API_FOOTBALL_KEY || '';
   if (!key) { 
-    debug?.logs.push('No API keys available (FOOTBALL_DATA_KEY or API_FOOTBALL_KEY), using demo data'); 
-    return generateDemoFootballEvents(leagues);
+    debug?.logs.push('No API keys available (FOOTBALL_DATA_KEY or API_FOOTBALL_KEY), returning empty array'); 
+    return [];
   }
+  
+  debug?.logs.push('Trying API-FOOTBALL API');
   const headers = { 'x-apisports-key': key } as any;
   if (!leagues.length) { debug?.logs.push('SOCCER no leagues selected'); return []; }
   const items: EventItem[] = [];
@@ -366,10 +342,7 @@ async function fetchSoccerApiFootball(debug?: DebugBuffer, leagues: number[] = [
     try {
       const r = await fetchWithLog(url, { headers }, debug, `API-FOOTBALL ${league}`);
       if (!r.ok) {
-        debug?.logs.push(`API-FOOTBALL ${league}: API failed (${r.status}) - using demo data`);
-        // Use demo data when API fails (rate limit, invalid token, etc.)
-        const demoEvents = generateDemoFootballEvents([league]);
-        items.push(...demoEvents);
+        debug?.logs.push(`API-FOOTBALL ${league}: API failed (${r.status}) - skipping league`);
         continue;
       }
       const data = await r.json();
@@ -383,10 +356,7 @@ async function fetchSoccerApiFootball(debug?: DebugBuffer, leagues: number[] = [
           const d2 = await r2.json();
           fixtures = d2?.response || [];
         } else {
-          debug?.logs.push(`API-FOOTBALL ${league}: Season API failed (${r2.status}) - using demo data`);
-          // Use demo data when API fails
-          const demoEvents = generateDemoFootballEvents([league]);
-          items.push(...demoEvents);
+          debug?.logs.push(`API-FOOTBALL ${league}: Season API failed (${r2.status}) - skipping league`);
           continue;
         }
       }
@@ -401,10 +371,7 @@ async function fetchSoccerApiFootball(debug?: DebugBuffer, leagues: number[] = [
           const d3 = await r3.json();
           fixtures = d3?.response || [];
         } else {
-          debug?.logs.push(`API-FOOTBALL ${league}: Range API failed (${r3.status}) - using demo data`);
-          // Use demo data when API fails
-          const demoEvents = generateDemoFootballEvents([league]);
-          items.push(...demoEvents);
+          debug?.logs.push(`API-FOOTBALL ${league}: Range API failed (${r3.status}) - skipping league`);
           continue;
         }
       }
@@ -421,73 +388,11 @@ async function fetchSoccerApiFootball(debug?: DebugBuffer, leagues: number[] = [
       debug?.logs.push(`API-FOOTBALL ${league} error: ${e?.message || String(e)}`);
     }
   }
+  debug?.logs.push(`Total API-FOOTBALL items: ${items.length}`);
   return items;
 }
 
-// Demo data generator when no API keys are available
-function generateDemoFootballEvents(leagues: number[] = []): EventItem[] {
-  if (!leagues.length) return [];
-  
-  const teams = {
-    39: [  // Premier League
-      ['Manchester City', 'Arsenal'], ['Liverpool', 'Chelsea'], 
-      ['Manchester United', 'Tottenham'], ['Newcastle', 'Brighton']
-    ],
-    78: [  // Bundesliga
-      ['Bayern Munich', 'Borussia Dortmund'], ['RB Leipzig', 'Bayer Leverkusen'],
-      ['Eintracht Frankfurt', 'VfB Stuttgart'], ['Borussia Mönchengladbach', 'Wolfsburg']
-    ],
-    2: [   // Champions League
-      ['Real Madrid', 'Barcelona'], ['PSG', 'Bayern Munich'],
-      ['Manchester City', 'Inter Milan'], ['Arsenal', 'Atletico Madrid']
-    ],
-    4: [   // European Championship
-      ['Germany', 'France'], ['Spain', 'Italy'], 
-      ['England', 'Netherlands'], ['Portugal', 'Belgium']
-    ]
-  };
-
-  const leagueNames = {
-    39: 'Premier League',
-    78: 'Bundesliga', 
-    2: 'Champions League',
-    4: 'European Championship'
-  };
-
-  const items: EventItem[] = [];
-  const now = new Date();
-  
-  leagues.forEach(league => {
-    const leagueTeams = teams[league as keyof typeof teams];
-    const leagueName = leagueNames[league as keyof typeof leagueNames];
-    
-    if (leagueTeams && leagueName) {
-      // Generate more matches over 30 days - repeat teams if needed
-      const totalMatches = Math.max(20, leagueTeams.length * 3); // At least 20 matches per league
-      
-      for (let i = 0; i < totalMatches; i++) {
-        const match = leagueTeams[i % leagueTeams.length];
-        if (!match || match.length < 2) continue; // Skip if match is undefined or incomplete
-        
-        // Distribute matches over 30 days
-        const dayOffset = Math.floor(i / Math.ceil(totalMatches / 30)); // Spread over 30 days
-        const timeOffset = (i % 3) * 2; // Different times: 0, 2, 4 hours apart
-        
-        const matchDate = new Date(now.getTime() + dayOffset * 24 * 60 * 60 * 1000);
-        matchDate.setHours(15 + timeOffset + Math.floor(Math.random() * 2), Math.floor(Math.random() * 60), 0, 0);
-        
-        items.push({
-          id: `demo_${league}_${i}`,
-          title: `${leagueName} · ${match[0]} vs ${match[1]}`,
-          sport: 'Fußball',
-          startsAt: matchDate.toISOString()
-        });
-      }
-    }
-  });
-  
-  return items.sort((a, b) => new Date(a.startsAt).getTime() - new Date(b.startsAt).getTime());
-}
+// Demo football function removed - only live API data is used
 
 // New function for football-data.org API
 async function fetchFootballDataOrg(apiKey: string, debug?: DebugBuffer, leagues: number[] = []): Promise<EventItem[]> {
@@ -550,10 +455,7 @@ async function fetchFootballDataOrg(apiKey: string, debug?: DebugBuffer, leagues
       }
       
       if (!r.ok && matches.length === 0) {
-        debug?.logs.push(`FOOTBALL-DATA ${competition.name}: API failed (${r.status}) - using demo data`);
-        // Use demo data when API fails
-        const demoEvents = generateDemoFootballEvents([competition.id]);
-        items.push(...demoEvents);
+        debug?.logs.push(`FOOTBALL-DATA ${competition.name}: API failed (${r.status}) - skipping competition`);
         continue;
       }
       
@@ -568,11 +470,14 @@ async function fetchFootballDataOrg(apiKey: string, debug?: DebugBuffer, leagues
           items.push({ id, title, sport: 'Fußball', startsAt });
         }
       }
+      
+      debug?.logs.push(`FOOTBALL-DATA ${competition.name} processed ${matches.length} matches, added ${items.length} events`);
     } catch (e: any) {
       debug?.logs.push(`FOOTBALL-DATA ${competition.name} error: ${e?.message || String(e)}`);
     }
   }
   
+  debug?.logs.push(`FOOTBALL-DATA total events: ${items.length}`);
   return items;
 }
 

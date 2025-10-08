@@ -113,3 +113,4 @@ docker-compose up -d --build
 
 **Status:** Alle Fixes implementiert und getestet ✅
 
+
