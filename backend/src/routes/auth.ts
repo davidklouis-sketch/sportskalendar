@@ -56,11 +56,15 @@ export function signAccess(user: { id: string; email: string; role?: 'user' | 'a
   });
 }
 
-export function signRefresh(user: { id: string; email: string; role?: 'user' | 'admin' }) {
+export function signRefresh(user: { id: string; email: string; role?: 'user' | 'admin' }, keepLoggedIn: boolean = false) {
   const secret = process.env.JWT_SECRET;
   if (!secret || secret === 'dev_secret_change_me') {
     throw new Error('JWT_SECRET not properly configured');
   }
+  
+  // If keepLoggedIn is true, token expires in 30 days, otherwise 7 days
+  const expiresIn = keepLoggedIn ? '30d' : '7d';
+  
   return jwt.sign({ 
     id: user.id, 
     email: user.email, 
@@ -68,15 +72,19 @@ export function signRefresh(user: { id: string; email: string; role?: 'user' | '
     type: 'refresh',
     iat: Math.floor(Date.now() / 1000)
   }, secret, { 
-    expiresIn: '7d',
+    expiresIn,
     issuer: 'sportskalendar',
     audience: 'sportskalendar-users'
   });
 }
 
-export function setAuthCookies(res: Response, tokens: { access: string; refresh: string }) {
+export function setAuthCookies(res: Response, tokens: { access: string; refresh: string }, keepLoggedIn: boolean = false) {
   // Always use secure cookies for HTTPS environments
   const isHttps = process.env.NODE_ENV === 'production' || process.env.FORCE_HTTPS === 'true';
+  
+  // If keepLoggedIn is true, refresh token cookie expires in 30 days
+  const refreshMaxAge = keepLoggedIn ? 30 * 24 * 60 * 60 * 1000 : 7 * 24 * 60 * 60 * 1000;
+  
   res.cookie('access_token', tokens.access, {
     httpOnly: true,
     secure: isHttps,
@@ -89,7 +97,7 @@ export function setAuthCookies(res: Response, tokens: { access: string; refresh:
     secure: isHttps,
     sameSite: 'lax',
     path: '/',
-    maxAge: 7 * 24 * 60 * 60 * 1000,
+    maxAge: refreshMaxAge, // 30 days if keepLoggedIn, otherwise 7 days
   });
 }
 
@@ -200,6 +208,7 @@ authRouter.post('/register', authRateLimit, async (req, res) => {
 const loginSchema = z.object({
   email: z.string().email().transform((v) => v.toLowerCase().trim()),
   password: z.string().min(1),
+  keepLoggedIn: z.boolean().optional().default(false),
 });
 
 authRouter.post('/login', authRateLimit, async (req: Request, res: Response) => {
@@ -250,7 +259,7 @@ authRouter.post('/login', authRateLimit, async (req: Request, res: Response) => 
     }
     console.log('✅ Schema validation successful:', parsed.data);
 
-    const { email, password } = parsed.data;
+    const { email, password, keepLoggedIn } = parsed.data;
     
     // Find user in PostgreSQL
     if (!process.env.DATABASE_URL) {
@@ -282,11 +291,12 @@ authRouter.post('/login', authRateLimit, async (req: Request, res: Response) => 
 
     // Generate tokens
     console.log('🔍 Login - User role from database:', user.role);
+    console.log('🔍 Login - Keep logged in:', keepLoggedIn);
     const access = signAccess(user);
-    const refresh = signRefresh(user);
+    const refresh = signRefresh(user, keepLoggedIn);
     
     // Set secure cookies
-    setAuthCookies(res, { access, refresh });
+    setAuthCookies(res, { access, refresh }, keepLoggedIn);
     
     // Return user data (without sensitive information)
     const userData = { 

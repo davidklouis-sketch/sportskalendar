@@ -135,6 +135,32 @@ export function Calendar() {
       const loadEvents = async () => {
         setIsLoading(true);
         try {
+          // Helper function for better team name matching
+          const matchesTeamName = (eventTitle: string, teamName: string): boolean => {
+            const title = eventTitle.toLowerCase();
+            const team = teamName.toLowerCase();
+            
+            // Direct match
+            if (title.includes(team)) return true;
+            
+            // Team name variations
+            const variations: Record<string, string[]> = {
+              'bayern munich': ['fc bayern', 'bayern münchen', 'fc bayern münchen', 'bayern'],
+              'borussia dortmund': ['bvb', 'borussia', 'dortmund'],
+              'bayer leverkusen': ['bayer 04', 'leverkusen'],
+              'max verstappen': ['verstappen', 'max'],
+              'lewis hamilton': ['hamilton', 'lewis'],
+            };
+            
+            for (const [key, values] of Object.entries(variations)) {
+              if (team.includes(key) || key.includes(team)) {
+                return values.some(v => title.includes(v));
+              }
+            }
+            
+            return false;
+          };
+          
           // Load Football Events
           const footballTeams = localTeams.filter(t => t.sport === 'football');
           if (footballTeams.length > 0) {
@@ -142,14 +168,20 @@ export function Calendar() {
             const response = await calendarApi.getEvents('football', leagues);
             let events = (response.data as Event[]) || [];
             
-            // Filter by team name
+            console.log(`📊 Loaded ${events.length} football events from API`);
+            
+            // Filter by team name with improved matching
             events = events.filter((event: Event) => {
-              const eventTitle = event.title.toLowerCase();
-              return footballTeams.some(team => 
-                eventTitle.includes(team.teamName.toLowerCase())
+              const matches = footballTeams.some(team => 
+                matchesTeamName(event.title, team.teamName)
               );
+              if (matches) {
+                console.log(`✅ Event "${event.title}" matches football team`);
+              }
+              return matches;
             });
             
+            console.log(`📊 Filtered to ${events.length} football events for selected teams`);
             setFootballEvents(events);
           } else {
             setFootballEvents([]);
@@ -161,13 +193,19 @@ export function Calendar() {
             const response = await calendarApi.getEvents('f1', []);
             let events = (response.data as Event[]) || [];
             
+            console.log(`📊 Loaded ${events.length} F1 events from API`);
+            
             events = events.filter((event: Event) => {
-              const eventTitle = event.title.toLowerCase();
-              return f1Teams.some(team => 
-                eventTitle.includes(team.teamName.toLowerCase())
+              const matches = f1Teams.some(team => 
+                matchesTeamName(event.title, team.teamName)
               );
+              if (matches) {
+                console.log(`✅ Event "${event.title}" matches F1 team`);
+              }
+              return matches;
             });
             
+            console.log(`📊 Filtered to ${events.length} F1 events for selected teams`);
             setF1Events(events);
           } else {
             setF1Events([]);
@@ -179,13 +217,19 @@ export function Calendar() {
             const response = await calendarApi.getEvents('nfl', []);
             let events = (response.data as Event[]) || [];
             
+            console.log(`📊 Loaded ${events.length} NFL events from API`);
+            
             events = events.filter((event: Event) => {
-              const eventTitle = event.title.toLowerCase();
-              return nflTeams.some(team => 
-                eventTitle.includes(team.teamName.toLowerCase())
+              const matches = nflTeams.some(team => 
+                matchesTeamName(event.title, team.teamName)
               );
+              if (matches) {
+                console.log(`✅ Event "${event.title}" matches NFL team`);
+              }
+              return matches;
             });
             
+            console.log(`📊 Filtered to ${events.length} NFL events for selected teams`);
             setNflEvents(events);
           } else {
             setNflEvents([]);
