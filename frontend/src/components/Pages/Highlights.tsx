@@ -38,28 +38,31 @@ export function Highlights() {
         f1: 'F1',
       };
 
-      console.log(`[Highlights Frontend] Loading highlights for ${selectedSport} (${sportMapping[selectedSport]})`);
+      const currentTeam = user?.selectedTeams?.find(t => t.sport === selectedSport);
+      console.log(`[Highlights Frontend] Loading highlights for ${selectedSport} (${sportMapping[selectedSport]})${currentTeam ? ` for team "${currentTeam.teamName}"` : ''}`);
       
       // Add timeout to prevent hanging
       const timeoutPromise = new Promise<never>((_, reject) => {
         setTimeout(() => reject(new Error('Request timeout')), 15000); // 15 second timeout
       });
       
-      const fetchPromise = highlightsApi.getHighlights(sportMapping[selectedSport]);
+      const fetchPromise = highlightsApi.getHighlights(sportMapping[selectedSport], currentTeam?.teamName);
       const response = await Promise.race([fetchPromise, timeoutPromise]);
       
       let allHighlights = response.data.items || [];
       console.log(`[Highlights Frontend] Got ${allHighlights.length} highlights from API`);
       
-      // Filter highlights by selected team name
-      const currentTeam = user?.selectedTeams?.find(t => t.sport === selectedSport);
-      if (currentTeam?.teamName) {
+      // Additional frontend filtering if needed (backend should handle most filtering now)
+      if (currentTeam?.teamName && allHighlights.length > 0) {
         const beforeFilter = allHighlights.length;
         allHighlights = allHighlights.filter((highlight: Highlight) => {
           const searchText = (highlight.title + ' ' + (highlight.description || '')).toLowerCase();
-          return searchText.includes(currentTeam.teamName.toLowerCase());
+          
+          // Use the same team variations as backend
+          const teamVariations = getTeamVariations(currentTeam.teamName);
+          return teamVariations.some(variation => searchText.includes(variation));
         });
-        console.log(`[Highlights Frontend] Filtered ${beforeFilter} highlights to ${allHighlights.length} for team "${currentTeam.teamName}"`);
+        console.log(`[Highlights Frontend] Additional filtering: ${beforeFilter} -> ${allHighlights.length} highlights for team "${currentTeam.teamName}"`);
       }
       
       setHighlights(allHighlights);
@@ -70,6 +73,31 @@ export function Highlights() {
       setIsLoading(false);
     }
   }, [selectedSport, user]);
+
+  // Get team name variations for better matching (same as backend)
+  const getTeamVariations = (teamName: string): string[] => {
+    const normalized = teamName.toLowerCase().trim();
+    const variations: string[] = [normalized];
+    
+    const mappings: Record<string, string[]> = {
+      'bayern munich': ['fc bayern', 'bayern münchen', 'fc bayern münchen', 'bayern', 'fc bayern münchen'],
+      'borussia dortmund': ['bvb', 'borussia', 'bvb dortmund', 'dortmund'],
+      'bayer leverkusen': ['bayer 04', 'leverkusen', 'bayer', 'werkself'],
+      'max verstappen': ['verstappen', 'max'],
+      'lewis hamilton': ['hamilton', 'lewis'],
+      'charles leclerc': ['leclerc', 'charles'],
+      'lando norris': ['norris', 'lando']
+    };
+    
+    for (const [key, values] of Object.entries(mappings)) {
+      if (normalized.includes(key)) {
+        variations.push(...values);
+        break;
+      }
+    }
+    
+    return variations;
+  };
 
   useEffect(() => {
     if (selectedSport) {

@@ -117,8 +117,11 @@ export const liveApi = {
 
 // Highlights
 export const highlightsApi = {
-  getHighlights: (sport?: string) => {
-    const params = sport ? `?sport=${sport}` : '';
-    return api.get(`/highlights${params}`);
+  getHighlights: (sport?: string, team?: string) => {
+    const params = new URLSearchParams();
+    if (sport) params.append('sport', sport);
+    if (team) params.append('team', team);
+    const queryString = params.toString();
+    return api.get(`/highlights${queryString ? `?${queryString}` : ''}`);
   },
 };

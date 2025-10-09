@@ -10,8 +10,9 @@ export const highlightsRouter = Router();
 highlightsRouter.get('/', async (req, res) => {
   const sport = (req.query.sport as string) || '';
   const query = (req.query.query as string) || '';
+  const team = (req.query.team as string) || '';
   
-  console.log(`[Highlights API] Request for sport: ${sport}, query: ${query}`);
+  console.log(`[Highlights API] Request for sport: ${sport}, query: ${query}, team: ${team}`);
   
   // Always try to fetch external data first, but with timeout and fallback
   if (sport && ['F1', 'NFL', 'Fußball', 'Basketball', 'Tennis'].includes(sport)) {
@@ -23,7 +24,7 @@ highlightsRouter.get('/', async (req, res) => {
         setTimeout(() => reject(new Error('Request timeout')), 10000); // 10 second timeout
       });
       
-      const fetchPromise = fetchHighlightsForSport(sport);
+      const fetchPromise = fetchHighlightsForSport(sport, team);
       const external = await Promise.race([fetchPromise, timeoutPromise]);
       
       if (external && external.length > 0) {
@@ -39,15 +40,22 @@ highlightsRouter.get('/', async (req, res) => {
     }
   }
 
-  // Fallback to local data
-  console.log(`[Highlights API] Using local data for ${sport || 'all sports'}`);
+  // Fallback to local data or generate fallback highlights
+  console.log(`[Highlights API] Using fallback data for ${sport || 'all sports'}`);
   let items = Array.from(db.highlights.values());
   if (sport) items = items.filter(h => h.sport.toLowerCase() === sport.toLowerCase());
   if (query) items = items.filter(h => (h.title + ' ' + (h.description || '')).toLowerCase().includes(query.toLowerCase()));
+  
+  // If no local data, generate fallback highlights
+  if (items.length === 0 && sport) {
+    console.log(`[Highlights API] No local data found, generating fallback highlights for ${sport}`);
+    items = generateFallbackHighlights(sport, team);
+  }
+  
   // Sort newest first
   items.sort((a, b) => (b.createdAt || '').localeCompare(a.createdAt || ''));
   
-  console.log(`[Highlights API] Returning ${items.length} local highlights`);
+  console.log(`[Highlights API] Returning ${items.length} highlights (local + fallback)`);
   res.json({ items });
 });
 
@@ -181,7 +189,7 @@ const NEWS_SOURCES = {
   ]
 };
 
-async function fetchHighlightsForSport(sport: string) {
+async function fetchHighlightsForSport(sport: string, team?: string) {
   try {
     // Check cache first
     const cacheKey = `highlights_${sport}`;
@@ -270,7 +278,7 @@ async function fetchHighlightsForSport(sport: string) {
     // If no highlights found, add some fallback content
     if (allHighlights.length === 0) {
       console.log(`[Highlights API] No external highlights found for ${sport}, adding fallback content`);
-      allHighlights.push(...generateFallbackHighlights(sport));
+      allHighlights.push(...generateFallbackHighlights(sport, team));
     }
 
     // Sort by priority and date
@@ -385,7 +393,7 @@ function matchAttr(xml: string, tag: string, attr: string): string | null {
 }
 
 // Generate fallback highlights when external APIs fail
-function generateFallbackHighlights(sport: string): HighlightItem[] {
+function generateFallbackHighlights(sport: string, teamName?: string): HighlightItem[] {
   const fallbackHighlights: Record<string, HighlightItem[]> = {
     'F1': [
       {
@@ -441,6 +449,47 @@ function generateFallbackHighlights(sport: string): HighlightItem[] {
         createdAt: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString(),
         priority: 'high',
         type: 'news'
+      },
+      // Team-specific highlights
+      {
+        id: `fallback_bayern_1_${Date.now()}`,
+        title: 'Bayern Munich Highlights - Die besten Momente',
+        url: 'https://www.bundesliga.com/en/news/highlights',
+        sport: 'Fußball',
+        description: 'Die besten Tore und Spielzüge von Bayern Munich in der Bundesliga',
+        createdAt: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000).toISOString(),
+        priority: 'high',
+        type: 'news'
+      },
+      {
+        id: `fallback_bayern_2_${Date.now()}`,
+        title: 'FC Bayern München - Champions League Highlights',
+        url: 'https://www.uefa.com/uefachampionsleague/highlights/',
+        sport: 'Fußball',
+        description: 'Bayern Munich in der Champions League - Die spannendsten Momente',
+        createdAt: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString(),
+        priority: 'high',
+        type: 'news'
+      },
+      {
+        id: `fallback_bvb_1_${Date.now()}`,
+        title: 'Borussia Dortmund Highlights - BVB im Fokus',
+        url: 'https://www.bundesliga.com/en/news/highlights',
+        sport: 'Fußball',
+        description: 'Die besten Aktionen von Borussia Dortmund in der Bundesliga',
+        createdAt: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString(),
+        priority: 'high',
+        type: 'news'
+      },
+      {
+        id: `fallback_leverkusen_1_${Date.now()}`,
+        title: 'Bayer Leverkusen Highlights - Werkself im Fokus',
+        url: 'https://www.bundesliga.com/en/news/highlights',
+        sport: 'Fußball',
+        description: 'Die besten Momente von Bayer 04 Leverkusen',
+        createdAt: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000).toISOString(),
+        priority: 'high',
+        type: 'news'
       }
     ],
     'Basketball': [
@@ -469,7 +518,50 @@ function generateFallbackHighlights(sport: string): HighlightItem[] {
     ]
   };
 
-  return fallbackHighlights[sport] || [];
+  let highlights = fallbackHighlights[sport] || [];
+  
+  // If team name is provided, filter highlights to include team-specific content
+  if (teamName && highlights.length > 0) {
+    const teamNameLower = teamName.toLowerCase();
+    const teamVariations = getTeamVariations(teamName);
+    
+    highlights = highlights.filter(highlight => {
+      const searchText = (highlight.title + ' ' + (highlight.description || '')).toLowerCase();
+      return teamVariations.some(variation => searchText.includes(variation));
+    });
+    
+    // If no team-specific highlights found, return general highlights
+    if (highlights.length === 0) {
+      highlights = fallbackHighlights[sport] || [];
+    }
+  }
+  
+  return highlights;
+}
+
+// Get team name variations for better matching
+function getTeamVariations(teamName: string): string[] {
+  const normalized = teamName.toLowerCase().trim();
+  const variations: string[] = [normalized];
+  
+  const mappings: Record<string, string[]> = {
+    'bayern munich': ['fc bayern', 'bayern münchen', 'fc bayern münchen', 'bayern', 'fc bayern münchen'],
+    'borussia dortmund': ['bvb', 'borussia', 'bvb dortmund', 'dortmund'],
+    'bayer leverkusen': ['bayer 04', 'leverkusen', 'bayer', 'werkself'],
+    'max verstappen': ['verstappen', 'max'],
+    'lewis hamilton': ['hamilton', 'lewis'],
+    'charles leclerc': ['leclerc', 'charles'],
+    'lando norris': ['norris', 'lando']
+  };
+  
+  for (const [key, values] of Object.entries(mappings)) {
+    if (normalized.includes(key)) {
+      variations.push(...values);
+      break;
+    }
+  }
+  
+  return variations;
 }
 
 // Parse RSS feeds for news content
