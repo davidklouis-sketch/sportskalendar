@@ -4,7 +4,7 @@ import { calendarApi, userApi, highlightsApi } from '../../lib/api';
 import { format } from 'date-fns';
 import { FOOTBALL_LEAGUES, FOOTBALL_TEAMS, F1_DRIVERS, NFL_TEAMS } from '../../data/teams';
 import { LiveData } from '../LiveData';
-import { BannerAd, LeaderboardAd } from '../Ads/AdBanner';
+import { LeaderboardAd } from '../Ads/AdBanner';
 import { InterstitialAd } from '../Ads/InterstitialAd';
 
 interface Event {
