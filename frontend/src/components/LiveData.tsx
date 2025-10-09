@@ -45,40 +45,51 @@ export function LiveData({ className = '' }: LiveDataProps) {
     setIsLoading(true);
     try {
       const allLiveData: LiveData[] = [];
+      const sportGroups = new Map<string, string[]>();
       
-      // Check each selected team for live data
-      for (const team of user.selectedTeams) {
+      // Group teams by sport to reduce API calls
+      user.selectedTeams.forEach(team => {
+        if (!sportGroups.has(team.sport)) {
+          sportGroups.set(team.sport, []);
+        }
+        sportGroups.get(team.sport)!.push(team.teamName);
+      });
+      
+      // Make one API call per sport instead of per team
+      for (const [sport, teamNames] of sportGroups) {
         try {
           let response;
-          if (team.sport === 'f1') {
+          if (sport === 'f1') {
             response = await liveApi.getF1();
-          } else if (team.sport === 'nfl') {
+          } else if (sport === 'nfl') {
             response = await liveApi.getNFL();
-          } else if (team.sport === 'football') {
+          } else if (sport === 'football') {
             response = await liveApi.getSoccer();
           } else {
             continue;
           }
           
-          const teamLiveData = response.data;
+          const sportLiveData = response.data;
           
-          // Filter entries by team name
-          if (teamLiveData.entries) {
-            const filteredEntries = teamLiveData.entries.filter((entry: LiveEntry) => 
-              entry.name.toLowerCase().includes(team.teamName.toLowerCase())
+          // Filter entries by all team names for this sport
+          if (sportLiveData.entries) {
+            const filteredEntries = sportLiveData.entries.filter((entry: LiveEntry) => 
+              teamNames.some(teamName => 
+                entry.name.toLowerCase().includes(teamName.toLowerCase())
+              )
             );
             
             if (filteredEntries.length > 0) {
               allLiveData.push({
-                ...teamLiveData,
+                ...sportLiveData,
                 entries: filteredEntries
               });
             }
           }
         } catch (error) {
-          console.error(`Failed to load live data for ${team.teamName}:`, error);
-          // Don't fail completely if one team's live data fails
-          // Continue with other teams
+          console.error(`Failed to load live data for ${sport}:`, error);
+          // Don't fail completely if one sport's live data fails
+          // Continue with other sports
         }
       }
       
@@ -107,10 +118,10 @@ export function LiveData({ className = '' }: LiveDataProps) {
   useEffect(() => {
     loadLiveData();
     
-    // Auto-refresh every 30 seconds
+    // Auto-refresh every 2 minutes (reduced from 30 seconds to prevent rate limiting)
     const interval = setInterval(() => {
       loadLiveData();
-    }, 30000);
+    }, 120000); // 2 minutes instead of 30 seconds
     
     return () => clearInterval(interval);
   }, [user?.selectedTeams]); // Only depend on selectedTeams, not loadLiveData function

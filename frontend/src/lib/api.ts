@@ -31,11 +31,17 @@ api.interceptors.response.use(
         console.log('✅ Token refreshed successfully');
         return api(originalRequest);
       } catch (refreshError) {
-        console.log('❌ Token refresh failed, clearing auth state');
-        // Clear any stored tokens and auth state
-        localStorage.removeItem('accessToken');
-        localStorage.removeItem('refreshToken');
-        // Don't redirect in SPA - let the app handle auth state
+        console.log('❌ Token refresh failed:', refreshError);
+        // Only logout if it's a real authentication error, not a network error
+        if (error.response?.status === 401 || error.response?.status === 403) {
+          console.log('🔒 Authentication failed, logging out user');
+          // Clear any stored tokens and auth state
+          localStorage.removeItem('accessToken');
+          localStorage.removeItem('refreshToken');
+          // Force logout via auth store
+          const { useAuthStore } = await import('../store/useAuthStore');
+          useAuthStore.getState().logout();
+        }
         return Promise.reject(refreshError);
       }
     }
