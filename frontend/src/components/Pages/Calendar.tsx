@@ -87,7 +87,7 @@ export function Calendar() {
     } finally {
       setIsLoadingHighlights(false);
     }
-  }, [selectedSport, user]);
+  }, [selectedSport, user?.selectedTeams]); // Only depend on selectedTeams, not entire user object
 
   // Get team name variations for better matching (same as backend)
   const getTeamVariations = (teamName: string): string[] => {
@@ -203,11 +203,16 @@ export function Calendar() {
   }, [localTeams]); // Depend on localTeams but use ref to prevent loops
 
   // Load highlights when sport selection changes
+  const highlightsLoadedRef = useRef<string>('');
   useEffect(() => {
     if (selectedSport) {
-      loadHighlights();
+      const key = `${selectedSport}-${user?.selectedTeams?.find(t => t.sport === selectedSport)?.teamName || ''}`;
+      if (key !== highlightsLoadedRef.current) {
+        highlightsLoadedRef.current = key;
+        loadHighlights();
+      }
     }
-  }, [selectedSport]); // Remove loadHighlights from dependencies to prevent loop
+  }, [selectedSport, user?.selectedTeams, loadHighlights]); // Include loadHighlights but use ref to prevent loops
 
   // Auto-select first sport if available
   useEffect(() => {
