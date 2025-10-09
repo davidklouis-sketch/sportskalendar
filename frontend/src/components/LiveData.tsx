@@ -108,9 +108,12 @@ export function LiveData({ className = '' }: LiveDataProps) {
     loadLiveData();
     
     // Auto-refresh every 30 seconds
-    const interval = setInterval(loadLiveData, 30000);
+    const interval = setInterval(() => {
+      loadLiveData();
+    }, 30000);
+    
     return () => clearInterval(interval);
-  }, [loadLiveData]);
+  }, [user?.selectedTeams]); // Only depend on selectedTeams, not loadLiveData function
 
   // Don't render if no live data or no teams selected
   if (!hasLiveData || !user?.selectedTeams?.length) {

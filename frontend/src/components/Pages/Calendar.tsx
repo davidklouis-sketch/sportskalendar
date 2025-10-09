@@ -121,19 +121,86 @@ export function Calendar() {
     }
   }, [user?.selectedTeams]);
 
-  // Load events when teams change - simplified approach to prevent loops
-  const teamsLengthRef = useRef(0);
+  // Load events when teams change - proper implementation without loops
+  const teamsStringRef = useRef('');
+  
   useEffect(() => {
-    if (localTeams.length > 0 && localTeams.length !== teamsLengthRef.current) {
-      teamsLengthRef.current = localTeams.length;
+    const teamsString = JSON.stringify(localTeams);
+    
+    // Only load if teams actually changed (not just re-rendered)
+    if (localTeams.length > 0 && teamsString !== teamsStringRef.current) {
+      teamsStringRef.current = teamsString;
       console.log('🔄 Loading events for teams:', localTeams);
-      // Simplified event loading - just log for now to prevent loops
-      setIsLoading(false); // Use setIsLoading to avoid TypeScript error
-      setFootballEvents([]);
-      setF1Events([]);
-      setNflEvents([]);
+      
+      const loadEvents = async () => {
+        setIsLoading(true);
+        try {
+          // Load Football Events
+          const footballTeams = localTeams.filter(t => t.sport === 'football');
+          if (footballTeams.length > 0) {
+            const leagues = footballTeams.map(t => t.leagueId).filter(Boolean) as number[];
+            const response = await calendarApi.getEvents('football', leagues);
+            let events = (response.data as Event[]) || [];
+            
+            // Filter by team name
+            events = events.filter((event: Event) => {
+              const eventTitle = event.title.toLowerCase();
+              return footballTeams.some(team => 
+                eventTitle.includes(team.teamName.toLowerCase())
+              );
+            });
+            
+            setFootballEvents(events);
+          } else {
+            setFootballEvents([]);
+          }
+          
+          // Load F1 Events
+          const f1Teams = localTeams.filter(t => t.sport === 'f1');
+          if (f1Teams.length > 0) {
+            const response = await calendarApi.getEvents('f1', []);
+            let events = (response.data as Event[]) || [];
+            
+            events = events.filter((event: Event) => {
+              const eventTitle = event.title.toLowerCase();
+              return f1Teams.some(team => 
+                eventTitle.includes(team.teamName.toLowerCase())
+              );
+            });
+            
+            setF1Events(events);
+          } else {
+            setF1Events([]);
+          }
+          
+          // Load NFL Events
+          const nflTeams = localTeams.filter(t => t.sport === 'nfl');
+          if (nflTeams.length > 0) {
+            const response = await calendarApi.getEvents('nfl', []);
+            let events = (response.data as Event[]) || [];
+            
+            events = events.filter((event: Event) => {
+              const eventTitle = event.title.toLowerCase();
+              return nflTeams.some(team => 
+                eventTitle.includes(team.teamName.toLowerCase())
+              );
+            });
+            
+            setNflEvents(events);
+          } else {
+            setNflEvents([]);
+          }
+          
+        } catch (error) {
+          console.error('Failed to load events:', error);
+        } finally {
+          setIsLoading(false);
+        }
+      };
+      
+      loadEvents();
     }
-  }, [localTeams.length]); // Only depend on length
+  }, [localTeams]); // Depend on localTeams but use ref to prevent loops
 
   // Load highlights when sport selection changes
   useEffect(() => {
