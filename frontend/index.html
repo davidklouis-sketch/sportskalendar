@@ -1,13 +1,106 @@
 <!doctype html>
 <html lang="de">
   <head>
+    <!-- Basic Meta Tags -->
     <meta charset="UTF-8" />
-    <link rel="icon" type="image/png" href="/logo.png" />
-    <link rel="apple-touch-icon" href="/logo.png" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="description" content="SportsKalender - Dein digitaler Sportkalender mit Live-Ticker, Highlights und Community-Features" />
-    <meta name="theme-color" content="#3b82f6" />
-    <title>SportsKalender - Digitaler Sportkalender</title>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    
+    <!-- SEO Meta Tags -->
+    <title>Sportskalendar - Dein digitaler Sportkalender für alle Sportarten</title>
+    <meta name="description" content="Verwalte alle Spiele deiner Lieblingsteams mit Sportskalendar. Live-Ticker, Highlights, Kalender-Sync und Community-Features. Bundesliga, NFL, F1 und mehr!" />
+    <meta name="keywords" content="Sportkalender, Sport, Bundesliga, NFL, F1, Fußball, Basketball, Live-Ticker, Highlights, Kalender-Sync, Sportskalendar, sportskalendar.de" />
+    <meta name="author" content="Sportskalendar Team" />
+    <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1" />
+    <meta name="googlebot" content="index, follow" />
+    
+    <!-- Canonical URL -->
+    <link rel="canonical" href="https://sportskalendar.de/" />
+    
+    <!-- Open Graph Meta Tags -->
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="Sportskalendar - Dein digitaler Sportkalender für alle Sportarten" />
+    <meta property="og:description" content="Verwalte alle Spiele deiner Lieblingsteams mit Sportskalendar. Live-Ticker, Highlights, Kalender-Sync und Community-Features." />
+    <meta property="og:url" content="https://sportskalendar.de/" />
+    <meta property="og:site_name" content="Sportskalendar" />
+    <meta property="og:image" content="https://sportskalendar.de/icon-512.png" />
+    <meta property="og:image:width" content="512" />
+    <meta property="og:image:height" content="512" />
+    <meta property="og:image:alt" content="Sportskalendar Logo - Digitaler Sportkalender" />
+    <meta property="og:locale" content="de_DE" />
+    
+    <!-- Twitter Card Meta Tags -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="Sportskalendar - Dein digitaler Sportkalender für alle Sportarten" />
+    <meta name="twitter:description" content="Verwalte alle Spiele deiner Lieblingsteams mit Sportskalendar. Live-Ticker, Highlights, Kalender-Sync und Community-Features." />
+    <meta name="twitter:image" content="https://sportskalendar.de/icon-512.png" />
+    <meta name="twitter:image:alt" content="Sportskalendar Logo - Digitaler Sportkalender" />
+    <meta name="twitter:site" content="@sportskalendar" />
+    <meta name="twitter:creator" content="@sportskalendar" />
+    
+    <!-- Favicon and Icons -->
+    <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png" />
+    <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png" />
+    <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
+    <link rel="icon" type="image/png" sizes="192x192" href="/android-chrome-192x192.png" />
+    <link rel="icon" type="image/png" sizes="512x512" href="/android-chrome-512x512.png" />
+    <link rel="manifest" href="/site.webmanifest" />
+    
+    <!-- Theme Colors -->
+    <meta name="theme-color" content="#4f46e5" />
+    <meta name="msapplication-TileColor" content="#4f46e5" />
+    <meta name="msapplication-config" content="/browserconfig.xml" />
+    
+    <!-- Performance Hints -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link rel="dns-prefetch" href="https://api.sportskalendar.de" />
+    
+    <!-- Structured Data -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "WebApplication",
+      "name": "Sportskalendar",
+      "alternateName": "SportsKalender",
+      "url": "https://sportskalendar.de",
+      "description": "Dein digitaler Sportkalender für alle Sportarten. Verwalte Spiele, verfolge Live-Ticker, schaue Highlights und synchronisiere mit deinen Kalender-Apps.",
+      "applicationCategory": "SportsApplication",
+      "operatingSystem": "Web Browser",
+      "offers": {
+        "@type": "Offer",
+        "price": "0",
+        "priceCurrency": "EUR",
+        "availability": "https://schema.org/InStock"
+      },
+      "creator": {
+        "@type": "Organization",
+        "name": "Sportskalendar Team",
+        "url": "https://sportskalendar.de"
+      },
+      "featureList": [
+        "Live-Ticker für alle Sportarten",
+        "Highlights und Nachrichten",
+        "Kalender-Synchronisation",
+        "Community-Features",
+        "Premium-Account mit erweiterten Features"
+      ],
+      "screenshot": "https://sportskalendar.de/icon-512.png",
+      "softwareVersion": "1.0.0",
+      "datePublished": "2025-01-01",
+      "dateModified": "2025-01-01"
+    }
+    </script>
+    
+    <!-- Additional SEO Meta Tags -->
+    <meta name="format-detection" content="telephone=no" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+    <meta name="apple-mobile-web-app-title" content="Sportskalendar" />
+    
+    <!-- Security Headers -->
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; font-src 'self' https://fonts.gstatic.com;" />
   </head>
   <body>
     <div id="root"></div>

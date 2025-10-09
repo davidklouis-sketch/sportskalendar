@@ -8,6 +8,7 @@ import { Footer } from './components/Layout/Footer';
 import { CookieBanner } from './components/Layout/CookieBanner';
 import { Calendar } from './components/Pages/Calendar';
 import { Live } from './components/Pages/Live';
+import { PageSEO } from './components/SEO/PageSEO';
 import { Highlights } from './components/Pages/Highlights';
 import { Admin } from './components/Pages/Admin';
 import { Settings } from './components/Pages/Settings';
@@ -100,6 +101,9 @@ function App() {
 
   return (
     <div className="min-h-screen flex flex-col">
+      {/* SEO Head for current page */}
+      <PageSEO page={currentPage} user={user} />
+      
       <Header 
         currentPage={currentPage} 
         onNavigate={setCurrentPage}

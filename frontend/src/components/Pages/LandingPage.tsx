@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { SEOHead } from '../SEO/SEOHead';
 
 interface LandingPageProps {
   onShowLogin: () => void;
@@ -51,7 +52,43 @@ export function LandingPage({ onShowLogin, onShowRegister }: LandingPageProps) {
   ];
 
   return (
-    <div className="max-w-7xl mx-auto px-4 py-8">
+    <>
+      {/* SEO for Landing Page */}
+      <SEOHead
+        title="Sportskalendar - Dein digitaler Sportkalender für alle Sportarten"
+        description="Verwalte alle Spiele deiner Lieblingsteams mit Sportskalendar. Live-Ticker, Highlights, Kalender-Sync und Community-Features. Bundesliga, NFL, F1 und mehr!"
+        keywords="Sportkalender, Sport, Bundesliga, NFL, F1, Fußball, Basketball, Live-Ticker, Highlights, Kalender-Sync, Sportskalendar, sportskalendar.de"
+        canonical="https://sportskalendar.de/"
+        structuredData={{
+          "@context": "https://schema.org",
+          "@type": "WebApplication",
+          "name": "Sportskalendar",
+          "description": "Dein digitaler Sportkalender für alle Sportarten. Verwalte Spiele, verfolge Live-Ticker, schaue Highlights und synchronisiere mit deinen Kalender-Apps.",
+          "url": "https://sportskalendar.de",
+          "applicationCategory": "SportsApplication",
+          "operatingSystem": "Web Browser",
+          "offers": {
+            "@type": "Offer",
+            "price": "0",
+            "priceCurrency": "EUR",
+            "availability": "https://schema.org/InStock"
+          },
+          "creator": {
+            "@type": "Organization",
+            "name": "Sportskalendar Team",
+            "url": "https://sportskalendar.de"
+          },
+          "featureList": [
+            "Live-Ticker für alle Sportarten",
+            "Highlights und Nachrichten",
+            "Kalender-Synchronisation",
+            "Community-Features",
+            "Premium-Account mit erweiterten Features"
+          ]
+        }}
+      />
+      
+      <div className="max-w-7xl mx-auto px-4 py-8">
       {/* Hero Section */}
       <div className="text-center mb-12">
         <div className="mb-6">
@@ -206,5 +243,6 @@ export function LandingPage({ onShowLogin, onShowRegister }: LandingPageProps) {
         </div>
       </div>
     </div>
+    </>
   );
 }
