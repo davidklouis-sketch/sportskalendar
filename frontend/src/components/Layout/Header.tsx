@@ -70,7 +70,7 @@ export function Header({ currentPage, onNavigate, onShowLogin, onShowRegister }:
           </div>
 
           {/* Desktop Navigation */}
-          <nav className="hidden lg:flex items-center gap-1">
+          <nav className="hidden lg:flex items-center gap-2">
             {navigationItems.map((item) => (
               <button
                 key={item.key}
@@ -91,7 +91,7 @@ export function Header({ currentPage, onNavigate, onShowLogin, onShowRegister }:
           </nav>
 
           {/* Right Section */}
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-4">
             
             {/* Theme Toggle */}
             <button

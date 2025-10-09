@@ -379,16 +379,13 @@ export function Calendar() {
               <div className="absolute -inset-1 bg-gradient-to-r from-red-500 to-pink-600 rounded-3xl blur opacity-75"></div>
               <div className="relative bg-white dark:bg-gray-800 rounded-3xl shadow-2xl overflow-hidden">
                 <div className="p-6">
-                  <div className="flex items-center mb-4">
+                  <div className="flex items-center mb-6">
                     <div className="w-3 h-3 bg-red-500 rounded-full animate-pulse mr-3"></div>
                     <h2 className="text-xl font-bold text-gray-900 dark:text-white">Live Events</h2>
                   </div>
                   <div className="space-y-4">
                     <LiveData />
                   </div>
-                  <p className="text-xs text-gray-500 dark:text-gray-400 mt-4 text-center">
-                    Automatische Aktualisierung alle 30 Sekunden
-                  </p>
                 </div>
               </div>
             </div>
