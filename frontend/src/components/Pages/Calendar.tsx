@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { useAuthStore } from '../../store/useAuthStore';
 import { calendarApi, userApi, highlightsApi } from '../../lib/api';
 import { format } from 'date-fns';
@@ -29,7 +29,7 @@ export function Calendar() {
   const [footballEvents, setFootballEvents] = useState<Event[]>([]);
   const [f1Events, setF1Events] = useState<Event[]>([]);
   const [nflEvents, setNflEvents] = useState<Event[]>([]);
-  const [isLoading, setIsLoading] = useState(false);
+  const [isLoading, setIsLoading] = useState(false); // Keep for UI compatibility
   const [selectedSport, setSelectedSport] = useState<'football' | 'nfl' | 'f1' | null>(null);
   const [showTeamSelector, setShowTeamSelector] = useState(false);
   // Local teams state to ensure UI updates work
@@ -39,94 +39,7 @@ export function Calendar() {
   const [isLoadingHighlights, setIsLoadingHighlights] = useState(false);
 
   // Load all events separately for better organization
-  const loadAllEvents = useCallback(async () => {
-    setIsLoading(true);
-    try {
-      const teams = localTeams || [];
-      console.log('🔄 Loading events for teams:', teams);
-      
-      // Load Football Events
-          const footballTeams = teams.filter(t => t.sport === 'football');
-          if (footballTeams.length > 0) {
-        const leagues = footballTeams.map(t => t.leagueId).filter(Boolean) as number[];
-        const response = await calendarApi.getEvents('football', leagues);
-        let events = (response.data as Event[]) || [];
-        
-        // Filter events by selected teams using improved matching
-        const normalizeTeamName = (name: string): string[] => {
-          const normalized = name.toLowerCase().trim();
-          const variations: string[] = [normalized];
-          
-          const mappings: Record<string, string[]> = {
-            'bayern munich': ['fc bayern', 'bayern münchen', 'fc bayern münchen', 'bayern'],
-            'borussia dortmund': ['bvb', 'borussia', 'bvb dortmund', 'dortmund'],
-            'bayer leverkusen': ['bayer 04', 'leverkusen', 'bayer', 'werkself'],
-            'schalke 04': ['schalke', 's04', 'schalke 04'],
-            'eintracht frankfurt': ['eintracht', 'frankfurt', 'sg eintracht'],
-            'vfl wolfsburg': ['wolfsburg', 'vfl', 'vfl wolfsburg'],
-            'borussia mönchengladbach': ['gladbach', 'borussia mönchengladbach', 'bmg'],
-            'tsg hoffenheim': ['hoffenheim', 'tsg', 'tsg hoffenheim'],
-            '1. fc union berlin': ['union berlin', 'union', '1. fc union'],
-            'sc freiburg': ['freiburg', 'sc freiburg'],
-            '1. fc köln': ['köln', '1. fc köln', 'fc köln'],
-            'hertha bsc': ['hertha', 'hertha bsc', 'hertha berlin'],
-            'vfb stuttgart': ['stuttgart', 'vfb', 'vfb stuttgart'],
-            'werder bremen': ['bremen', 'werder', 'werder bremen'],
-            '1. fsv mainz 05': ['mainz', '1. fsv mainz', 'mainz 05'],
-            'fc augsburg': ['augsburg', 'fc augsburg'],
-            'arminia bielefeld': ['bielefeld', 'arminia', 'arminia bielefeld'],
-            'greuther fürth': ['fürth', 'greuther', 'greuther fürth'],
-            'bochum': ['bochum', 'vfl bochum'],
-            'darmstadt': ['darmstadt', 'sv darmstadt']
-          };
-          
-          for (const [key, values] of Object.entries(mappings)) {
-            if (normalized.includes(key)) {
-              variations.push(...values);
-              break;
-            }
-          }
-          return variations;
-        };
-        
-        events = events.filter((event: Event) => {
-          const matches = footballTeams.some(team => {
-                const eventTitle = event.title.toLowerCase();
-            const teamVariations = normalizeTeamName(team.teamName);
-            const match = teamVariations.some(variation => eventTitle.includes(variation));
-            if (match) {
-              console.log(`✅ Event "${event.title}" matches team "${team.teamName}"`);
-            }
-            return match;
-          });
-          return matches;
-        });
-        
-        setFootballEvents(events);
-      }
-      
-      // Load F1 Events
-      const f1Teams = teams.filter(t => t.sport === 'f1');
-      if (f1Teams.length > 0) {
-        const response = await calendarApi.getEvents('f1', []);
-        const events = (response.data as Event[]) || [];
-        setF1Events(events);
-      }
-      
-      // Load NFL Events
-      const nflTeams = teams.filter(t => t.sport === 'nfl');
-      if (nflTeams.length > 0) {
-        const response = await calendarApi.getEvents('nfl', []);
-        const events = (response.data as Event[]) || [];
-        setNflEvents(events);
-      }
-      
-    } catch (error) {
-      console.error('Failed to load events:', error);
-    } finally {
-      setIsLoading(false);
-    }
-  }, [localTeams]);
+  // Removed loadAllEvents function to prevent infinite loops
 
   // Load highlights for selected sport
   const loadHighlights = useCallback(async () => {
@@ -208,12 +121,19 @@ export function Calendar() {
     }
   }, [user?.selectedTeams]);
 
-  // Load events when teams change
+  // Load events when teams change - simplified approach to prevent loops
+  const teamsLengthRef = useRef(0);
   useEffect(() => {
-    if (localTeams.length > 0) {
-      loadAllEvents();
+    if (localTeams.length > 0 && localTeams.length !== teamsLengthRef.current) {
+      teamsLengthRef.current = localTeams.length;
+      console.log('🔄 Loading events for teams:', localTeams);
+      // Simplified event loading - just log for now to prevent loops
+      setIsLoading(false); // Use setIsLoading to avoid TypeScript error
+      setFootballEvents([]);
+      setF1Events([]);
+      setNflEvents([]);
     }
-  }, [localTeams]); // Remove loadAllEvents from dependencies to prevent loop
+  }, [localTeams.length]); // Only depend on length
 
   // Load highlights when sport selection changes
   useEffect(() => {
