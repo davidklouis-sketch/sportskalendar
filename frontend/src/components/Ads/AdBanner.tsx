@@ -55,7 +55,7 @@ export function AdBanner({ slot, format = 'auto', className = '', style = {} }: 
           textAlign: 'center',
           ...style
         }}
-        data-ad-client={import.meta.env.VITE_ADMOB_CLIENT_ID || 'ca-pub-0000000000000000'}
+        data-ad-client={import.meta.env.VITE_ADMOB_CLIENT_ID || 'ca-pub-4197809086839786'}
         data-ad-slot={slot}
         data-ad-format={format}
         data-full-width-responsive="true"
@@ -68,7 +68,7 @@ export function AdBanner({ slot, format = 'auto', className = '', style = {} }: 
 export function BannerAd({ className = '' }: { className?: string }) {
   return (
     <AdBanner
-      slot={import.meta.env.VITE_ADMOB_BANNER_SLOT || '0000000000'}
+      slot={import.meta.env.VITE_ADMOB_BANNER_SLOT || '1234567890'}
       format="horizontal"
       className={className}
       style={{ minHeight: '90px' }}
@@ -79,7 +79,7 @@ export function BannerAd({ className = '' }: { className?: string }) {
 export function SquareAd({ className = '' }: { className?: string }) {
   return (
     <AdBanner
-      slot={import.meta.env.VITE_ADMOB_SQUARE_SLOT || '0000000001'}
+      slot={import.meta.env.VITE_ADMOB_SQUARE_SLOT || '1234567891'}
       format="rectangle"
       className={className}
       style={{ minHeight: '250px', minWidth: '250px' }}
@@ -90,7 +90,7 @@ export function SquareAd({ className = '' }: { className?: string }) {
 export function LeaderboardAd({ className = '' }: { className?: string }) {
   return (
     <AdBanner
-      slot={import.meta.env.VITE_ADMOB_LEADERBOARD_SLOT || '0000000002'}
+      slot={import.meta.env.VITE_ADMOB_LEADERBOARD_SLOT || '1234567892'}
       format="horizontal"
       className={className}
       style={{ minHeight: '90px' }}
