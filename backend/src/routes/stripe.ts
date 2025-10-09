@@ -1,6 +1,6 @@
 import { Router } from 'express';
 import { z } from 'zod';
-import { stripe, PREMIUM_AMOUNT, PREMIUM_CURRENCY } from '../config/stripe';
+import { stripe, PREMIUM_AMOUNT, PREMIUM_CURRENCY, isStripeConfigured } from '../config/stripe';
 import { requireAuth } from '../middleware/auth';
 import { UserRepository } from '../database/repositories/userRepository';
 
@@ -9,6 +9,14 @@ export const stripeRouter = Router();
 // Create Stripe checkout session
 stripeRouter.post('/create-checkout-session', requireAuth, async (req, res) => {
   try {
+    // Check if Stripe is configured
+    if (!isStripeConfigured() || !stripe) {
+      return res.status(503).json({
+        error: 'Service unavailable',
+        message: 'Payment processing is currently unavailable'
+      });
+    }
+
     const user = (req as any).user as { id: string; email: string };
     
     // Check if user is already premium
@@ -21,7 +29,7 @@ stripeRouter.post('/create-checkout-session', requireAuth, async (req, res) => {
     }
 
     // Create Stripe checkout session
-    const session = await stripe.checkout.sessions.create({
+    const session = await stripe!.checkout.sessions.create({
       payment_method_types: ['card'],
       line_items: [
         {
@@ -62,6 +70,14 @@ stripeRouter.post('/create-checkout-session', requireAuth, async (req, res) => {
 
 // Handle successful payment (webhook)
 stripeRouter.post('/webhook', async (req, res) => {
+  // Check if Stripe is configured
+  if (!isStripeConfigured() || !stripe) {
+    return res.status(503).json({
+      error: 'Service unavailable',
+      message: 'Payment processing is currently unavailable'
+    });
+  }
+
   const sig = req.headers['stripe-signature'];
   const endpointSecret = process.env.STRIPE_WEBHOOK_SECRET;
 
@@ -73,7 +89,7 @@ stripeRouter.post('/webhook', async (req, res) => {
   let event;
 
   try {
-    event = stripe.webhooks.constructEvent(req.body, sig as string, endpointSecret);
+    event = stripe!.webhooks.constructEvent(req.body, sig as string, endpointSecret);
   } catch (err) {
     console.error('Webhook signature verification failed:', err);
     return res.status(400).json({ error: 'Invalid signature' });
