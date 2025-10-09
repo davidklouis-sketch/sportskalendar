@@ -10,24 +10,44 @@ export const highlightsRouter = Router();
 highlightsRouter.get('/', async (req, res) => {
   const sport = (req.query.sport as string) || '';
   const query = (req.query.query as string) || '';
-  // If explicit sport is requested and we can aggregate externally, do so
-  if (sport && ['F1', 'NFL'].includes(sport)) {
+  
+  console.log(`[Highlights API] Request for sport: ${sport}, query: ${query}`);
+  
+  // Always try to fetch external data first, but with timeout and fallback
+  if (sport && ['F1', 'NFL', 'Fußball', 'Basketball', 'Tennis'].includes(sport)) {
     try {
-      const external = await fetchHighlightsForSport(sport);
-      let items = external;
-      if (query) items = items.filter(h => (h.title + ' ' + (h.description || '')).toLowerCase().includes(query.toLowerCase()));
-      items.sort((a, b) => (b.createdAt || '').localeCompare(a.createdAt || ''));
-      return res.json({ items });
-    } catch (e) {
+      console.log(`[Highlights API] Fetching external highlights for ${sport}`);
+      
+      // Add timeout to prevent hanging
+      const timeoutPromise = new Promise<HighlightItem[]>((_, reject) => {
+        setTimeout(() => reject(new Error('Request timeout')), 10000); // 10 second timeout
+      });
+      
+      const fetchPromise = fetchHighlightsForSport(sport);
+      const external = await Promise.race([fetchPromise, timeoutPromise]);
+      
+      if (external && external.length > 0) {
+        console.log(`[Highlights API] Got ${external.length} external highlights for ${sport}`);
+        let items = external;
+        if (query) items = items.filter(h => (h.title + ' ' + (h.description || '')).toLowerCase().includes(query.toLowerCase()));
+        items.sort((a, b) => (b.createdAt || '').localeCompare(a.createdAt || ''));
+        return res.json({ items });
+      }
+    } catch (error) {
+      console.log(`[Highlights API] External fetch failed for ${sport}:`, error);
       // fallthrough to local data if external fails
     }
   }
 
+  // Fallback to local data
+  console.log(`[Highlights API] Using local data for ${sport || 'all sports'}`);
   let items = Array.from(db.highlights.values());
   if (sport) items = items.filter(h => h.sport.toLowerCase() === sport.toLowerCase());
   if (query) items = items.filter(h => (h.title + ' ' + (h.description || '')).toLowerCase().includes(query.toLowerCase()));
   // Sort newest first
   items.sort((a, b) => (b.createdAt || '').localeCompare(a.createdAt || ''));
+  
+  console.log(`[Highlights API] Returning ${items.length} local highlights`);
   res.json({ items });
 });
 
@@ -178,11 +198,19 @@ async function fetchHighlightsForSport(sport: string) {
     const videoPromises = videoSources.map(async (source) => {
       try {
         const feedUrl = `https://www.youtube.com/feeds/videos.xml?channel_id=${source.channelId}`;
+        
+        // Add timeout for individual requests
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 5000); // 5 second timeout per request
+        
         const response = await fetch(feedUrl, {
           headers: {
             'User-Agent': 'SportsKalender/1.0 (https://sportskalendar.com)'
-          }
+          },
+          signal: controller.signal
         });
+        
+        clearTimeout(timeoutId);
         
         if (!response.ok) {
           throw new Error(`YouTube feed ${source.name} returned ${response.status}`);
@@ -200,11 +228,18 @@ async function fetchHighlightsForSport(sport: string) {
     // Fetch from RSS news sources
     const newsPromises = newsSources.map(async (source) => {
       try {
+        // Add timeout for individual requests
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 5000); // 5 second timeout per request
+        
         const response = await fetch(source.rssUrl, {
           headers: {
             'User-Agent': 'SportsKalender/1.0 (https://sportskalendar.com)'
-          }
+          },
+          signal: controller.signal
         });
+        
+        clearTimeout(timeoutId);
         
         if (!response.ok) {
           throw new Error(`RSS feed ${source.name} returned ${response.status}`);
@@ -219,12 +254,24 @@ async function fetchHighlightsForSport(sport: string) {
       }
     });
 
-    // Wait for all sources
-    const videoResults = await Promise.all(videoPromises);
-    const newsResults = await Promise.all(newsPromises);
+    // Wait for all sources with timeout
+    const allPromises = [...videoPromises, ...newsPromises];
+    const results = await Promise.allSettled(allPromises);
     
-    videoResults.forEach(highlights => allHighlights.push(...highlights));
-    newsResults.forEach(highlights => allHighlights.push(...highlights));
+    // Process results
+    results.forEach((result) => {
+      if (result.status === 'fulfilled') {
+        allHighlights.push(...result.value);
+      } else {
+        console.error('Promise rejected:', result.reason);
+      }
+    });
+
+    // If no highlights found, add some fallback content
+    if (allHighlights.length === 0) {
+      console.log(`[Highlights API] No external highlights found for ${sport}, adding fallback content`);
+      allHighlights.push(...generateFallbackHighlights(sport));
+    }
 
     // Sort by priority and date
     allHighlights.sort((a, b) => {
@@ -335,6 +382,94 @@ function matchTag(xml: string, tag: string): string | null {
 function matchAttr(xml: string, tag: string, attr: string): string | null {
   const m = xml.match(new RegExp(`<${tag}[^>]*?${attr}=\"([^\"]+)\"`));
   return m?.[1] ?? null;
+}
+
+// Generate fallback highlights when external APIs fail
+function generateFallbackHighlights(sport: string): HighlightItem[] {
+  const fallbackHighlights: Record<string, HighlightItem[]> = {
+    'F1': [
+      {
+        id: `fallback_f1_1_${Date.now()}`,
+        title: 'F1 Saison 2025 - Alle Highlights',
+        url: 'https://www.formula1.com/en/latest.html',
+        sport: 'F1',
+        description: 'Die besten Momente der Formel 1 Saison 2025',
+        createdAt: new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString(),
+        priority: 'high',
+        type: 'news'
+      },
+      {
+        id: `fallback_f1_2_${Date.now()}`,
+        title: 'F1 Qualifying Highlights',
+        url: 'https://www.formula1.com/en/latest.html',
+        sport: 'F1',
+        description: 'Spannung pur: Die besten Qualifying-Runden',
+        createdAt: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString(),
+        priority: 'high',
+        type: 'news'
+      }
+    ],
+    'NFL': [
+      {
+        id: `fallback_nfl_1_${Date.now()}`,
+        title: 'NFL Playoffs 2025 - Alle Highlights',
+        url: 'https://www.nfl.com/highlights/',
+        sport: 'NFL',
+        description: 'Die spannendsten Momente der NFL Playoffs',
+        createdAt: new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString(),
+        priority: 'high',
+        type: 'news'
+      }
+    ],
+    'Fußball': [
+      {
+        id: `fallback_football_1_${Date.now()}`,
+        title: 'Bundesliga Highlights - Alle Tore',
+        url: 'https://www.bundesliga.com/en/news/highlights',
+        sport: 'Fußball',
+        description: 'Die besten Tore und Momente der Bundesliga',
+        createdAt: new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString(),
+        priority: 'high',
+        type: 'news'
+      },
+      {
+        id: `fallback_football_2_${Date.now()}`,
+        title: 'Champions League Highlights',
+        url: 'https://www.uefa.com/uefachampionsleague/highlights/',
+        sport: 'Fußball',
+        description: 'Die spannendsten Momente der Champions League',
+        createdAt: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString(),
+        priority: 'high',
+        type: 'news'
+      }
+    ],
+    'Basketball': [
+      {
+        id: `fallback_basketball_1_${Date.now()}`,
+        title: 'NBA Highlights - Top Plays',
+        url: 'https://www.nba.com/news/highlights',
+        sport: 'Basketball',
+        description: 'Die besten Spielzüge der NBA',
+        createdAt: new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString(),
+        priority: 'high',
+        type: 'news'
+      }
+    ],
+    'Tennis': [
+      {
+        id: `fallback_tennis_1_${Date.now()}`,
+        title: 'ATP/WTA Highlights',
+        url: 'https://www.atptour.com/en/news/highlights',
+        sport: 'Tennis',
+        description: 'Die besten Punkte des Tennis',
+        createdAt: new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString(),
+        priority: 'high',
+        type: 'news'
+      }
+    ]
+  };
+
+  return fallbackHighlights[sport] || [];
 }
 
 // Parse RSS feeds for news content

@@ -38,16 +38,28 @@ export function Highlights() {
         f1: 'F1',
       };
 
-      const { data } = await highlightsApi.getHighlights(sportMapping[selectedSport]);
-      let allHighlights = data.items || [];
+      console.log(`[Highlights Frontend] Loading highlights for ${selectedSport} (${sportMapping[selectedSport]})`);
+      
+      // Add timeout to prevent hanging
+      const timeoutPromise = new Promise<never>((_, reject) => {
+        setTimeout(() => reject(new Error('Request timeout')), 15000); // 15 second timeout
+      });
+      
+      const fetchPromise = highlightsApi.getHighlights(sportMapping[selectedSport]);
+      const response = await Promise.race([fetchPromise, timeoutPromise]);
+      
+      let allHighlights = response.data.items || [];
+      console.log(`[Highlights Frontend] Got ${allHighlights.length} highlights from API`);
       
       // Filter highlights by selected team name
       const currentTeam = user?.selectedTeams?.find(t => t.sport === selectedSport);
       if (currentTeam?.teamName) {
+        const beforeFilter = allHighlights.length;
         allHighlights = allHighlights.filter((highlight: Highlight) => {
           const searchText = (highlight.title + ' ' + (highlight.description || '')).toLowerCase();
           return searchText.includes(currentTeam.teamName.toLowerCase());
         });
+        console.log(`[Highlights Frontend] Filtered ${beforeFilter} highlights to ${allHighlights.length} for team "${currentTeam.teamName}"`);
       }
       
       setHighlights(allHighlights);
