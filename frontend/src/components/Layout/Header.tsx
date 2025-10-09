@@ -27,8 +27,7 @@ export function Header({ currentPage, onNavigate, onShowLogin, onShowRegister }:
   const navigationItems = [
     { key: 'calendar', label: 'Kalender', icon: '📅' },
     { key: 'live', label: 'Live', icon: '🔴' },
-    { key: 'highlights', label: 'Highlights', icon: '🎬' },
-    { key: 'premium', label: 'Premium', icon: '⭐' }
+    { key: 'highlights', label: 'Highlights', icon: '🎬' }
   ];
 
   const getPageIcon = (page: string) => {
@@ -75,7 +74,7 @@ export function Header({ currentPage, onNavigate, onShowLogin, onShowRegister }:
               <button
                 key={item.key}
                 onClick={() => onNavigate(item.key as any)}
-                className={`group relative px-4 py-2 rounded-2xl font-medium transition-all duration-300 transform hover:scale-105 ${
+                className={`group relative px-4 py-2.5 rounded-xl font-medium transition-all duration-300 ${
                   currentPage === item.key
                     ? 'bg-gradient-to-r from-indigo-600 to-purple-600 text-white shadow-lg shadow-indigo-500/25'
                     : 'text-gray-700 dark:text-gray-300 hover:bg-white/50 dark:hover:bg-gray-800/50 hover:text-indigo-600 dark:hover:text-indigo-400'
@@ -84,22 +83,22 @@ export function Header({ currentPage, onNavigate, onShowLogin, onShowRegister }:
                 <span className="mr-2">{item.icon}</span>
                 {item.label}
                 {currentPage === item.key && (
-                  <div className="absolute -inset-1 bg-gradient-to-r from-white/20 to-white/10 rounded-2xl blur opacity-75"></div>
+                  <div className="absolute -inset-1 bg-gradient-to-r from-white/20 to-white/10 rounded-xl blur opacity-75"></div>
                 )}
               </button>
             ))}
           </nav>
 
           {/* Right Section */}
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-3">
             
             {/* Theme Toggle */}
             <button
               onClick={toggleTheme}
-              className="group relative p-2 rounded-2xl bg-white/50 dark:bg-gray-800/50 hover:bg-white dark:hover:bg-gray-800 transition-all duration-300 transform hover:scale-105 backdrop-blur-sm border border-white/20 dark:border-gray-700/50"
+              className="group relative p-2 rounded-xl bg-white/50 dark:bg-gray-800/50 hover:bg-white dark:hover:bg-gray-800 transition-all duration-300 backdrop-blur-sm border border-white/20 dark:border-gray-700/50"
               aria-label="Toggle dark mode"
             >
-              <div className="absolute -inset-1 bg-gradient-to-r from-yellow-400 to-orange-500 rounded-2xl blur opacity-0 group-hover:opacity-50 transition duration-300"></div>
+              <div className="absolute -inset-1 bg-gradient-to-r from-yellow-400 to-orange-500 rounded-xl blur opacity-0 group-hover:opacity-50 transition duration-300"></div>
               <div className="relative">
                 {isDark ? (
                   <svg className="w-5 h-5 text-yellow-500" fill="currentColor" viewBox="0 0 20 20">
@@ -119,8 +118,8 @@ export function Header({ currentPage, onNavigate, onShowLogin, onShowRegister }:
                 {/* Premium Badge */}
                 {user.isPremium && (
                   <div className="relative group">
-                    <div className="absolute -inset-1 bg-gradient-to-r from-yellow-400 to-orange-500 rounded-2xl blur opacity-75 group-hover:opacity-100 transition duration-300"></div>
-                    <div className="relative px-3 py-1 bg-gradient-to-r from-yellow-400 to-orange-500 text-white text-xs font-bold rounded-2xl shadow-lg">
+                    <div className="absolute -inset-1 bg-gradient-to-r from-yellow-400 to-orange-500 rounded-xl blur opacity-75 group-hover:opacity-100 transition duration-300"></div>
+                    <div className="relative px-3 py-1 bg-gradient-to-r from-yellow-400 to-orange-500 text-white text-xs font-bold rounded-xl shadow-lg">
                       PREMIUM
                     </div>
                   </div>
@@ -134,7 +133,7 @@ export function Header({ currentPage, onNavigate, onShowLogin, onShowRegister }:
                   </div>
                   
                   {/* User Avatar */}
-                  <div className="w-8 h-8 bg-gradient-to-r from-indigo-500 to-purple-600 rounded-2xl flex items-center justify-center">
+                  <div className="w-8 h-8 bg-gradient-to-r from-indigo-500 to-purple-600 rounded-xl flex items-center justify-center">
                     <span className="text-white font-semibold text-sm">
                       {user.displayName?.charAt(0).toUpperCase() || 'U'}
                     </span>
@@ -145,46 +144,36 @@ export function Header({ currentPage, onNavigate, onShowLogin, onShowRegister }:
                 {user.role === 'admin' && (
                   <button
                     onClick={() => onNavigate('admin')}
-                    className={`group relative px-3 py-2 rounded-2xl font-medium transition-all duration-300 transform hover:scale-105 ${
+                    className={`group relative px-3 py-2 rounded-xl font-medium transition-all duration-300 ${
                       currentPage === 'admin'
                         ? 'bg-gradient-to-r from-red-500 to-pink-600 text-white shadow-lg shadow-red-500/25'
                         : 'bg-white/50 dark:bg-gray-800/50 text-gray-700 dark:text-gray-300 hover:bg-white dark:hover:bg-gray-800 hover:text-red-600 dark:hover:text-red-400'
                     }`}
                   >
-                    <span className="mr-2">{getPageIcon('admin')}</span>
+                    <span className="mr-2">⚙️</span>
                     Admin
-                    {currentPage === 'admin' && (
-                      <div className="absolute -inset-1 bg-gradient-to-r from-white/20 to-white/10 rounded-2xl blur opacity-75"></div>
-                    )}
                   </button>
                 )}
 
-                {/* Settings Button */}
+                {/* Premium Button */}
                 <button
-                  onClick={() => onNavigate('settings')}
-                  className={`group relative p-2 rounded-2xl transition-all duration-300 transform hover:scale-105 ${
-                    currentPage === 'settings'
-                      ? 'bg-gradient-to-r from-indigo-600 to-purple-600 text-white shadow-lg shadow-indigo-500/25'
-                      : 'bg-white/50 dark:bg-gray-800/50 text-gray-700 dark:text-gray-300 hover:bg-white dark:hover:bg-gray-800 hover:text-indigo-600 dark:hover:text-indigo-400'
+                  onClick={() => onNavigate('premium')}
+                  className={`group relative px-3 py-2 rounded-xl font-medium transition-all duration-300 ${
+                    currentPage === 'premium'
+                      ? 'bg-gradient-to-r from-yellow-400 to-orange-500 text-white shadow-lg shadow-yellow-500/25'
+                      : 'bg-white/50 dark:bg-gray-800/50 text-gray-700 dark:text-gray-300 hover:bg-white dark:hover:bg-gray-800 hover:text-yellow-600 dark:hover:text-yellow-400'
                   }`}
-                  aria-label="Einstellungen"
                 >
-                  <div className="absolute -inset-1 bg-gradient-to-r from-indigo-500 to-purple-600 rounded-2xl blur opacity-0 group-hover:opacity-50 transition duration-300"></div>
-                  <div className="relative">
-                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                    </svg>
-                  </div>
+                  <span className="mr-2">⭐</span>
+                  Premium
                 </button>
 
                 {/* Logout Button */}
                 <button
                   onClick={handleLogout}
-                  className="group relative px-4 py-2 bg-gradient-to-r from-red-500 to-pink-600 hover:from-red-600 hover:to-pink-700 text-white text-sm font-medium rounded-2xl transition-all duration-300 transform hover:scale-105 shadow-lg shadow-red-500/25"
+                  className="group relative px-3 py-2 bg-gradient-to-r from-red-500 to-pink-600 hover:from-red-600 hover:to-pink-700 text-white rounded-xl font-medium transition-all duration-300 shadow-lg shadow-red-500/25"
                 >
-                  <div className="absolute -inset-1 bg-gradient-to-r from-red-500 to-pink-600 rounded-2xl blur opacity-0 group-hover:opacity-50 transition duration-300"></div>
-                  <span className="relative">Abmelden</span>
+                  Abmelden
                 </button>
               </>
             ) : (
@@ -192,17 +181,15 @@ export function Header({ currentPage, onNavigate, onShowLogin, onShowRegister }:
                 {/* Login/Register for non-authenticated users */}
                 <button
                   onClick={onShowLogin}
-                  className="group relative px-4 py-2 bg-white/50 dark:bg-gray-800/50 text-gray-700 dark:text-gray-300 hover:bg-white dark:hover:bg-gray-800 text-sm font-medium rounded-2xl transition-all duration-300 transform hover:scale-105 backdrop-blur-sm border border-white/20 dark:border-gray-700/50"
+                  className="px-4 py-2 text-gray-700 dark:text-gray-300 hover:text-indigo-600 dark:hover:text-indigo-400 font-medium transition-colors"
                 >
-                  <div className="absolute -inset-1 bg-gradient-to-r from-gray-400 to-gray-600 rounded-2xl blur opacity-0 group-hover:opacity-50 transition duration-300"></div>
-                  <span className="relative">Anmelden</span>
+                  Anmelden
                 </button>
                 <button
                   onClick={onShowRegister}
-                  className="group relative px-4 py-2 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white text-sm font-medium rounded-2xl transition-all duration-300 transform hover:scale-105 shadow-lg shadow-indigo-500/25"
+                  className="px-4 py-2 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white rounded-xl font-medium transition-all duration-300 shadow-lg shadow-indigo-500/25"
                 >
-                  <div className="absolute -inset-1 bg-gradient-to-r from-indigo-600 to-purple-600 rounded-2xl blur opacity-0 group-hover:opacity-50 transition duration-300"></div>
-                  <span className="relative">Registrieren</span>
+                  Registrieren
                 </button>
               </>
             )}
@@ -210,11 +197,11 @@ export function Header({ currentPage, onNavigate, onShowLogin, onShowRegister }:
             {/* Mobile Menu Button */}
             <button
               onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-              className="lg:hidden group relative p-2 rounded-2xl bg-white/50 dark:bg-gray-800/50 hover:bg-white dark:hover:bg-gray-800 transition-all duration-300 transform hover:scale-105 backdrop-blur-sm border border-white/20 dark:border-gray-700/50"
+              className="lg:hidden group relative p-2 rounded-xl bg-white/50 dark:bg-gray-800/50 hover:bg-white dark:hover:bg-gray-800 transition-all duration-300 backdrop-blur-sm border border-white/20 dark:border-gray-700/50"
             >
-              <div className="absolute -inset-1 bg-gradient-to-r from-indigo-500 to-purple-600 rounded-2xl blur opacity-0 group-hover:opacity-50 transition duration-300"></div>
+              <div className="absolute -inset-1 bg-gradient-to-r from-indigo-500 to-purple-600 rounded-xl blur opacity-0 group-hover:opacity-50 transition duration-300"></div>
               <div className="relative">
-                <svg className="w-6 h-6 text-gray-700 dark:text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg className="w-5 h-5 text-gray-700 dark:text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   {isMobileMenuOpen ? (
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                   ) : (
@@ -229,7 +216,7 @@ export function Header({ currentPage, onNavigate, onShowLogin, onShowRegister }:
         {/* Mobile Navigation */}
         {isMobileMenuOpen && (
           <div className="lg:hidden">
-            <div className="absolute top-full left-0 right-0 mt-2 mx-4 bg-white/90 dark:bg-gray-800/90 backdrop-blur-xl rounded-3xl shadow-2xl border border-white/20 dark:border-gray-700/50 overflow-hidden">
+            <div className="absolute top-full left-0 right-0 mt-2 mx-4 bg-white/90 dark:bg-gray-800/90 backdrop-blur-xl rounded-2xl shadow-2xl border border-white/20 dark:border-gray-700/50 overflow-hidden">
               <div className="p-4 space-y-2">
                 
                 {/* Main Navigation */}
@@ -241,7 +228,7 @@ export function Header({ currentPage, onNavigate, onShowLogin, onShowRegister }:
                         onNavigate(item.key as any);
                         setIsMobileMenuOpen(false);
                       }}
-                      className={`w-full flex items-center px-4 py-3 rounded-2xl font-medium transition-all duration-300 ${
+                      className={`w-full flex items-center px-4 py-3 rounded-xl font-medium transition-all duration-300 ${
                         currentPage === item.key
                           ? 'bg-gradient-to-r from-indigo-600 to-purple-600 text-white shadow-lg'
                           : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700'
