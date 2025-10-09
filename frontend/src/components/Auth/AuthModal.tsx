@@ -12,6 +12,7 @@ export function AuthModal({ onClose, initialMode = 'login' }: AuthModalProps) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [displayName, setDisplayName] = useState('');
+  const [keepLoggedIn, setKeepLoggedIn] = useState(true); // Default: angemeldet bleiben
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const setUser = useAuthStore((state) => state.setUser);
@@ -23,11 +24,18 @@ export function AuthModal({ onClose, initialMode = 'login' }: AuthModalProps) {
 
     try {
       if (mode === 'login') {
-        await authApi.login({ email, password });
+        await authApi.login({ email, password, keepLoggedIn });
         
         // Get user profile with premium status
         const { data } = await userApi.getProfile();
         setUser(data.user);
+        
+        // Store keepLoggedIn preference in localStorage
+        if (keepLoggedIn) {
+          localStorage.setItem('keepLoggedIn', 'true');
+        } else {
+          localStorage.removeItem('keepLoggedIn');
+        }
       } else {
         await authApi.register({ email, password, displayName });
       }
@@ -46,6 +54,7 @@ export function AuthModal({ onClose, initialMode = 'login' }: AuthModalProps) {
     setEmail('');
     setPassword('');
     setDisplayName('');
+    setKeepLoggedIn(true); // Reset to default
   };
 
   return (
@@ -136,6 +145,22 @@ export function AuthModal({ onClose, initialMode = 'login' }: AuthModalProps) {
                 </p>
               )}
             </div>
+
+            {/* Keep logged in checkbox - only show in login mode */}
+            {mode === 'login' && (
+              <div className="flex items-center">
+                <input
+                  type="checkbox"
+                  id="keepLoggedInModal"
+                  checked={keepLoggedIn}
+                  onChange={(e) => setKeepLoggedIn(e.target.checked)}
+                  className="w-4 h-4 text-indigo-600 bg-gray-100 border-gray-300 rounded focus:ring-indigo-500 dark:focus:ring-indigo-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600"
+                />
+                <label htmlFor="keepLoggedInModal" className="ml-2 text-sm font-medium text-gray-700 dark:text-gray-300">
+                  Angemeldet bleiben (30 Tage)
+                </label>
+              </div>
+            )}
 
             {error && (
               <div className="p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 text-red-700 dark:text-red-300 rounded-xl text-sm">
