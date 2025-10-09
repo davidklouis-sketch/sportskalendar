@@ -12,6 +12,7 @@ import { tickerRouter } from './routes/ticker';
 import { adminRouter } from './routes/admin';
 import { userRouter } from './routes/user';
 import { liveRouter } from './routes/live';
+import { stripeRouter } from './routes/stripe';
 
 // Middleware imports
 import { enhancedSecurityMiddleware, validateJwtSecret } from './middleware/security-enhanced';
@@ -101,6 +102,7 @@ app.use('/api/ticker', tickerRouter);
 app.use('/api/admin', adminRouter);
 app.use('/api/user', userRouter);
 app.use('/api/live', liveRouter);
+app.use('/api/stripe', stripeRouter);
 
 // Example protected endpoint for current user
 app.get('/api/user/me', requireAuth, (req, res) => {

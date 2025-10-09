@@ -12,12 +12,13 @@ import { PageSEO } from './components/SEO/PageSEO';
 import { Highlights } from './components/Pages/Highlights';
 import { Admin } from './components/Pages/Admin';
 import { Settings } from './components/Pages/Settings';
+import { Premium } from './components/Pages/Premium';
 import { LandingPage } from './components/Pages/LandingPage';
 import Privacy from './components/Pages/Privacy';
 import Contact from './components/Pages/Contact';
 
 type AuthView = 'login' | 'register' | null;
-type Page = 'calendar' | 'live' | 'highlights' | 'admin' | 'settings' | 'privacy' | 'contact';
+type Page = 'calendar' | 'live' | 'highlights' | 'admin' | 'settings' | 'premium' | 'privacy' | 'contact';
 
 function App() {
   const { user, isAuthenticated, setUser, setLoading } = useAuthStore();
@@ -81,15 +82,15 @@ function App() {
 
   // Show auth modal if user wants to authenticate
   if (authView === 'login' || authView === 'register') {
-    return (
+  return (
       <>
         <div className="min-h-screen flex items-center justify-center p-4">
           <div className="w-full">
             <LandingPage 
               onShowLogin={() => setAuthView('login')} 
               onShowRegister={() => setAuthView('register')} 
-            />
-          </div>
+          />
+        </div>
         </div>
         <AuthModal
           onClose={() => setAuthView(null)}
@@ -143,15 +144,37 @@ function App() {
                 className="btn btn-primary"
               >
                 Anmelden
-              </button>
+          </button>
               <button 
                 onClick={() => setCurrentPage('calendar')}
                 className="btn btn-secondary"
               >
                 Zurück zum Kalender
+          </button>
+        </div>
+      </div>
+        ) : null}
+        {currentPage === 'premium' && user ? <Premium /> : currentPage === 'premium' ? (
+          <div className="card p-12 text-center">
+            <h2 className="text-2xl font-bold mb-4">🔒 Anmeldung erforderlich</h2>
+            <p className="text-gray-600 dark:text-gray-400 mb-6">
+              Bitte melden Sie sich an, um Premium-Features zu entdecken.
+            </p>
+            <div className="flex gap-3 justify-center">
+              <button 
+                onClick={() => setAuthView('login')}
+                className="btn btn-primary"
+              >
+                Anmelden
               </button>
-            </div>
-          </div>
+        <button 
+                onClick={() => setCurrentPage('calendar')}
+                className="btn btn-secondary"
+              >
+                Zurück zum Kalender
+        </button>
+      </div>
+      </div>
         ) : null}
         {currentPage === 'privacy' && <Privacy />}
         {currentPage === 'contact' && <Contact />}

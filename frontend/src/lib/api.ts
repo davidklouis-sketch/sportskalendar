@@ -125,3 +125,11 @@ export const highlightsApi = {
     return api.get(`/highlights${queryString ? `?${queryString}` : ''}`);
   },
 };
+
+// Stripe
+export const stripeApi = {
+  createCheckoutSession: () => api.post('/stripe/create-checkout-session'),
+  getPremiumFeatures: () => api.get('/stripe/premium-features'),
+  upgradeUser: (email: string) => api.post('/stripe/admin/upgrade-user', { email }),
+  downgradeUser: (email: string) => api.post('/stripe/admin/downgrade-user', { email }),
+};

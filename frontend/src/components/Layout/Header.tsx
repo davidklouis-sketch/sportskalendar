@@ -4,8 +4,8 @@ import { useAuthStore } from '../../store/useAuthStore';
 import { authApi } from '../../lib/api';
 
 interface HeaderProps {
-  currentPage: 'calendar' | 'live' | 'highlights' | 'admin' | 'settings' | 'privacy' | 'contact';
-  onNavigate: (page: 'calendar' | 'live' | 'highlights' | 'admin' | 'settings' | 'privacy' | 'contact') => void;
+  currentPage: 'calendar' | 'live' | 'highlights' | 'admin' | 'settings' | 'premium' | 'privacy' | 'contact';
+  onNavigate: (page: 'calendar' | 'live' | 'highlights' | 'admin' | 'settings' | 'premium' | 'privacy' | 'contact') => void;
   onShowLogin?: () => void;
   onShowRegister?: () => void;
 }
@@ -27,7 +27,8 @@ export function Header({ currentPage, onNavigate, onShowLogin, onShowRegister }:
   const navigationItems = [
     { key: 'calendar', label: 'Kalender', icon: '📅' },
     { key: 'live', label: 'Live', icon: '🔴' },
-    { key: 'highlights', label: 'Highlights', icon: '🎬' }
+    { key: 'highlights', label: 'Highlights', icon: '🎬' },
+    { key: 'premium', label: 'Premium', icon: '⭐' }
   ];
 
   const getPageIcon = (page: string) => {
@@ -35,6 +36,7 @@ export function Header({ currentPage, onNavigate, onShowLogin, onShowRegister }:
       case 'calendar': return '📅';
       case 'live': return '🔴';
       case 'highlights': return '🎬';
+      case 'premium': return '⭐';
       case 'admin': return '⚙️';
       case 'settings': return '👤';
       default: return '🏠';

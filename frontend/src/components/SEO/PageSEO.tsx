@@ -1,7 +1,7 @@
 import { SEOHead } from './SEOHead';
 
 interface PageSEOProps {
-  page: 'calendar' | 'live' | 'highlights' | 'settings' | 'privacy' | 'contact' | 'admin';
+  page: 'calendar' | 'live' | 'highlights' | 'settings' | 'premium' | 'privacy' | 'contact' | 'admin';
   user?: any;
 }
 
@@ -92,6 +92,24 @@ export function PageSEO({ page, user }: PageSEOProps) {
         'name': 'Kontakt - Sportskalendar',
         'description': 'Kontaktmöglichkeiten für Support und Feedback',
         'url': 'https://sportskalendar.de/contact'
+      }
+    },
+    premium: {
+      title: 'Premium - Sportskalendar | Upgrade zu Premium',
+      description: 'Upgrade zu Premium und genieße unbegrenzte Teams, erweiterte Features und mehr!',
+      keywords: 'Premium, Upgrade, Sportskalendar Premium, unbegrenzte Teams, erweiterte Features',
+      canonical: 'https://sportskalendar.de/premium',
+      structuredData: {
+        '@context': 'https://schema.org',
+        '@type': 'Product',
+        'name': 'Sportskalendar Premium',
+        'description': 'Premium-Abonnement für erweiterte Sportskalendar-Features',
+        'offers': {
+          '@type': 'Offer',
+          'price': '9.99',
+          'priceCurrency': 'EUR',
+          'priceValidUntil': '2025-12-31'
+        }
       }
     },
     admin: {
