@@ -4,6 +4,8 @@ import { calendarApi, userApi, highlightsApi } from '../../lib/api';
 import { format } from 'date-fns';
 import { FOOTBALL_LEAGUES, FOOTBALL_TEAMS, F1_DRIVERS, NFL_TEAMS } from '../../data/teams';
 import { LiveData } from '../LiveData';
+import { BannerAd, LeaderboardAd } from '../Ads/AdBanner';
+import { InterstitialAd } from '../Ads/InterstitialAd';
 
 interface Event {
   id: string;
@@ -37,6 +39,9 @@ export function Calendar() {
   // Highlights state
   const [highlights, setHighlights] = useState<Highlight[]>([]);
   const [isLoadingHighlights, setIsLoadingHighlights] = useState(false);
+  // Interstitial ad state (show every 5 page views for free users)
+  const [showInterstitial, setShowInterstitial] = useState(false);
+  const pageViewCountRef = useRef(0);
 
   // Load all events separately for better organization
   // Removed loadAllEvents function to prevent infinite loops
@@ -320,9 +325,24 @@ export function Calendar() {
     }
   };
 
+  // Show interstitial ad every 5 page views for free users
+  useEffect(() => {
+    if (!user?.isPremium) {
+      pageViewCountRef.current += 1;
+      if (pageViewCountRef.current % 5 === 0) {
+        setShowInterstitial(true);
+      }
+    }
+  }, [user?.isPremium]);
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 dark:from-gray-900 dark:via-slate-900 dark:to-gray-800">
       
+      {/* Interstitial Ad for Free Users */}
+      {showInterstitial && !user?.isPremium && (
+        <InterstitialAd onClose={() => setShowInterstitial(false)} />
+      )}
+
       {/* Hero Section */}
       <div className="relative overflow-hidden">
         <div className="absolute inset-0 bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600"></div>
@@ -504,6 +524,13 @@ export function Calendar() {
                       </div>
               </div>
                     
+                    {/* Ad Banner for Free Users - Top of Events */}
+                    {!user?.isPremium && (
+                      <div className="mb-6">
+                        <LeaderboardAd className="mx-auto" />
+                      </div>
+                    )}
+
                     <div className="space-y-4">
                       {isLoading ? (
                         <div className="text-center py-12">

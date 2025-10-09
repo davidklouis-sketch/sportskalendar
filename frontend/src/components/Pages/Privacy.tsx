@@ -99,7 +99,93 @@ const Privacy: React.FC = () => {
 
             <section className="mb-8">
               <h2 className="text-2xl font-semibold text-gray-900 dark:text-white mb-4">
-                5. Datenübertragung und -speicherung
+                5. Werbung und Monetarisierung
+              </h2>
+              
+              <h3 className="text-xl font-medium text-gray-900 dark:text-white mb-3">
+                5.1 Google AdMob / Google AdSense
+              </h3>
+              <div className="text-gray-600 dark:text-gray-300 space-y-4 mb-6">
+                <p>
+                  Für Nutzer ohne Premium-Account zeigen wir Werbung über Google AdMob bzw. 
+                  Google AdSense an. Google ist ein Dienst der Google Ireland Limited 
+                  („Google"), Gordon House, Barrow Street, Dublin 4, Irland.
+                </p>
+                <p><strong>Erhobene Daten durch Google:</strong></p>
+                <ul className="list-disc pl-6 space-y-2">
+                  <li>IP-Adresse (anonymisiert)</li>
+                  <li>Geräteinformationen (Gerätetyp, Betriebssystem)</li>
+                  <li>Browser-Informationen</li>
+                  <li>Besuchte Seiten und Klickverhalten</li>
+                  <li>Werbe-IDs (falls aktiviert)</li>
+                </ul>
+                <p>
+                  <strong>Zweck:</strong> Anzeige personalisierter oder nicht-personalisierter 
+                  Werbung zur Finanzierung unseres kostenlosen Angebots
+                </p>
+                <p>
+                  <strong>Rechtsgrundlage:</strong> Art. 6 Abs. 1 lit. a DSGVO (Einwilligung) 
+                  oder Art. 6 Abs. 1 lit. f DSGVO (berechtigtes Interesse)
+                </p>
+                <p>
+                  <strong>Datenübertragung:</strong> Google verarbeitet Daten in der EU und den USA. 
+                  Die Übertragung erfolgt auf Grundlage der EU-Standardvertragsklauseln.
+                </p>
+                <p>
+                  <strong>Werbefrei:</strong> Premium-Nutzer (€9.99/Monat) sehen keine Werbung 
+                  und ihre Daten werden nicht an Google Werbedienste übertragen.
+                </p>
+                <p className="mt-4">
+                  <strong>Weitere Informationen:</strong><br />
+                  • <a href="https://policies.google.com/privacy" target="_blank" rel="noopener noreferrer" className="text-blue-600 dark:text-blue-400 hover:underline">
+                    Google Datenschutzerklärung
+                  </a><br />
+                  • <a href="https://policies.google.com/technologies/ads" target="_blank" rel="noopener noreferrer" className="text-blue-600 dark:text-blue-400 hover:underline">
+                    Wie Google Daten nutzt
+                  </a><br />
+                  • <a href="https://adssettings.google.com/" target="_blank" rel="noopener noreferrer" className="text-blue-600 dark:text-blue-400 hover:underline">
+                    Google Werbeeinstellungen anpassen
+                  </a>
+                </p>
+              </div>
+
+              <h3 className="text-xl font-medium text-gray-900 dark:text-white mb-3">
+                5.2 Stripe (Zahlungsabwicklung)
+              </h3>
+              <div className="text-gray-600 dark:text-gray-300 space-y-4 mb-6">
+                <p>
+                  Für die Abwicklung von Premium-Zahlungen nutzen wir Stripe, einen Dienst 
+                  der Stripe Payments Europe, Ltd., 1 Grand Canal Street Lower, Grand Canal 
+                  Dock, Dublin, Irland.
+                </p>
+                <p><strong>Erhobene Daten durch Stripe:</strong></p>
+                <ul className="list-disc pl-6 space-y-2">
+                  <li>E-Mail-Adresse</li>
+                  <li>Zahlungsinformationen (Kreditkarte, IBAN - verschlüsselt)</li>
+                  <li>Transaktionsdaten</li>
+                  <li>IP-Adresse (für Betrugsprävention)</li>
+                </ul>
+                <p>
+                  <strong>Zweck:</strong> Sichere Abwicklung von Zahlungen für Premium-Abonnements
+                </p>
+                <p>
+                  <strong>Rechtsgrundlage:</strong> Art. 6 Abs. 1 lit. b DSGVO (Vertragserfüllung)
+                </p>
+                <p>
+                  <strong>Speicherdauer:</strong> Bis zur Beendigung des Abonnements + gesetzliche Aufbewahrungsfristen
+                </p>
+                <p className="mt-4">
+                  <strong>Weitere Informationen:</strong><br />
+                  • <a href="https://stripe.com/de/privacy" target="_blank" rel="noopener noreferrer" className="text-blue-600 dark:text-blue-400 hover:underline">
+                    Stripe Datenschutzerklärung
+                  </a>
+                </p>
+              </div>
+            </section>
+
+            <section className="mb-8">
+              <h2 className="text-2xl font-semibold text-gray-900 dark:text-white mb-4">
+                6. Datenübertragung und -speicherung
               </h2>
               <div className="text-gray-600 dark:text-gray-300 space-y-4">
                 <p><strong>Sicherheitsmaßnahmen:</strong></p>
@@ -117,7 +203,7 @@ const Privacy: React.FC = () => {
 
             <section className="mb-8">
               <h2 className="text-2xl font-semibold text-gray-900 dark:text-white mb-4">
-                6. Ihre Rechte
+                7. Ihre Rechte
               </h2>
               <div className="text-gray-600 dark:text-gray-300 space-y-4">
                 <p>Sie haben folgende Rechte bezüglich Ihrer personenbezogenen Daten:</p>
@@ -140,7 +226,7 @@ const Privacy: React.FC = () => {
 
             <section className="mb-8">
               <h2 className="text-2xl font-semibold text-gray-900 dark:text-white mb-4">
-                7. Beschwerderecht
+                8. Beschwerderecht
               </h2>
               <div className="text-gray-600 dark:text-gray-300">
                 <p>
@@ -157,7 +243,7 @@ const Privacy: React.FC = () => {
 
             <section className="mb-8">
               <h2 className="text-2xl font-semibold text-gray-900 dark:text-white mb-4">
-                8. Änderungen der Datenschutzerklärung
+                9. Änderungen der Datenschutzerklärung
               </h2>
               <div className="text-gray-600 dark:text-gray-300">
                 <p>
@@ -169,7 +255,7 @@ const Privacy: React.FC = () => {
 
             <section className="mb-8">
               <h2 className="text-2xl font-semibold text-gray-900 dark:text-white mb-4">
-                9. Kontakt
+                10. Kontakt
               </h2>
               <div className="text-gray-600 dark:text-gray-300">
                 <p>Bei Fragen zum Datenschutz kontaktieren Sie uns:</p>

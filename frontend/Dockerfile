@@ -11,12 +11,25 @@ RUN npm ci
 # Copy source code
 COPY . .
 
-# Accept backend API URL for Vite at build time
+# Accept environment variables for Vite at build time
 ARG VITE_API_URL
+ARG VITE_ADMOB_CLIENT_ID
+ARG VITE_ADMOB_BANNER_SLOT
+ARG VITE_ADMOB_SQUARE_SLOT
+ARG VITE_ADMOB_LEADERBOARD_SLOT
+ARG VITE_ADMOB_INTERSTITIAL_SLOT
+
+# Set environment variables
 ENV VITE_API_URL=${VITE_API_URL}
+ENV VITE_ADMOB_CLIENT_ID=${VITE_ADMOB_CLIENT_ID}
+ENV VITE_ADMOB_BANNER_SLOT=${VITE_ADMOB_BANNER_SLOT}
+ENV VITE_ADMOB_SQUARE_SLOT=${VITE_ADMOB_SQUARE_SLOT}
+ENV VITE_ADMOB_LEADERBOARD_SLOT=${VITE_ADMOB_LEADERBOARD_SLOT}
+ENV VITE_ADMOB_INTERSTITIAL_SLOT=${VITE_ADMOB_INTERSTITIAL_SLOT}
 
 # Show build args for debugging
-RUN echo "Building with VITE_API_URL=${VITE_API_URL}"
+RUN echo "Building with VITE_API_URL=${VITE_API_URL}" && \
+    echo "AdMob Client ID: ${VITE_ADMOB_CLIENT_ID}"
 
 # Build the application with timestamp to bust cache
 RUN npx vite build --mode production

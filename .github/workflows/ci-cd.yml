@@ -75,6 +75,11 @@ jobs:
         tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}/frontend:${{ github.sha }}
         build-args: |
           VITE_API_URL=https://api.sportskalendar.de/api
+          VITE_ADMOB_CLIENT_ID=${{ secrets.VITE_ADMOB_CLIENT_ID }}
+          VITE_ADMOB_BANNER_SLOT=${{ secrets.VITE_ADMOB_BANNER_SLOT }}
+          VITE_ADMOB_SQUARE_SLOT=${{ secrets.VITE_ADMOB_SQUARE_SLOT }}
+          VITE_ADMOB_LEADERBOARD_SLOT=${{ secrets.VITE_ADMOB_LEADERBOARD_SLOT }}
+          VITE_ADMOB_INTERSTITIAL_SLOT=${{ secrets.VITE_ADMOB_INTERSTITIAL_SLOT }}
     
     - name: Build and push backend image
       uses: docker/build-push-action@v5
