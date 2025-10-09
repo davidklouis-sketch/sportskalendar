@@ -213,7 +213,7 @@ export function Calendar() {
     if (localTeams.length > 0) {
       loadAllEvents();
     }
-  }, [localTeams, loadAllEvents]);
+  }, [localTeams]); // Remove loadAllEvents from dependencies to prevent loop
 
   // Load highlights when sport selection changes
   useEffect(() => {
