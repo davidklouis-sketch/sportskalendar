@@ -86,7 +86,7 @@ Erstelle `/frontend/.env` mit folgenden Variablen:
 VITE_API_URL=https://api.sportskalendar.de/api
 
 # Google AdMob / AdSense Configuration
-VITE_ADMOB_CLIENT_ID=ca-pub-4197809086839786  # Deine Publisher-ID
+VITE_ADMOB_CLIENT_ID=ca-pub-2481184858901580  # Deine Publisher-ID
 VITE_ADMOB_BANNER_SLOT=1234567890             # Banner Ad Slot ID
 VITE_ADMOB_SQUARE_SLOT=0987654321             # Square Ad Slot ID
 VITE_ADMOB_LEADERBOARD_SLOT=1122334455        # Leaderboard Ad Slot ID
@@ -112,7 +112,7 @@ Für CI/CD Pipeline:
 
 ```
 Name: VITE_ADMOB_CLIENT_ID
-Value: ca-pub-1234567890123456
+Value: ca-pub-2481184858901580
 
 Name: VITE_ADMOB_BANNER_SLOT
 Value: 1234567890

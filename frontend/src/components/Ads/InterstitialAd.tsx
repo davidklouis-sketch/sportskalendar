@@ -60,7 +60,7 @@ export function InterstitialAd({ onClose, showAfterSeconds = 3 }: InterstitialAd
               minHeight: '400px',
               width: '100%'
             }}
-            data-ad-client={import.meta.env.VITE_ADMOB_CLIENT_ID || 'ca-pub-4197809086839786'}
+            data-ad-client={import.meta.env.VITE_ADMOB_CLIENT_ID || 'ca-pub-2481184858901580'}
             data-ad-slot={import.meta.env.VITE_ADMOB_INTERSTITIAL_SLOT || '1234567893'}
             data-ad-format="auto"
             data-full-width-responsive="true"

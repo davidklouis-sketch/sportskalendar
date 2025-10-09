@@ -55,7 +55,7 @@ export function AdBanner({ slot, format = 'auto', className = '', style = {} }: 
           textAlign: 'center',
           ...style
         }}
-        data-ad-client={import.meta.env.VITE_ADMOB_CLIENT_ID || 'ca-pub-4197809086839786'}
+        data-ad-client={import.meta.env.VITE_ADMOB_CLIENT_ID || 'ca-pub-2481184858901580'}
         data-ad-slot={slot}
         data-ad-format={format}
         data-full-width-responsive="true"
