@@ -103,7 +103,7 @@ export function Highlights() {
     if (selectedSport) {
       loadHighlights();
     }
-  }, [selectedSport, loadHighlights]);
+  }, [selectedSport]); // Remove loadHighlights from dependencies to prevent loop
 
   const formatViews = (views?: number) => {
     if (!views) return '';

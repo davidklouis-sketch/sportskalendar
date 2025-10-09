@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { useThemeStore } from '../../store/useThemeStore';
 import { useAuthStore } from '../../store/useAuthStore';
 import { authApi } from '../../lib/api';
@@ -12,6 +13,7 @@ interface HeaderProps {
 export function Header({ currentPage, onNavigate, onShowLogin, onShowRegister }: HeaderProps) {
   const { isDark, toggleTheme } = useThemeStore();
   const { user, logout, isAuthenticated } = useAuthStore();
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   const handleLogout = async () => {
     try {
@@ -22,69 +24,91 @@ export function Header({ currentPage, onNavigate, onShowLogin, onShowRegister }:
     logout();
   };
 
+  const navigationItems = [
+    { key: 'calendar', label: 'Kalender', icon: '📅' },
+    { key: 'live', label: 'Live', icon: '🔴' },
+    { key: 'highlights', label: 'Highlights', icon: '🎬' }
+  ];
+
+  const getPageIcon = (page: string) => {
+    switch (page) {
+      case 'calendar': return '📅';
+      case 'live': return '🔴';
+      case 'highlights': return '🎬';
+      case 'admin': return '⚙️';
+      case 'settings': return '👤';
+      default: return '🏠';
+    }
+  };
+
   return (
-    <header className="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 sticky top-0 z-50">
-      <div className="container mx-auto px-4">
+    <header className="fixed top-0 left-0 right-0 z-50">
+      {/* Background with blur effect */}
+      <div className="absolute inset-0 bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl border-b border-white/20 dark:border-gray-700/50"></div>
+      
+      {/* Gradient overlay */}
+      <div className="absolute inset-0 bg-gradient-to-r from-indigo-500/10 via-purple-500/10 to-pink-500/10"></div>
+      
+      <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
-          {/* Logo */}
-          <div className="flex items-center gap-2">
-            <div className="w-8 h-8 bg-gradient-to-br from-primary-500 to-primary-700 rounded-lg flex items-center justify-center">
-              <span className="text-white font-bold text-lg">S</span>
+          
+          {/* Logo Section */}
+          <div className="flex items-center gap-3">
+            <div className="relative group">
+              <div className="absolute -inset-1 bg-gradient-to-r from-indigo-600 to-purple-600 rounded-2xl blur opacity-75 group-hover:opacity-100 transition duration-300"></div>
+              <div className="relative w-10 h-10 bg-gradient-to-r from-indigo-600 to-purple-600 rounded-2xl flex items-center justify-center">
+                <span className="text-white font-bold text-lg">S</span>
+              </div>
             </div>
-            <h1 className="text-xl font-bold">SportsKalender</h1>
+            <div className="hidden sm:block">
+              <h1 className="text-xl font-bold bg-gradient-to-r from-gray-900 to-gray-700 dark:from-white dark:to-gray-300 bg-clip-text text-transparent">
+                Sportskalendar
+              </h1>
+            </div>
           </div>
 
-          {/* Navigation */}
-          <nav className="hidden md:flex items-center gap-2">
-            <button
-              onClick={() => onNavigate('calendar')}
-              className={`px-4 py-2 rounded-lg font-medium transition-all ${
-                currentPage === 'calendar'
-                  ? 'bg-primary-100 dark:bg-primary-900/30 text-primary-700 dark:text-primary-300'
-                  : 'hover:bg-gray-100 dark:hover:bg-gray-700'
-              }`}
-            >
-              Kalender
-            </button>
-            <button
-              onClick={() => onNavigate('live')}
-              className={`px-4 py-2 rounded-lg font-medium transition-all ${
-                currentPage === 'live'
-                  ? 'bg-primary-100 dark:bg-primary-900/30 text-primary-700 dark:text-primary-300'
-                  : 'hover:bg-gray-100 dark:hover:bg-gray-700'
-              }`}
-            >
-              Live
-            </button>
-            <button
-              onClick={() => onNavigate('highlights')}
-              className={`px-4 py-2 rounded-lg font-medium transition-all ${
-                currentPage === 'highlights'
-                  ? 'bg-primary-100 dark:bg-primary-900/30 text-primary-700 dark:text-primary-300'
-                  : 'hover:bg-gray-100 dark:hover:bg-gray-700'
-              }`}
-            >
-              Highlights
-            </button>
+          {/* Desktop Navigation */}
+          <nav className="hidden lg:flex items-center gap-1">
+            {navigationItems.map((item) => (
+              <button
+                key={item.key}
+                onClick={() => onNavigate(item.key as any)}
+                className={`group relative px-4 py-2 rounded-2xl font-medium transition-all duration-300 transform hover:scale-105 ${
+                  currentPage === item.key
+                    ? 'bg-gradient-to-r from-indigo-600 to-purple-600 text-white shadow-lg shadow-indigo-500/25'
+                    : 'text-gray-700 dark:text-gray-300 hover:bg-white/50 dark:hover:bg-gray-800/50 hover:text-indigo-600 dark:hover:text-indigo-400'
+                }`}
+              >
+                <span className="mr-2">{item.icon}</span>
+                {item.label}
+                {currentPage === item.key && (
+                  <div className="absolute -inset-1 bg-gradient-to-r from-white/20 to-white/10 rounded-2xl blur opacity-75"></div>
+                )}
+              </button>
+            ))}
           </nav>
 
-          {/* Right side */}
+          {/* Right Section */}
           <div className="flex items-center gap-3">
-            {/* Dark Mode Toggle */}
+            
+            {/* Theme Toggle */}
             <button
               onClick={toggleTheme}
-              className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+              className="group relative p-2 rounded-2xl bg-white/50 dark:bg-gray-800/50 hover:bg-white dark:hover:bg-gray-800 transition-all duration-300 transform hover:scale-105 backdrop-blur-sm border border-white/20 dark:border-gray-700/50"
               aria-label="Toggle dark mode"
             >
-              {isDark ? (
-                <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
-                  <path d="M10 2a1 1 0 011 1v1a1 1 0 11-2 0V3a1 1 0 011-1zm4 8a4 4 0 11-8 0 4 4 0 018 0zm-.464 4.95l.707.707a1 1 0 001.414-1.414l-.707-.707a1 1 0 00-1.414 1.414zm2.12-10.607a1 1 0 010 1.414l-.706.707a1 1 0 11-1.414-1.414l.707-.707a1 1 0 011.414 0zM17 11a1 1 0 100-2h-1a1 1 0 100 2h1zm-7 4a1 1 0 011 1v1a1 1 0 11-2 0v-1a1 1 0 011-1zM5.05 6.464A1 1 0 106.465 5.05l-.708-.707a1 1 0 00-1.414 1.414l.707.707zm1.414 8.486l-.707.707a1 1 0 01-1.414-1.414l.707-.707a1 1 0 011.414 1.414zM4 11a1 1 0 100-2H3a1 1 0 000 2h1z" />
-                </svg>
-              ) : (
-                <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
-                  <path d="M17.293 13.293A8 8 0 016.707 2.707a8.001 8.001 0 1010.586 10.586z" />
-                </svg>
-              )}
+              <div className="absolute -inset-1 bg-gradient-to-r from-yellow-400 to-orange-500 rounded-2xl blur opacity-0 group-hover:opacity-50 transition duration-300"></div>
+              <div className="relative">
+                {isDark ? (
+                  <svg className="w-5 h-5 text-yellow-500" fill="currentColor" viewBox="0 0 20 20">
+                    <path d="M10 2a1 1 0 011 1v1a1 1 0 11-2 0V3a1 1 0 011-1zm4 8a4 4 0 11-8 0 4 4 0 018 0zm-.464 4.95l.707.707a1 1 0 001.414-1.414l-.707-.707a1 1 0 00-1.414 1.414zm2.12-10.607a1 1 0 010 1.414l-.706.707a1 1 0 11-1.414-1.414l.707-.707a1 1 0 011.414 0zM17 11a1 1 0 100-2h-1a1 1 0 100 2h1zm-7 4a1 1 0 011 1v1a1 1 0 11-2 0v-1a1 1 0 011-1zM5.05 6.464A1 1 0 106.465 5.05l-.708-.707a1 1 0 00-1.414 1.414l.707.707zm1.414 8.486l-.707.707a1 1 0 01-1.414-1.414l.707-.707a1 1 0 011.414 1.414zM4 11a1 1 0 100-2H3a1 1 0 000 2h1z" />
+                  </svg>
+                ) : (
+                  <svg className="w-5 h-5 text-gray-600 dark:text-gray-400" fill="currentColor" viewBox="0 0 20 20">
+                    <path d="M17.293 13.293A8 8 0 016.707 2.707a8.001 8.001 0 1010.586 10.586z" />
+                  </svg>
+                )}
+              </div>
             </button>
 
             {/* Authentication Section */}
@@ -92,53 +116,73 @@ export function Header({ currentPage, onNavigate, onShowLogin, onShowRegister }:
               <>
                 {/* Premium Badge */}
                 {user.isPremium && (
-                  <span className="hidden sm:inline-flex px-3 py-1 bg-gradient-to-r from-yellow-400 to-orange-500 text-white text-xs font-bold rounded-full">
-                    PREMIUM
-                  </span>
+                  <div className="relative group">
+                    <div className="absolute -inset-1 bg-gradient-to-r from-yellow-400 to-orange-500 rounded-2xl blur opacity-75 group-hover:opacity-100 transition duration-300"></div>
+                    <div className="relative px-3 py-1 bg-gradient-to-r from-yellow-400 to-orange-500 text-white text-xs font-bold rounded-2xl shadow-lg">
+                      PREMIUM
+                    </div>
+                  </div>
                 )}
 
                 {/* User Info */}
-                <div className="hidden sm:block text-right">
-                  <p className="text-sm font-medium">{user.displayName}</p>
-                  <p className="text-xs text-gray-500 dark:text-gray-400">{user.email}</p>
+                <div className="hidden md:flex items-center gap-3">
+                  <div className="text-right">
+                    <p className="text-sm font-medium text-gray-900 dark:text-white">{user.displayName}</p>
+                    <p className="text-xs text-gray-500 dark:text-gray-400">{user.email}</p>
+                  </div>
+                  
+                  {/* User Avatar */}
+                  <div className="w-8 h-8 bg-gradient-to-r from-indigo-500 to-purple-600 rounded-2xl flex items-center justify-center">
+                    <span className="text-white font-semibold text-sm">
+                      {user.displayName?.charAt(0).toUpperCase() || 'U'}
+                    </span>
+                  </div>
                 </div>
 
                 {/* Admin Button */}
                 {user.role === 'admin' && (
                   <button
                     onClick={() => onNavigate('admin')}
-                    className={`px-3 py-2 rounded-lg font-medium transition-all text-sm ${
+                    className={`group relative px-3 py-2 rounded-2xl font-medium transition-all duration-300 transform hover:scale-105 ${
                       currentPage === 'admin'
-                        ? 'bg-primary-100 dark:bg-primary-900/30 text-primary-700 dark:text-primary-300'
-                        : 'hover:bg-gray-100 dark:hover:bg-gray-700'
+                        ? 'bg-gradient-to-r from-red-500 to-pink-600 text-white shadow-lg shadow-red-500/25'
+                        : 'bg-white/50 dark:bg-gray-800/50 text-gray-700 dark:text-gray-300 hover:bg-white dark:hover:bg-gray-800 hover:text-red-600 dark:hover:text-red-400'
                     }`}
                   >
+                    <span className="mr-2">{getPageIcon('admin')}</span>
                     Admin
+                    {currentPage === 'admin' && (
+                      <div className="absolute -inset-1 bg-gradient-to-r from-white/20 to-white/10 rounded-2xl blur opacity-75"></div>
+                    )}
                   </button>
                 )}
 
                 {/* Settings Button */}
                 <button
                   onClick={() => onNavigate('settings')}
-                  className={`p-2 rounded-lg transition-all ${
+                  className={`group relative p-2 rounded-2xl transition-all duration-300 transform hover:scale-105 ${
                     currentPage === 'settings'
-                      ? 'bg-primary-100 dark:bg-primary-900/30 text-primary-700 dark:text-primary-300'
-                      : 'hover:bg-gray-100 dark:hover:bg-gray-700'
+                      ? 'bg-gradient-to-r from-indigo-600 to-purple-600 text-white shadow-lg shadow-indigo-500/25'
+                      : 'bg-white/50 dark:bg-gray-800/50 text-gray-700 dark:text-gray-300 hover:bg-white dark:hover:bg-gray-800 hover:text-indigo-600 dark:hover:text-indigo-400'
                   }`}
                   aria-label="Einstellungen"
                 >
-                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                  </svg>
+                  <div className="absolute -inset-1 bg-gradient-to-r from-indigo-500 to-purple-600 rounded-2xl blur opacity-0 group-hover:opacity-50 transition duration-300"></div>
+                  <div className="relative">
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                    </svg>
+                  </div>
                 </button>
 
-                {/* Logout */}
+                {/* Logout Button */}
                 <button
                   onClick={handleLogout}
-                  className="btn btn-secondary text-sm"
+                  className="group relative px-4 py-2 bg-gradient-to-r from-red-500 to-pink-600 hover:from-red-600 hover:to-pink-700 text-white text-sm font-medium rounded-2xl transition-all duration-300 transform hover:scale-105 shadow-lg shadow-red-500/25"
                 >
-                  Abmelden
+                  <div className="absolute -inset-1 bg-gradient-to-r from-red-500 to-pink-600 rounded-2xl blur opacity-0 group-hover:opacity-50 transition duration-300"></div>
+                  <span className="relative">Abmelden</span>
                 </button>
               </>
             ) : (
@@ -146,125 +190,165 @@ export function Header({ currentPage, onNavigate, onShowLogin, onShowRegister }:
                 {/* Login/Register for non-authenticated users */}
                 <button
                   onClick={onShowLogin}
-                  className="btn btn-secondary text-sm"
+                  className="group relative px-4 py-2 bg-white/50 dark:bg-gray-800/50 text-gray-700 dark:text-gray-300 hover:bg-white dark:hover:bg-gray-800 text-sm font-medium rounded-2xl transition-all duration-300 transform hover:scale-105 backdrop-blur-sm border border-white/20 dark:border-gray-700/50"
                 >
-                  Anmelden
+                  <div className="absolute -inset-1 bg-gradient-to-r from-gray-400 to-gray-600 rounded-2xl blur opacity-0 group-hover:opacity-50 transition duration-300"></div>
+                  <span className="relative">Anmelden</span>
                 </button>
                 <button
                   onClick={onShowRegister}
-                  className="btn btn-primary text-sm"
+                  className="group relative px-4 py-2 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white text-sm font-medium rounded-2xl transition-all duration-300 transform hover:scale-105 shadow-lg shadow-indigo-500/25"
                 >
-                  Registrieren
+                  <div className="absolute -inset-1 bg-gradient-to-r from-indigo-600 to-purple-600 rounded-2xl blur opacity-0 group-hover:opacity-50 transition duration-300"></div>
+                  <span className="relative">Registrieren</span>
                 </button>
               </>
             )}
+
+            {/* Mobile Menu Button */}
+            <button
+              onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+              className="lg:hidden group relative p-2 rounded-2xl bg-white/50 dark:bg-gray-800/50 hover:bg-white dark:hover:bg-gray-800 transition-all duration-300 transform hover:scale-105 backdrop-blur-sm border border-white/20 dark:border-gray-700/50"
+            >
+              <div className="absolute -inset-1 bg-gradient-to-r from-indigo-500 to-purple-600 rounded-2xl blur opacity-0 group-hover:opacity-50 transition duration-300"></div>
+              <div className="relative">
+                <svg className="w-6 h-6 text-gray-700 dark:text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  {isMobileMenuOpen ? (
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  ) : (
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+                  )}
+                </svg>
+              </div>
+            </button>
           </div>
         </div>
 
         {/* Mobile Navigation */}
-        <nav className="md:hidden flex flex-col gap-2 pb-3">
-          <div className="flex items-center gap-1">
-            <button
-              onClick={() => onNavigate('calendar')}
-              className={`flex-1 px-3 py-2 rounded-lg text-sm font-medium transition-all ${
-                currentPage === 'calendar'
-                  ? 'bg-primary-100 dark:bg-primary-900/30 text-primary-700 dark:text-primary-300'
-                  : 'hover:bg-gray-100 dark:hover:bg-gray-700'
-              }`}
-            >
-              Kalender
-            </button>
-            <button
-              onClick={() => onNavigate('live')}
-              className={`flex-1 px-3 py-2 rounded-lg text-sm font-medium transition-all ${
-                currentPage === 'live'
-                  ? 'bg-primary-100 dark:bg-primary-900/30 text-primary-700 dark:text-primary-300'
-                  : 'hover:bg-gray-100 dark:hover:bg-gray-700'
-              }`}
-            >
-              Live
-            </button>
-            <button
-              onClick={() => onNavigate('highlights')}
-              className={`flex-1 px-3 py-2 rounded-lg text-sm font-medium transition-all ${
-                currentPage === 'highlights'
-                  ? 'bg-primary-100 dark:bg-primary-900/30 text-primary-700 dark:text-primary-300'
-                  : 'hover:bg-gray-100 dark:hover:bg-gray-700'
-              }`}
-            >
-              Highlights
-            </button>
-          </div>
-          <div className="flex items-center gap-1">
-            {isAuthenticated && user ? (
-              <>
-                {user.role === 'admin' && (
-                  <button
-                    onClick={() => onNavigate('admin')}
-                    className={`flex-1 px-3 py-2 rounded-lg text-sm font-medium transition-all ${
-                      currentPage === 'admin'
-                        ? 'bg-primary-100 dark:bg-primary-900/30 text-primary-700 dark:text-primary-300'
-                        : 'hover:bg-gray-100 dark:hover:bg-gray-700'
-                    }`}
-                  >
-                    Admin
-                  </button>
-                )}
-                <button
-                  onClick={() => onNavigate('settings')}
-                  className={`flex-1 px-3 py-2 rounded-lg text-sm font-medium transition-all ${
-                    currentPage === 'settings'
-                      ? 'bg-primary-100 dark:bg-primary-900/30 text-primary-700 dark:text-primary-300'
-                      : 'hover:bg-gray-100 dark:hover:bg-gray-700'
-                  }`}
-                >
-                  Einstellungen
-                </button>
-                <button
-                  onClick={handleLogout}
-                  className="flex-1 px-3 py-2 rounded-lg text-sm font-medium transition-all hover:bg-gray-100 dark:hover:bg-gray-700"
-                >
-                  Abmelden
-                </button>
-              </>
-            ) : (
-              <>
-                <button
-                  onClick={onShowLogin}
-                  className="flex-1 px-3 py-2 rounded-lg text-sm font-medium transition-all hover:bg-gray-100 dark:hover:bg-gray-700"
-                >
-                  Anmelden
-                </button>
-                <button
-                  onClick={onShowRegister}
-                  className="flex-1 px-3 py-2 rounded-lg text-sm font-medium transition-all bg-primary-600 text-white hover:bg-primary-700"
-                >
-                  Registrieren
-                </button>
-              </>
-            )}
-          </div>
-        </nav>
+        {isMobileMenuOpen && (
+          <div className="lg:hidden">
+            <div className="absolute top-full left-0 right-0 mt-2 mx-4 bg-white/90 dark:bg-gray-800/90 backdrop-blur-xl rounded-3xl shadow-2xl border border-white/20 dark:border-gray-700/50 overflow-hidden">
+              <div className="p-4 space-y-2">
+                
+                {/* Main Navigation */}
+                <div className="space-y-1">
+                  {navigationItems.map((item) => (
+                    <button
+                      key={item.key}
+                      onClick={() => {
+                        onNavigate(item.key as any);
+                        setIsMobileMenuOpen(false);
+                      }}
+                      className={`w-full flex items-center px-4 py-3 rounded-2xl font-medium transition-all duration-300 ${
+                        currentPage === item.key
+                          ? 'bg-gradient-to-r from-indigo-600 to-purple-600 text-white shadow-lg'
+                          : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700'
+                      }`}
+                    >
+                      <span className="mr-3 text-lg">{item.icon}</span>
+                      {item.label}
+                    </button>
+                  ))}
+                </div>
 
-        {/* Footer Links */}
-        <div className="md:hidden border-t border-gray-200 dark:border-gray-700 pt-3">
-          <div className="flex justify-center gap-4 text-sm">
-            <button
-              onClick={() => onNavigate('privacy')}
-              className="text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 transition-colors"
-            >
-              Datenschutz
-            </button>
-            <button
-              onClick={() => onNavigate('contact')}
-              className="text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 transition-colors"
-            >
-              Kontakt
-            </button>
+                {/* User Section */}
+                {isAuthenticated && user && (
+                  <div className="border-t border-gray-200 dark:border-gray-700 pt-4 mt-4">
+                    <div className="flex items-center gap-3 px-4 py-2 mb-3">
+                      <div className="w-10 h-10 bg-gradient-to-r from-indigo-500 to-purple-600 rounded-2xl flex items-center justify-center">
+                        <span className="text-white font-semibold">
+                          {user.displayName?.charAt(0).toUpperCase() || 'U'}
+                        </span>
+                      </div>
+                      <div>
+                        <p className="font-medium text-gray-900 dark:text-white">{user.displayName}</p>
+                        <p className="text-sm text-gray-500 dark:text-gray-400">{user.email}</p>
+                      </div>
+                    </div>
+                    
+                    {user.isPremium && (
+                      <div className="px-4 mb-3">
+                        <span className="inline-flex px-3 py-1 bg-gradient-to-r from-yellow-400 to-orange-500 text-white text-xs font-bold rounded-2xl">
+                          PREMIUM
+                        </span>
+                      </div>
+                    )}
+
+                    <div className="space-y-1">
+                      {user.role === 'admin' && (
+                        <button
+                          onClick={() => {
+                            onNavigate('admin');
+                            setIsMobileMenuOpen(false);
+                          }}
+                          className={`w-full flex items-center px-4 py-3 rounded-2xl font-medium transition-all duration-300 ${
+                            currentPage === 'admin'
+                              ? 'bg-gradient-to-r from-red-500 to-pink-600 text-white shadow-lg'
+                              : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700'
+                          }`}
+                        >
+                          <span className="mr-3">{getPageIcon('admin')}</span>
+                          Admin
+                        </button>
+                      )}
+                      
+                      <button
+                        onClick={() => {
+                          onNavigate('settings');
+                          setIsMobileMenuOpen(false);
+                        }}
+                        className={`w-full flex items-center px-4 py-3 rounded-2xl font-medium transition-all duration-300 ${
+                          currentPage === 'settings'
+                            ? 'bg-gradient-to-r from-indigo-600 to-purple-600 text-white shadow-lg'
+                            : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700'
+                        }`}
+                      >
+                        <span className="mr-3">{getPageIcon('settings')}</span>
+                        Einstellungen
+                      </button>
+                      
+                      <button
+                        onClick={() => {
+                          handleLogout();
+                          setIsMobileMenuOpen(false);
+                        }}
+                        className="w-full flex items-center px-4 py-3 rounded-2xl font-medium bg-gradient-to-r from-red-500 to-pink-600 text-white hover:from-red-600 hover:to-pink-700 transition-all duration-300"
+                      >
+                        <span className="mr-3">🚪</span>
+                        Abmelden
+                      </button>
+                    </div>
+                  </div>
+                )}
+
+                {/* Footer Links */}
+                <div className="border-t border-gray-200 dark:border-gray-700 pt-4 mt-4">
+                  <div className="flex justify-center gap-6 text-sm">
+                    <button
+                      onClick={() => {
+                        onNavigate('privacy');
+                        setIsMobileMenuOpen(false);
+                      }}
+                      className="text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 transition-colors"
+                    >
+                      Datenschutz
+                    </button>
+                    <button
+                      onClick={() => {
+                        onNavigate('contact');
+                        setIsMobileMenuOpen(false);
+                      }}
+                      className="text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 transition-colors"
+                    >
+                      Kontakt
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
-        </div>
+        )}
       </div>
     </header>
   );
 }
-
