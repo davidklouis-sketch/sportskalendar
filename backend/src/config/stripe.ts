@@ -14,7 +14,7 @@ export const isStripeConfigured = () => {
 };
 
 // Premium pricing configuration
-export const PREMIUM_PRICE_ID = 'price_premium_monthly'; // This will be created in Stripe Dashboard
+export const PREMIUM_PRICE_ID = process.env.STRIPE_PRICE_ID || 'price_premium_monthly'; // Set in environment variables
 export const PREMIUM_AMOUNT = 999; // €9.99 in cents
 export const PREMIUM_CURRENCY = 'eur';
 

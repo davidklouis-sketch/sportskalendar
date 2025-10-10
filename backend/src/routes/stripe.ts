@@ -1,6 +1,6 @@
 import { Router } from 'express';
 import { z } from 'zod';
-import { stripe, PREMIUM_AMOUNT, PREMIUM_CURRENCY, isStripeConfigured } from '../config/stripe';
+import { stripe, PREMIUM_AMOUNT, PREMIUM_CURRENCY, PREMIUM_PRICE_ID, isStripeConfigured } from '../config/stripe';
 import { requireAuth } from '../middleware/auth';
 import { UserRepository } from '../database/repositories/userRepository';
 
@@ -33,18 +33,7 @@ stripeRouter.post('/create-checkout-session', requireAuth, async (req, res) => {
       payment_method_types: ['card'],
       line_items: [
         {
-          price_data: {
-            currency: PREMIUM_CURRENCY,
-            product_data: {
-              name: 'Sportskalendar Premium',
-              description: 'Unbegrenzte Teams, erweiterte Features und mehr!',
-              images: ['https://sportskalendar.de/logo.png'], // Add your logo URL
-            },
-            unit_amount: PREMIUM_AMOUNT,
-            recurring: {
-              interval: 'month',
-            },
-          },
+          price: PREMIUM_PRICE_ID, // Use the price ID from Stripe Dashboard
           quantity: 1,
         },
       ],
