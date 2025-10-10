@@ -1,4 +1,4 @@
-// AdMob Debug Component
+// AdSense Debug Component
 
 export function AdDebug() {
   const admobClientId = import.meta.env.VITE_ADMOB_CLIENT_ID;
@@ -7,6 +7,10 @@ export function AdDebug() {
   const leaderboardSlot = import.meta.env.VITE_ADMOB_LEADERBOARD_SLOT;
   const interstitialSlot = import.meta.env.VITE_ADMOB_INTERSTITIAL_SLOT;
   const mode = import.meta.env.MODE;
+  
+  // Check if AdSense script is loaded
+  const isAdSenseLoaded = typeof window !== 'undefined' && !!(window as any).adsbygoogle;
+  const adSenseArrayLength = typeof window !== 'undefined' && (window as any).adsbygoogle ? (window as any).adsbygoogle.length : 0;
 
   return (
     <div className="bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg p-4 mb-4">
@@ -30,6 +34,24 @@ export function AdDebug() {
             mode === 'production' ? 'bg-green-100 text-green-800' : 'bg-blue-100 text-blue-800'
           }`}>
             {mode}
+          </span>
+        </div>
+        
+        <div>
+          <span className="font-medium">AdSense Script:</span>
+          <span className={`ml-2 px-2 py-1 rounded text-xs ${
+            isAdSenseLoaded ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
+          }`}>
+            {isAdSenseLoaded ? '✅ Geladen' : '❌ Nicht geladen'}
+          </span>
+        </div>
+        
+        <div>
+          <span className="font-medium">AdSense Array:</span>
+          <span className={`ml-2 px-2 py-1 rounded text-xs ${
+            adSenseArrayLength > 0 ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'
+          }`}>
+            {adSenseArrayLength} Einträge
           </span>
         </div>
         

@@ -213,6 +213,9 @@ export function Calendar() {
   useEffect(() => {
     if (localTeams.length > 0) {
       loadAllEvents(localTeams);
+    } else {
+      // Keine Teams = Loading beenden
+      setIsLoading(false);
     }
   }, [localTeams]);
 

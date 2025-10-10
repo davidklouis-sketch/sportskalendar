@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { SEOHead } from '../SEO/SEOHead';
 import { SportsKalendarBanner, SportsKalendarLeaderboard } from '../Ads/AdManager';
 import { AdDebug } from '../Ads/AdDebug';
+import { useAuthStore } from '../../store/useAuthStore';
 
 interface LandingPageProps {
   onShowLogin: () => void;
@@ -10,6 +11,7 @@ interface LandingPageProps {
 
 export function LandingPage({ onShowLogin, onShowRegister }: LandingPageProps) {
   const [showFeatures, setShowFeatures] = useState(false);
+  const { user } = useAuthStore();
 
   const features = [
     {
@@ -91,7 +93,7 @@ export function LandingPage({ onShowLogin, onShowRegister }: LandingPageProps) {
       />
       
       <div className="max-w-7xl mx-auto px-4 py-8 pt-24">
-      {/* AdMob Debug Information */}
+      {/* AdSense Debug Information - immer anzeigen für Debugging */}
       <AdDebug />
       
       {/* Hero Section */}
