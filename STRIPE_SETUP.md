@@ -26,19 +26,30 @@ Die Sportskalendar App ist bereits vollständig für Stripe-Integration konfigur
 
 3. **Notiere den Webhook Secret** (beginnt mit `whsec_...`)
 
-### 3. **Environment Variables setzen**
+### 3. **GitHub Secrets setzen**
+
+Gehe zu GitHub → Settings → Secrets and variables → Actions und füge hinzu:
+
+```bash
+# Stripe Secrets
+STRIPE_SECRET_KEY=sk_live_your_actual_stripe_secret_key
+STRIPE_WEBHOOK_SECRET=whsec_your_actual_webhook_secret
+STRIPE_PRICE_ID=price_your_actual_price_id
+```
+
+### 4. **Environment Variables setzen**
 
 Aktualisiere `env.production`:
 
 ```bash
-# Stripe Configuration
+# Stripe Configuration (werden automatisch aus GitHub Secrets gesetzt)
 STRIPE_SECRET_KEY=sk_live_your_actual_stripe_secret_key
 STRIPE_WEBHOOK_SECRET=whsec_your_actual_webhook_secret
 STRIPE_PRICE_ID=price_your_actual_price_id
 FRONTEND_URL=https://sportskalendar.de
 ```
 
-### 4. **Test vs. Live Mode**
+### 5. **Test vs. Live Mode**
 
 - **Development:** Verwende Test-Keys (`sk_test_...`)
 - **Production:** Verwende Live-Keys (`sk_live_...`)
@@ -89,6 +100,7 @@ FRONTEND_URL=https://sportskalendar.de
 - [ ] Stripe-Produkt erstellt
 - [ ] Price ID notiert
 - [ ] Webhook konfiguriert
+- [ ] **GitHub Secrets gesetzt** (STRIPE_SECRET_KEY, STRIPE_WEBHOOK_SECRET, STRIPE_PRICE_ID)
 - [ ] Environment Variables gesetzt
 - [ ] Test-Zahlung durchgeführt
 - [ ] Webhook-Test erfolgreich

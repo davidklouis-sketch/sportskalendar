@@ -87,6 +87,11 @@ jobs:
         context: ./backend
         push: true
         tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}/backend:${{ github.sha }}
+        build-args: |
+          STRIPE_SECRET_KEY=${{ secrets.STRIPE_SECRET_KEY }}
+          STRIPE_WEBHOOK_SECRET=${{ secrets.STRIPE_WEBHOOK_SECRET }}
+          STRIPE_PRICE_ID=${{ secrets.STRIPE_PRICE_ID }}
+          FRONTEND_URL=https://sportskalendar.de
 
   deploy:
     needs: build-and-push
