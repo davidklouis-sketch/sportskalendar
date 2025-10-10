@@ -138,6 +138,10 @@ jobs:
           echo "STRIPE_WEBHOOK_SECRET: ${STRIPE_WEBHOOK_SECRET:0:10}..."
           echo "STRIPE_PRICE_ID: ${STRIPE_PRICE_ID}"
           echo "FRONTEND_URL: ${FRONTEND_URL}"
+          echo "🔍 Checking if secrets are properly set:"
+          if [ -z "$STRIPE_SECRET_KEY" ]; then echo "❌ STRIPE_SECRET_KEY is empty!"; else echo "✅ STRIPE_SECRET_KEY is set"; fi
+          if [ -z "$STRIPE_WEBHOOK_SECRET" ]; then echo "❌ STRIPE_WEBHOOK_SECRET is empty!"; else echo "✅ STRIPE_WEBHOOK_SECRET is set"; fi
+          if [ -z "$STRIPE_PRICE_ID" ]; then echo "❌ STRIPE_PRICE_ID is empty!"; else echo "✅ STRIPE_PRICE_ID is set"; fi
           
           # Direct environment variable injection
           echo "🔍 Starting services with direct environment variable injection..."
@@ -154,7 +158,11 @@ jobs:
           echo "🔍 Created .env.temp with Stripe variables"
           ls -la .env.temp
           
-          # Start services with environment variables from file
+          # Start services with environment variables from file AND direct injection
+          STRIPE_SECRET_KEY="${STRIPE_SECRET_KEY}" \
+          STRIPE_WEBHOOK_SECRET="${STRIPE_WEBHOOK_SECRET}" \
+          STRIPE_PRICE_ID="${STRIPE_PRICE_ID}" \
+          FRONTEND_URL="${FRONTEND_URL}" \
           docker compose -f docker-compose.traefik.yml --env-file .env.production --env-file .env.temp up -d --force-recreate
           
           # Clean up temporary environment file
