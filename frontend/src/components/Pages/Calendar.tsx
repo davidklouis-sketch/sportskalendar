@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useRef } from 'react';
+import { useState, useEffect } from 'react';
 import { useAuthStore } from '../../store/useAuthStore';
 import { calendarApi, userApi, highlightsApi } from '../../lib/api';
 import { format } from 'date-fns';
@@ -40,15 +40,14 @@ export function Calendar() {
   const [isLoadingHighlights, setIsLoadingHighlights] = useState(false);
 
   // Load all events separately for better organization
-  const loadAllEvents = useCallback(async () => {
+  const loadAllEvents = async (teams: Array<{ sport: string; teamName: string; teamId?: string; leagueId?: number }>) => {
     setIsLoading(true);
     try {
-      const teams = localTeams || [];
       console.log('🔄 Loading events for teams:', teams);
       
       // Load Football Events
-          const footballTeams = teams.filter(t => t.sport === 'football');
-          if (footballTeams.length > 0) {
+      const footballTeams = teams.filter(t => t.sport === 'football');
+      if (footballTeams.length > 0) {
         const leagues = footballTeams.map(t => t.leagueId).filter(Boolean) as number[];
         const response = await calendarApi.getEvents('football', leagues);
         let events = (response.data as Event[]) || [];
@@ -127,10 +126,10 @@ export function Calendar() {
     } finally {
       setIsLoading(false);
     }
-  }, [localTeams]);
+  };
 
   // Load highlights for selected sport
-  const loadHighlights = useCallback(async () => {
+  const loadHighlights = async () => {
     if (!selectedSport) return;
     
     setIsLoadingHighlights(true);
@@ -141,7 +140,8 @@ export function Calendar() {
         f1: 'F1',
       };
 
-      const currentTeam = user?.selectedTeams?.find(t => t.sport === selectedSport);
+      // Get current values from state
+      const currentTeam = localTeams.find(t => t.sport === selectedSport);
       console.log(`[Highlights Frontend] Loading highlights for ${selectedSport} (${sportMapping[selectedSport]})${currentTeam ? ` for team "${currentTeam.teamName}"` : ''}`);
       
       // Add timeout to prevent hanging
@@ -175,7 +175,7 @@ export function Calendar() {
     } finally {
       setIsLoadingHighlights(false);
     }
-  }, [selectedSport, user]);
+  };
 
   // Get team name variations for better matching (same as backend)
   const getTeamVariations = (teamName: string): string[] => {
@@ -210,24 +210,18 @@ export function Calendar() {
   }, [user?.selectedTeams]);
 
   // Load events when teams change
-  const loadAllEventsRef = useRef(loadAllEvents);
-  loadAllEventsRef.current = loadAllEvents;
-  
   useEffect(() => {
     if (localTeams.length > 0) {
-      loadAllEventsRef.current();
+      loadAllEvents(localTeams);
     }
   }, [localTeams]);
 
   // Load highlights when sport selection changes
-  const loadHighlightsRef = useRef(loadHighlights);
-  loadHighlightsRef.current = loadHighlights;
-  
   useEffect(() => {
-    if (selectedSport) {
-      loadHighlightsRef.current();
+    if (selectedSport && localTeams.length > 0) {
+      loadHighlights();
     }
-  }, [selectedSport]);
+  }, [selectedSport, localTeams]);
 
   // Auto-select first sport if available
   useEffect(() => {

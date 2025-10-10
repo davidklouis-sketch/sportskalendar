@@ -72,6 +72,17 @@ export function AdDebug() {
           <li>3. Starten Sie den Development Server neu</li>
           <li>4. Oder konfigurieren Sie GitHub Secrets für Production</li>
         </ul>
+        
+        <div className="mt-3 p-2 bg-yellow-50 dark:bg-yellow-900/20 rounded border border-yellow-200 dark:border-yellow-800">
+          <h5 className="font-medium text-yellow-800 dark:text-yellow-200 mb-1">🔧 Beispiel .env.local:</h5>
+          <pre className="text-xs text-yellow-700 dark:text-yellow-300 bg-yellow-100 dark:bg-yellow-900/30 p-2 rounded overflow-x-auto">
+{`VITE_ADMOB_CLIENT_ID=ca-pub-1234567890123456
+VITE_ADMOB_BANNER_SLOT=7002462664
+VITE_ADMOB_SQUARE_SLOT=5008646728
+VITE_ADMOB_LEADERBOARD_SLOT=4384038187
+VITE_ADMOB_INTERSTITIAL_SLOT=9901880755`}
+          </pre>
+        </div>
       </div>
     </div>
   );
