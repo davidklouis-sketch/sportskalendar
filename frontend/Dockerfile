@@ -35,13 +35,23 @@ RUN echo "Building with VITE_API_URL=${VITE_API_URL}" && \
 RUN npx vite build --mode production
 
 # Verify build output
-RUN ls -la /app/dist && echo "Build completed, files created"
+RUN ls -la /app/dist && echo "Build completed, files created" && \
+    echo "Checking for logo files:" && \
+    ls -la /app/dist/logo* || echo "No logo files found" && \
+    ls -la /app/dist/logos/ || echo "No logos directory found"
 
 # Production stage
 FROM nginx:alpine
 
 # Copy built assets from build stage
 COPY --from=build /app/dist /usr/share/nginx/html
+
+# Verify files were copied correctly in production stage
+RUN echo "Verifying files in nginx html directory:" && \
+    ls -la /usr/share/nginx/html/ && \
+    echo "Checking for logo files:" && \
+    ls -la /usr/share/nginx/html/logo* || echo "No logo files found" && \
+    ls -la /usr/share/nginx/html/logos/ || echo "No logos directory found"
 
 # Copy nginx configuration
 COPY nginx.conf /etc/nginx/nginx.conf
