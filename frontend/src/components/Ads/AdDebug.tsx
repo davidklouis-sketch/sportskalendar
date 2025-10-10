@@ -119,13 +119,13 @@ export function AdDebug() {
         </div>
       </div>
       
-      <div className="mt-4 p-3 bg-blue-50 dark:bg-blue-900/20 rounded border border-blue-200 dark:border-blue-800">
-        <h4 className="font-medium text-blue-800 dark:text-blue-200 mb-2">📋 Nächste Schritte:</h4>
+        <div className="mt-4 p-3 bg-blue-50 dark:bg-blue-900/20 rounded border border-blue-200 dark:border-blue-800">
+        <h4 className="font-medium text-blue-800 dark:text-blue-200 mb-2">📋 AdSense Problem-Diagnose:</h4>
         <ul className="text-sm text-blue-700 dark:text-blue-300 space-y-1">
-          <li>1. Erstellen Sie eine <code>.env.local</code> Datei im frontend/ Ordner</li>
-          <li>2. Fügen Sie Ihre echte AdSense Publisher ID hinzu</li>
-          <li>3. Starten Sie den Development Server neu</li>
-          <li>4. Oder konfigurieren Sie GitHub Secrets für Production</li>
+          <li>1. <strong>GitHub Secrets prüfen:</strong> VITE_ADMOB_CLIENT_ID muss in GitHub gesetzt sein</li>
+          <li>2. <strong>Domain genehmigt:</strong> sportskalendar.de muss in AdSense genehmigt sein</li>
+          <li>3. <strong>AdBlocker deaktivieren:</strong> Kann AdSense blockieren</li>
+          <li>4. <strong>Browser-Cache leeren:</strong> Ctrl+F5 für Hard Refresh</li>
         </ul>
         
         <div className="mt-3 p-2 bg-yellow-50 dark:bg-yellow-900/20 rounded border border-yellow-200 dark:border-yellow-800">

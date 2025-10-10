@@ -2,7 +2,6 @@ import { useState } from 'react';
 import { SEOHead } from '../SEO/SEOHead';
 import { SportsKalendarBanner, SportsKalendarLeaderboard } from '../Ads/AdManager';
 import { AdDebug } from '../Ads/AdDebug';
-import { useAuthStore } from '../../store/useAuthStore';
 
 interface LandingPageProps {
   onShowLogin: () => void;
@@ -11,7 +10,6 @@ interface LandingPageProps {
 
 export function LandingPage({ onShowLogin, onShowRegister }: LandingPageProps) {
   const [showFeatures, setShowFeatures] = useState(false);
-  const { user } = useAuthStore();
 
   const features = [
     {
