@@ -11,14 +11,27 @@ export const stripe = process.env.STRIPE_SECRET_KEY
 // Check if Stripe is properly configured
 export const isStripeConfigured = () => {
   const hasSecretKey = !!process.env.STRIPE_SECRET_KEY && process.env.STRIPE_SECRET_KEY !== 'sk_live_your_stripe_secret_key_here';
+  const hasWebhookSecret = !!process.env.STRIPE_WEBHOOK_SECRET && process.env.STRIPE_WEBHOOK_SECRET !== 'whsec_your_webhook_secret_here';
+  const hasPriceId = !!process.env.STRIPE_PRICE_ID && process.env.STRIPE_PRICE_ID !== 'price_your_stripe_price_id_here' && process.env.STRIPE_PRICE_ID !== '***';
+  
   console.log('🔍 Stripe configuration check:', {
     hasSecretKey,
+    hasWebhookSecret,
+    hasPriceId,
     secretKeyPrefix: process.env.STRIPE_SECRET_KEY?.substring(0, 10) + '...' || 'undefined',
+    webhookSecretPrefix: process.env.STRIPE_WEBHOOK_SECRET?.substring(0, 10) + '...' || 'undefined',
+    priceId: process.env.STRIPE_PRICE_ID || 'undefined',
     nodeEnv: process.env.NODE_ENV,
     allEnvKeys: Object.keys(process.env).filter(key => key.includes('STRIPE')),
-    isPlaceholder: process.env.STRIPE_SECRET_KEY === 'sk_live_your_stripe_secret_key_here'
+    isSecretKeyPlaceholder: process.env.STRIPE_SECRET_KEY === 'sk_live_your_stripe_secret_key_here',
+    isPriceIdPlaceholder: process.env.STRIPE_PRICE_ID === 'price_your_stripe_price_id_here' || process.env.STRIPE_PRICE_ID === '***'
   });
-  return hasSecretKey;
+  
+  // Return true only if all required keys are set
+  const isConfigured = hasSecretKey && hasWebhookSecret && hasPriceId;
+  console.log(`🔍 Stripe is ${isConfigured ? 'CONFIGURED ✅' : 'NOT CONFIGURED ❌'}`);
+  
+  return isConfigured;
 };
 
 // Premium pricing configuration
