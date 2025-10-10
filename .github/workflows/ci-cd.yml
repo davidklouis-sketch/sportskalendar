@@ -126,10 +126,20 @@ jobs:
           # Stop and remove old containers
           docker compose -f docker-compose.traefik.yml --env-file .env.production down
           
-          # Start services with Stripe secrets
-          STRIPE_SECRET_KEY="${{ secrets.STRIPE_SECRET_KEY }}" \
-          STRIPE_WEBHOOK_SECRET="${{ secrets.STRIPE_WEBHOOK_SECRET }}" \
-          STRIPE_PRICE_ID="${{ secrets.STRIPE_PRICE_ID }}" \
+          # Set all required environment variables
+          export STRIPE_SECRET_KEY="${{ secrets.STRIPE_SECRET_KEY }}"
+          export STRIPE_WEBHOOK_SECRET="${{ secrets.STRIPE_WEBHOOK_SECRET }}"
+          export STRIPE_PRICE_ID="${{ secrets.STRIPE_PRICE_ID }}"
+          export FRONTEND_URL="https://sportskalendar.de"
+          
+          # Debug: Show environment variables (without sensitive data)
+          echo "🔍 Environment variables set:"
+          echo "STRIPE_SECRET_KEY: ${STRIPE_SECRET_KEY:0:10}..."
+          echo "STRIPE_WEBHOOK_SECRET: ${STRIPE_WEBHOOK_SECRET:0:10}..."
+          echo "STRIPE_PRICE_ID: ${STRIPE_PRICE_ID}"
+          echo "FRONTEND_URL: ${FRONTEND_URL}"
+          
+          # Start services with environment variables
           docker compose -f docker-compose.traefik.yml --env-file .env.production up -d
           
           # Clean up old images
