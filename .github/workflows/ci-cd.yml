@@ -139,8 +139,17 @@ jobs:
           echo "STRIPE_PRICE_ID: ${STRIPE_PRICE_ID}"
           echo "FRONTEND_URL: ${FRONTEND_URL}"
           
-          # Start services with environment variables
-          docker compose -f docker-compose.traefik.yml --env-file .env.production up -d --force-recreate
+          # Test: Create a temporary env file with Stripe variables
+          echo "🔍 Creating temporary environment file..."
+          cat > .env.temp << EOF
+STRIPE_SECRET_KEY=${STRIPE_SECRET_KEY}
+STRIPE_WEBHOOK_SECRET=${STRIPE_WEBHOOK_SECRET}
+STRIPE_PRICE_ID=${STRIPE_PRICE_ID}
+FRONTEND_URL=${FRONTEND_URL}
+EOF
+          
+          # Start services with both env files
+          docker compose -f docker-compose.traefik.yml --env-file .env.production --env-file .env.temp up -d --force-recreate
           
           # Clean up old images
           docker image prune -f
