@@ -64,6 +64,11 @@ export function Calendar() {
         console.log('Events:', events);
         console.log('Teams:', footballTeams);
         
+        // Debug: Zeige die ersten 5 Events in der Konsole
+        if (events.length > 0) {
+          console.log('Erste 5 Events:', events.slice(0, 5));
+        }
+        
         setFootballEvents(events);
         } catch (error) {
           console.error('Failed to load football events:', error);
