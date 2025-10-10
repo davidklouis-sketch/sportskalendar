@@ -8,6 +8,14 @@ export const stripeRouter = Router();
 
 // Debug endpoint to check Stripe configuration
 stripeRouter.get('/debug', (req, res) => {
+  // Show all environment variables that start with STRIPE
+  const stripeEnvVars = Object.keys(process.env)
+    .filter(key => key.startsWith('STRIPE'))
+    .reduce((obj, key) => {
+      obj[key] = process.env[key] ? 'SET' : 'NOT_SET';
+      return obj;
+    }, {} as Record<string, string>);
+
   res.json({
     isStripeConfigured: isStripeConfigured(),
     hasStripeInstance: !!stripe,
@@ -15,7 +23,10 @@ stripeRouter.get('/debug', (req, res) => {
     hasWebhookSecret: !!process.env.STRIPE_WEBHOOK_SECRET,
     hasPriceId: !!process.env.STRIPE_PRICE_ID,
     secretKeyPrefix: process.env.STRIPE_SECRET_KEY?.substring(0, 10) + '...' || 'undefined',
-    priceId: process.env.STRIPE_PRICE_ID || 'undefined'
+    priceId: process.env.STRIPE_PRICE_ID || 'undefined',
+    allStripeEnvVars: stripeEnvVars,
+    nodeEnv: process.env.NODE_ENV,
+    allEnvKeys: Object.keys(process.env).filter(key => key.includes('STRIPE') || key.includes('stripe'))
   });
 });
 
