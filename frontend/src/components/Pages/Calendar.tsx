@@ -30,7 +30,7 @@ export function Calendar() {
   const [footballEvents, setFootballEvents] = useState<Event[]>([]);
   const [f1Events, setF1Events] = useState<Event[]>([]);
   const [nflEvents, setNflEvents] = useState<Event[]>([]);
-  const [isLoading, setIsLoading] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
   const [selectedSport, setSelectedSport] = useState<'football' | 'nfl' | 'f1' | null>(null);
   const [showTeamSelector, setShowTeamSelector] = useState(false);
   // Local teams state to ensure UI updates work
@@ -43,7 +43,6 @@ export function Calendar() {
   const loadAllEvents = async (teams: Array<{ sport: string; teamName: string; teamId?: string; leagueId?: number }>) => {
     setIsLoading(true);
     try {
-      console.log('🔄 Loading events for teams:', teams);
       
       // Reset all events first
       setFootballEvents([]);
@@ -65,7 +64,6 @@ export function Calendar() {
             return teamNames.some(teamName => eventTitle.includes(teamName));
           });
           
-          console.log(`📊 Gefundene Football Events: ${events.length}`);
           setFootballEvents(events);
         } catch (error) {
           console.error('Failed to load football events:', error);
@@ -87,7 +85,6 @@ export function Calendar() {
             return driverNames.some(driverName => eventTitle.includes(driverName));
           });
           
-          console.log(`📊 Gefundene F1 Events: ${events.length}`);
           setF1Events(events);
         } catch (error) {
           console.error('Failed to load F1 events:', error);
@@ -109,7 +106,6 @@ export function Calendar() {
             return teamNames.some(teamName => eventTitle.includes(teamName));
           });
           
-          console.log(`📊 Gefundene NFL Events: ${events.length}`);
           setNflEvents(events);
         } catch (error) {
           console.error('Failed to load NFL events:', error);
@@ -138,7 +134,6 @@ export function Calendar() {
 
       // Get current values from state
       const currentTeam = localTeams.find(t => t.sport === selectedSport);
-      console.log(`[Highlights Frontend] Loading highlights for ${selectedSport} (${sportMapping[selectedSport]})${currentTeam ? ` for team "${currentTeam.teamName}"` : ''}`);
       
       // Add timeout to prevent hanging
       const timeoutPromise = new Promise<never>((_, reject) => {
@@ -149,7 +144,6 @@ export function Calendar() {
       const response = await Promise.race([fetchPromise, timeoutPromise]);
       
       let allHighlights = response.data.items || [];
-      console.log(`[Highlights Frontend] Got ${allHighlights.length} highlights from API`);
       
       // Additional frontend filtering if needed (backend should handle most filtering now)
       if (currentTeam?.teamName && allHighlights.length > 0) {
@@ -161,7 +155,6 @@ export function Calendar() {
           const teamVariations = getTeamVariations(currentTeam.teamName);
           return teamVariations.some(variation => searchText.includes(variation));
         });
-        console.log(`[Highlights Frontend] Additional filtering: ${beforeFilter} -> ${allHighlights.length} highlights for team "${currentTeam.teamName}"`);
       }
       
       setHighlights(allHighlights);
@@ -202,6 +195,9 @@ export function Calendar() {
   useEffect(() => {
     if (user?.selectedTeams) {
       setLocalTeams(user.selectedTeams);
+    } else {
+      // No teams = stop loading immediately
+      setIsLoading(false);
     }
   }, [user?.selectedTeams]);
 

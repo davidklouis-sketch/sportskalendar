@@ -21,7 +21,6 @@ export function AdBanner({ slotId, style, className, format = 'auto' }: AdBanner
       // AdSense Initialisierung für diese spezifische Ad
       if (typeof window !== 'undefined' && (window as any).adsbygoogle) {
         ((window as any).adsbygoogle = (window as any).adsbygoogle || []).push({});
-        console.log('AdSense Banner initialisiert für Slot:', slotId);
       }
     } catch (error) {
       console.error('AdSense Banner initialization error:', error);

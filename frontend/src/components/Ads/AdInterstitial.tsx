@@ -11,9 +11,7 @@ export function AdInterstitial({ slotId, trigger = false, onAdLoaded, onAdFailed
   useEffect(() => {
     // Nur in Production laden
     if (import.meta.env.MODE !== 'production') {
-      console.log('Ad Interstitial Platzhalter - Slot:', slotId);
       if (trigger) {
-        console.log('Interstitial Ad würde jetzt angezeigt werden');
         onAdLoaded?.();
       }
       return;

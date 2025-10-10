@@ -15,7 +15,6 @@ export function AdManager({ children }: AdManagerProps) {
     // Hier nur sicherstellen, dass adsbygoogle Array existiert
     if (typeof window !== 'undefined') {
       (window as any).adsbygoogle = (window as any).adsbygoogle || [];
-      console.log('AdSense Manager initialisiert');
     }
   }, []);
 
