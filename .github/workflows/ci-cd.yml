@@ -144,13 +144,19 @@ jobs:
           # Direct environment variable injection
           echo "🔍 Starting services with direct environment variable injection..."
           
-          # Create temporary environment file with ALL required variables (NO SPACES around =)
-          cat > .env.stripe << EOF
-          STRIPE_SECRET_KEY=${STRIPE_SECRET_KEY}
-          STRIPE_WEBHOOK_SECRET=${STRIPE_WEBHOOK_SECRET}
-          STRIPE_PRICE_ID=${STRIPE_PRICE_ID}
-          FRONTEND_URL=${FRONTEND_URL}
-          EOF
+          # Create temporary environment file with ALL required variables (NO SPACES, NO INDENTATION)
+          cat > .env.stripe << 'EOF'
+STRIPE_SECRET_KEY=${STRIPE_SECRET_KEY}
+STRIPE_WEBHOOK_SECRET=${STRIPE_WEBHOOK_SECRET}
+STRIPE_PRICE_ID=${STRIPE_PRICE_ID}
+FRONTEND_URL=${FRONTEND_URL}
+EOF
+          
+          # Substitute variables manually to avoid shell expansion issues
+          sed -i "s|\${STRIPE_SECRET_KEY}|${STRIPE_SECRET_KEY}|g" .env.stripe
+          sed -i "s|\${STRIPE_WEBHOOK_SECRET}|${STRIPE_WEBHOOK_SECRET}|g" .env.stripe
+          sed -i "s|\${STRIPE_PRICE_ID}|${STRIPE_PRICE_ID}|g" .env.stripe
+          sed -i "s|\${FRONTEND_URL}|${FRONTEND_URL}|g" .env.stripe
           
           # Debug: Show that file was created and its contents (masked by GitHub)
           echo "🔍 Created .env.stripe with Stripe variables"
