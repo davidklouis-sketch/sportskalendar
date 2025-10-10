@@ -5,9 +5,6 @@ import { format } from 'date-fns';
 import { FOOTBALL_LEAGUES, FOOTBALL_TEAMS, F1_DRIVERS, NFL_TEAMS } from '../../data/teams';
 import { LiveData } from '../LiveData';
 import { SportsKalendarBanner, SportsKalendarSquare } from '../Ads/AdManager';
-import { AdDebug } from '../Ads/AdDebug';
-import { AdBanner } from '../Ads/AdBanner';
-import { AdSquare } from '../Ads/AdSquare';
 
 interface Event {
   id: string;
@@ -60,18 +57,16 @@ export function Calendar() {
           const leagues = footballTeams.map(t => t.leagueId).filter(Boolean) as number[];
           const response = await calendarApi.getEvents('football', leagues);
           let events = (response.data as Event[]) || [];
-        
-        // Temporär: Alle Events anzeigen ohne Filterung für Debugging
-        console.log(`📊 Gefundene Events: ${events.length}`);
-        console.log('Events:', events);
-        console.log('Teams:', footballTeams);
-        
-        // Debug: Zeige die ersten 5 Events in der Konsole
-        if (events.length > 0) {
-          console.log('Erste 5 Events:', events.slice(0, 5));
-        }
-        
-        setFootballEvents(events);
+          
+          // Filter events for selected teams
+          const teamNames = footballTeams.map(t => t.teamName.toLowerCase());
+          events = events.filter(event => {
+            const eventTitle = event.title.toLowerCase();
+            return teamNames.some(teamName => eventTitle.includes(teamName));
+          });
+          
+          console.log(`📊 Gefundene Football Events: ${events.length}`);
+          setFootballEvents(events);
         } catch (error) {
           console.error('Failed to load football events:', error);
           setFootballEvents([]);
@@ -81,17 +76,45 @@ export function Calendar() {
       // Load F1 Events
       const f1Teams = teams.filter(t => t.sport === 'f1');
       if (f1Teams.length > 0) {
-        const response = await calendarApi.getEvents('f1', []);
-        const events = (response.data as Event[]) || [];
-        setF1Events(events);
+        try {
+          const response = await calendarApi.getEvents('f1', []);
+          let events = (response.data as Event[]) || [];
+          
+          // Filter events for selected drivers
+          const driverNames = f1Teams.map(t => t.teamName.toLowerCase());
+          events = events.filter(event => {
+            const eventTitle = event.title.toLowerCase();
+            return driverNames.some(driverName => eventTitle.includes(driverName));
+          });
+          
+          console.log(`📊 Gefundene F1 Events: ${events.length}`);
+          setF1Events(events);
+        } catch (error) {
+          console.error('Failed to load F1 events:', error);
+          setF1Events([]);
+        }
       }
       
       // Load NFL Events
       const nflTeams = teams.filter(t => t.sport === 'nfl');
       if (nflTeams.length > 0) {
-        const response = await calendarApi.getEvents('nfl', []);
-        const events = (response.data as Event[]) || [];
-        setNflEvents(events);
+        try {
+          const response = await calendarApi.getEvents('nfl', []);
+          let events = (response.data as Event[]) || [];
+          
+          // Filter events for selected teams
+          const teamNames = nflTeams.map(t => t.teamName.toLowerCase());
+          events = events.filter(event => {
+            const eventTitle = event.title.toLowerCase();
+            return teamNames.some(teamName => eventTitle.includes(teamName));
+          });
+          
+          console.log(`📊 Gefundene NFL Events: ${events.length}`);
+          setNflEvents(events);
+        } catch (error) {
+          console.error('Failed to load NFL events:', error);
+          setNflEvents([]);
+        }
       }
       
     } catch (error) {
@@ -267,27 +290,6 @@ export function Calendar() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 dark:from-gray-900 dark:via-slate-900 dark:to-gray-800">
       
-      {/* AdSense Debug Panel */}
-      <div className="max-w-7xl mx-auto px-4 pt-24">
-        <AdDebug />
-        
-        {/* Temporär: Direkte AdSense-Tests */}
-        <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4 mb-4">
-          <h3 className="text-lg font-semibold text-blue-800 dark:text-blue-200 mb-3">
-            🧪 AdSense Test-Anzeigen
-          </h3>
-          <div className="space-y-4">
-            <div>
-              <h4 className="font-medium text-blue-700 dark:text-blue-300 mb-2">Banner Ad Test:</h4>
-              <AdBanner slotId="7002462664" />
-            </div>
-            <div>
-              <h4 className="font-medium text-blue-700 dark:text-blue-300 mb-2">Square Ad Test:</h4>
-              <AdSquare slotId="5008646728" />
-            </div>
-          </div>
-        </div>
-      </div>
       
       {/* Hero Section */}
       <div className="relative overflow-hidden">

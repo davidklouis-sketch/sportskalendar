@@ -28,16 +28,9 @@ export function AdBanner({ slotId, style, className, format = 'auto' }: AdBanner
     }
   }, [slotId]);
 
-  // Temporär: Immer echte AdSense-Anzeige anzeigen für Debugging
-  const clientId = 'ca-pub-2481184858901580'; // Hardcoded für Debugging
+  // AdSense Client ID aus Environment Variable oder Fallback
+  const clientId = import.meta.env.VITE_ADMOB_CLIENT_ID || 'ca-pub-2481184858901580';
   
-  // Debug: Zeige Environment Variable Status
-  console.log('AdBanner Debug:', {
-    clientId,
-    slotId,
-    hasClientId: !!import.meta.env.VITE_ADMOB_CLIENT_ID,
-    envClientId: import.meta.env.VITE_ADMOB_CLIENT_ID
-  });
 
   return (
     <div className={className} style={defaultStyle}>
