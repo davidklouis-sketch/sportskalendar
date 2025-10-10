@@ -94,18 +94,6 @@ jobs:
     if: github.ref == 'refs/heads/main'
     
     steps:
-    - name: Check deployment secrets
-      run: |
-        if [ -z "${{ secrets.HOST }}" ] || [ -z "${{ secrets.USERNAME }}" ] || [ -z "${{ secrets.SSH_KEY }}" ]; then
-          echo "❌ Deployment secrets not configured"
-          echo "Please configure the following secrets in GitHub:"
-          echo "- HOST: Your server hostname"
-          echo "- USERNAME: Your SSH username"
-          echo "- SSH_KEY: Your private SSH key"
-          exit 1
-        fi
-        echo "✅ Deployment secrets configured"
-    
     - name: Deploy to server
       uses: appleboy/ssh-action@v1.0.3
       with:
@@ -115,282 +103,28 @@ jobs:
         port: ${{ secrets.SSH_PORT || '22' }}
         script: |
           set -e
-          
-          # CACHE BUSTER: Force refresh workflow
-          echo "🔄 Workflow refreshed at $(date)"
           echo "🚀 Starting deployment..."
-          echo "🔍 Current working directory: $(pwd)"
-          echo "🔍 Current user: $(whoami)"
-          echo "🔍 Home directory: $HOME"
           
           # Navigate to project directory
-          echo "🔍 Checking if directory exists..."
-          ls -la /home/dl/sportskalendar/ || echo "❌ /home/dl/sportskalendar/ does not exist"
-          ls -la /home/dl/sportskalendar/sportskalendar/ || echo "❌ /home/dl/sportskalendar/sportskalendar/ does not exist"
-          
-          # Try alternative paths
-          echo "🔍 Trying alternative paths..."
-          ls -la /home/dl/ || echo "❌ /home/dl/ does not exist"
-          find /home/dl -name "docker-compose.traefik.yml" 2>/dev/null || echo "❌ docker-compose.traefik.yml not found in /home/dl"
-          
-          echo "🔍 Attempting to navigate to project directory..."
-          echo "🔍 Target path: /home/dl/sportskalendar/sportskalendar"
           cd /home/dl/sportskalendar/sportskalendar
-          echo "✅ Successfully navigated to: $(pwd)"
-          
-          # Debug: Check if files exist
-          echo "🔍 Checking directory contents..."
-          ls -la
-          echo "🔍 Checking for docker-compose files..."
-          ls -la docker-compose*.yml
-          echo "🔍 Checking for .env.production..."
-          ls -la .env.production
           
           # Login to GitHub Container Registry
-          echo "🔐 Logging in to GitHub Container Registry..."
           echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
           
           # Set environment variables for correct image tags
           export BACKEND_IMAGE="ghcr.io/davidklouis-sketch/sportskalendar/backend:${{ github.sha }}"
           export FRONTEND_IMAGE="ghcr.io/davidklouis-sketch/sportskalendar/frontend:${{ github.sha }}"
-          echo "🔍 Using backend image: $BACKEND_IMAGE"
-          echo "🔍 Using frontend image: $FRONTEND_IMAGE"
           
           # Pull latest images
-          echo "📥 Pulling latest images..."
           docker compose -f docker-compose.traefik.yml --env-file .env.production pull
           
-          # Create backup directory if it doesn't exist
-          mkdir -p /home/dl/sportskalendar/sportskalendar/backups
-          
-          # Create database backup BEFORE stopping services
-          echo "💾 Creating database backup..."
-          if docker compose -f docker-compose.traefik.yml --env-file .env.production ps postgres | grep -q "Up"; then
-            echo "PostgreSQL container is running, creating backup..."
-            
-            # Check current user count
-            CURRENT_USERS=$(docker compose -f docker-compose.traefik.yml --env-file .env.production exec -T postgres psql -U sportskalendar -d sportskalendar -t -c "SELECT COUNT(*) FROM users;" 2>/dev/null | tr -d ' \n' || echo "0")
-            echo "Current users before backup: $CURRENT_USERS"
-            
-            # List all users before backup
-            echo "Users before backup:"
-            docker compose -f docker-compose.traefik.yml --env-file .env.production exec -T postgres psql -U sportskalendar -d sportskalendar -c "SELECT email, display_name, role FROM users;" || echo "Could not list users"
-            
-            # Create data-only backup
-            docker compose -f docker-compose.traefik.yml --env-file .env.production exec -T postgres pg_dump -U sportskalendar sportskalendar --data-only --column-inserts --no-owner --no-privileges > /tmp/db_backup.sql
-            echo "Backup created: $(ls -la /tmp/db_backup.sql)"
-            
-            # Verify backup contains data
-            if [ -s /tmp/db_backup.sql ]; then
-              echo "✅ Backup file is not empty"
-              echo "Backup preview (first 10 lines):"
-              head -10 /tmp/db_backup.sql
-              echo "Checking for user data in backup:"
-              grep -i "INSERT INTO users" /tmp/db_backup.sql || echo "⚠️ No user INSERT statements found in backup"
-            else
-              echo "⚠️ Backup file is empty!"
-            fi
-            
-          # Create permanent backup
-          TIMESTAMP=$(date +"%Y%m%d_%H%M%S")
-          PERMANENT_BACKUP="/home/dl/sportskalendar/sportskalendar/backups/sportskalendar_backup_${TIMESTAMP}.sql"
-            cp /tmp/db_backup.sql "$PERMANENT_BACKUP"
-            gzip "$PERMANENT_BACKUP"
-            echo "Permanent backup created: $PERMANENT_BACKUP.gz"
-          else
-            echo "PostgreSQL container not running, skipping backup"
-          fi
-          
-          # Stop services gracefully
-          echo "🛑 Stopping services gracefully..."
-          docker compose -f docker-compose.traefik.yml --env-file .env.production stop
-          
-          # Force remove ALL containers with our project names (including orphaned ones)
-          echo "🗑️ Force removing all project containers..."
-          docker rm -f traefik 2>/dev/null || echo "Traefik container not found or already removed"
-          docker rm -f sportskalendar-db 2>/dev/null || echo "PostgreSQL container not found or already removed"
-          docker rm -f sportskalendar-backend 2>/dev/null || echo "Backend container not found or already removed"
-          docker rm -f sportskalendar-frontend 2>/dev/null || echo "Frontend container not found or already removed"
-          
-          # Also remove any containers with our project prefix
-          echo "🗑️ Removing any remaining project containers..."
-          docker ps -a --filter "name=sportskalendar" --format "{{.Names}}" | xargs -r docker rm -f || echo "No sportskalendar containers found"
-          
-          # Additional cleanup: Remove any containers that might be running
-          echo "🗑️ Additional cleanup - removing any running containers..."
-          docker ps -q --filter "name=traefik" | xargs -r docker rm -f || echo "No traefik containers to remove"
-          docker ps -q --filter "name=sportskalendar" | xargs -r docker rm -f || echo "No sportskalendar containers to remove"
-          
-          # Nuclear option: Remove ALL stopped containers (be careful!)
-          echo "🗑️ Removing all stopped containers..."
-          docker container prune -f || echo "No stopped containers to remove"
-          
-          # Remove only the containers, NOT the volumes (fallback)
-          echo "🗑️ Removing containers via compose (preserving volumes)..."
-          docker compose -f docker-compose.traefik.yml --env-file .env.production rm -f
-          
-          # Deploy with zero-downtime (preserving volumes)
-          echo "🚀 Starting services with preserved volumes..."
-          
-          # Ensure the postgres_data volume exists
-          echo "Ensuring postgres_data volume exists..."
-          docker volume create postgres_data 2>/dev/null || echo "Volume already exists or could not be created"
-          
-          # Debug: Check volume details
-          echo "🔍 Volume details:"
-          docker volume inspect postgres_data || echo "Could not inspect postgres_data volume"
-          
-          # Debug: Check volume permissions
-          echo "🔍 Volume permissions:"
-          ls -la /var/lib/docker/volumes/postgres_data/_data/ || echo "Could not check volume permissions"
-          
-          # Verify no conflicting containers exist
-          echo "🔍 Verifying no conflicting containers exist..."
-          docker ps -a --filter "name=traefik" --format "{{.Names}}" | grep -q traefik && echo "⚠️ Traefik container still exists" || echo "✅ No traefik container found"
-          docker ps -a --filter "name=sportskalendar" --format "{{.Names}}" | grep -q sportskalendar && echo "⚠️ Sportskalendar containers still exist" || echo "✅ No sportskalendar containers found"
-          
-          # Show all containers for debugging
-          echo "🔍 All containers (for debugging):"
-          docker ps -a --format "table {{.Names}}\t{{.Status}}\t{{.Image}}" || echo "Could not list containers"
+          # Stop and remove old containers
+          docker compose -f docker-compose.traefik.yml --env-file .env.production down
           
           # Start services
-          echo "🚀 Starting services..."
           docker compose -f docker-compose.traefik.yml --env-file .env.production up -d
           
-          # Debug: Check container status
-          echo "🔍 Checking container status..."
-          docker compose -f docker-compose.traefik.yml --env-file .env.production ps
-          
-          # Debug: Check PostgreSQL container logs
-          echo "🔍 PostgreSQL container logs:"
-          docker compose -f docker-compose.traefik.yml --env-file .env.production logs postgres || echo "Could not get postgres logs"
-          
-          # Debug: Check Backend container logs
-          echo "🔍 Backend container logs:"
-          docker compose -f docker-compose.traefik.yml --env-file .env.production logs backend || echo "Could not get backend logs"
-          
-          # Debug: Test backend health endpoint
-          echo "🔍 Testing backend health endpoint..."
-          curl -f http://localhost:4000/api/health || echo "Backend health check failed"
-          
-          # Debug: Test backend from within container network
-          echo "🔍 Testing backend from container network..."
-          docker compose -f docker-compose.traefik.yml --env-file .env.production exec backend curl -f http://localhost:4000/api/health || echo "Backend health check from container failed"
-          
-          # Debug: Check environment variables in backend container
-          echo "🔍 Checking backend environment variables..."
-          docker compose -f docker-compose.traefik.yml --env-file .env.production exec backend env | grep -E "(DATABASE_URL|JWT_SECRET|DB_)" || echo "Could not check environment variables"
-          
-          # Debug: Test database connection from backend
-          echo "🔍 Testing database connection from backend..."
-          docker compose -f docker-compose.traefik.yml --env-file .env.production exec backend node -e "
-            const { Pool } = require('pg');
-            const pool = new Pool({ connectionString: process.env.DATABASE_URL });
-            pool.query('SELECT 1 as test', (err, res) => {
-              if (err) {
-                console.error('❌ Database connection failed:', err.message);
-                process.exit(1);
-              } else {
-                console.log('✅ Database connection successful:', res.rows[0]);
-                process.exit(0);
-              }
-            });
-          " || echo "Database connection test failed"
-          
-          # Debug: Test registration endpoint directly
-          echo "🔍 Testing registration endpoint..."
-          curl -X POST http://localhost:4000/api/auth/register \
-            -H "Content-Type: application/json" \
-            -d '{"email":"test@example.com","password":"Test123!","displayName":"Test User"}' \
-            -v || echo "Registration endpoint test failed"
-          
-          # Debug: Test registration from container network
-          echo "🔍 Testing registration from container network..."
-          docker compose -f docker-compose.traefik.yml --env-file .env.production exec backend curl -X POST http://localhost:4000/api/auth/register \
-            -H "Content-Type: application/json" \
-            -d '{"email":"test@example.com","password":"Test123!","displayName":"Test User"}' \
-            -v || echo "Registration endpoint test from container failed"
-          
-          # Debug: Test login endpoint directly
-          echo "🔍 Testing login endpoint..."
-          curl -X POST http://localhost:4000/api/auth/login \
-            -H "Content-Type: application/json" \
-            -d '{"email":"demo@sportskalender.local","password":"password"}' \
-            -v || echo "Login endpoint test failed"
-          
-          # Debug: Check if postgres container exists
-          echo "🔍 All containers:"
-          docker ps -a | grep postgres || echo "No postgres containers found"
-          
-          # Fallback: Try to start postgres container individually if it failed
-          echo "🔧 Attempting to start postgres container individually..."
-          docker compose -f docker-compose.traefik.yml --env-file .env.production up -d postgres
-          
-          # Wait a bit and check again
-          sleep 10
-          echo "🔍 Container status after individual start:"
-          docker compose -f docker-compose.traefik.yml --env-file .env.production ps postgres
-          
-          # Wait for database to be ready
-          echo "⏳ Waiting for database to be ready..."
-          sleep 15
-          
-          # Wait for database to be actually accessible
-          echo "🔍 Checking database accessibility..."
-          for i in {1..10}; do
-            if docker compose -f docker-compose.traefik.yml --env-file .env.production exec -T postgres psql -U sportskalendar -d sportskalendar -c "SELECT 1;" >/dev/null 2>&1; then
-              echo "Database is accessible after $i attempts"
-              break
-            else
-              echo "Database not ready, attempt $i/10, waiting 3 seconds..."
-              sleep 3
-            fi
-          done
-          
-          # Check if database is empty and restore if needed
-          echo "🔍 Checking database status..."
-          USER_COUNT=$(docker compose -f docker-compose.traefik.yml --env-file .env.production exec -T postgres psql -U sportskalendar -d sportskalendar -t -c "SELECT COUNT(*) FROM users;" 2>/dev/null | tr -d ' \n' || echo "0")
-          echo "Current user count: $USER_COUNT"
-          
-          if [ "$USER_COUNT" = "0" ]; then
-            echo "🚨 Database is empty, attempting restoration..."
-            
-            # Try to restore from backup
-            if [ -f /tmp/db_backup.sql ] && [ -s /tmp/db_backup.sql ]; then
-              echo "Restoring from backup..."
-              echo "Backup file size: $(wc -c < /tmp/db_backup.sql) bytes"
-              echo "Backup preview (first 5 lines):"
-              head -5 /tmp/db_backup.sql
-              
-              # Clear existing data first, then restore
-              echo "Clearing existing data..."
-              docker compose -f docker-compose.traefik.yml --env-file .env.production exec -T postgres psql -U sportskalendar -d sportskalendar -c "TRUNCATE TABLE users, sessions, security_events, highlights RESTART IDENTITY CASCADE;"
-              
-              # Restore only data (skip schema conflicts)
-              echo "Restoring data from backup..."
-              docker compose -f docker-compose.traefik.yml --env-file .env.production exec -T postgres psql -U sportskalendar -d sportskalendar --single-transaction < /tmp/db_backup.sql
-              
-              # Verify restoration
-              echo "Verifying restoration..."
-              docker compose -f docker-compose.traefik.yml --env-file .env.production exec -T postgres psql -U sportskalendar -d sportskalendar -c "SELECT email, display_name, role FROM users;" || echo "Could not list users after restore"
-            else
-              echo "⚠️ No backup found, database will be empty"
-            fi
-            
-            echo "Restoration completed, checking user count..."
-            FINAL_USER_COUNT=$(docker compose -f docker-compose.traefik.yml --env-file .env.production exec -T postgres psql -U sportskalendar -d sportskalendar -t -c "SELECT COUNT(*) FROM users;" 2>/dev/null | tr -d ' \n' || echo "0")
-            echo "Final user count after restoration: $FINAL_USER_COUNT"
-            if [ "$FINAL_USER_COUNT" -gt "0" ]; then
-              echo "✅ Database restoration successful - $FINAL_USER_COUNT users found"
-            else
-              echo "⚠️ Database restoration failed - no users found"
-            fi
-          else
-            echo "Database has $USER_COUNT users, skipping restoration"
-          fi
-          
           # Clean up old images
-          echo "🧹 Cleaning up old images..."
           docker image prune -f
           
           echo "✅ Deployment completed successfully!"
