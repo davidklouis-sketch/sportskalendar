@@ -29,7 +29,7 @@ export function AdBanner({ slotId, style, className, format = 'auto' }: AdBanner
   }, [slotId]);
 
   // Temporär: Immer echte AdSense-Anzeige anzeigen für Debugging
-  const clientId = import.meta.env.VITE_ADMOB_CLIENT_ID || 'ca-pub-2481184858901580';
+  const clientId = 'ca-pub-2481184858901580'; // Hardcoded für Debugging
   
   // Debug: Zeige Environment Variable Status
   console.log('AdBanner Debug:', {
