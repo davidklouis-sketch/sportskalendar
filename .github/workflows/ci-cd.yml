@@ -118,8 +118,11 @@ jobs:
           # Pull latest images
           docker compose -f docker-compose.traefik.yml --env-file .env.production pull
           
-          # Force stop and remove old containers
-          docker compose -f docker-compose.traefik.yml --env-file .env.production down --volumes --remove-orphans
+          # Force stop and remove old containers, networks, and orphans
+          docker compose -f docker-compose.traefik.yml --env-file .env.production down --volumes --remove-orphans || true
+          
+          # Additional cleanup to ensure no stale containers/networks
+          docker system prune -f || true
           
           # Set all required environment variables
           export STRIPE_SECRET_KEY="${{ secrets.STRIPE_SECRET_KEY }}"
