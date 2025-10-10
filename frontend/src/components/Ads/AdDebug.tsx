@@ -11,6 +11,10 @@ export function AdDebug() {
   // Check if AdSense script is loaded
   const isAdSenseLoaded = typeof window !== 'undefined' && !!(window as any).adsbygoogle;
   const adSenseArrayLength = typeof window !== 'undefined' && (window as any).adsbygoogle ? (window as any).adsbygoogle.length : 0;
+  
+  // Check if user is premium (ads are hidden for premium users)
+  const { user } = useAuthStore();
+  const isPremium = user?.isPremium;
 
   return (
     <div className="bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg p-4 mb-4">
@@ -52,6 +56,15 @@ export function AdDebug() {
             adSenseArrayLength > 0 ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'
           }`}>
             {adSenseArrayLength} Einträge
+          </span>
+        </div>
+        
+        <div>
+          <span className="font-medium">User Status:</span>
+          <span className={`ml-2 px-2 py-1 rounded text-xs ${
+            isPremium ? 'bg-yellow-100 text-yellow-800' : 'bg-green-100 text-green-800'
+          }`}>
+            {isPremium ? '⭐ Premium (Ads versteckt)' : '👤 Standard (Ads sichtbar)'}
           </span>
         </div>
         

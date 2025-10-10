@@ -29,7 +29,7 @@ export function AdBanner({ slotId, style, className, format = 'auto' }: AdBanner
   }, [slotId]);
 
   // Zeige Platzhalter wenn keine AdSense Publisher ID konfiguriert ist
-  if (!import.meta.env.VITE_ADMOB_CLIENT_ID || import.meta.env.VITE_ADMOB_CLIENT_ID === 'ca-pub-xxxxxxxxxxxxxxxx') {
+  if (!import.meta.env.VITE_ADMOB_CLIENT_ID || import.meta.env.VITE_ADMOB_CLIENT_ID === 'ca-pub-xxxxxxxxxxxxxxxx' || import.meta.env.VITE_ADMOB_CLIENT_ID === '') {
     return (
       <div 
         className={`bg-gray-200 dark:bg-gray-700 border-2 border-dashed border-gray-400 dark:border-gray-500 rounded-lg flex items-center justify-center text-gray-500 dark:text-gray-400 text-sm ${className || ''}`}
