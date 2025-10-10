@@ -141,12 +141,10 @@ jobs:
           
           # Test: Create a temporary env file with Stripe variables
           echo "🔍 Creating temporary environment file..."
-          cat > .env.temp << EOF
-STRIPE_SECRET_KEY=${STRIPE_SECRET_KEY}
-STRIPE_WEBHOOK_SECRET=${STRIPE_WEBHOOK_SECRET}
-STRIPE_PRICE_ID=${STRIPE_PRICE_ID}
-FRONTEND_URL=${FRONTEND_URL}
-EOF
+          echo "STRIPE_SECRET_KEY=${STRIPE_SECRET_KEY}" > .env.temp
+          echo "STRIPE_WEBHOOK_SECRET=${STRIPE_WEBHOOK_SECRET}" >> .env.temp
+          echo "STRIPE_PRICE_ID=${STRIPE_PRICE_ID}" >> .env.temp
+          echo "FRONTEND_URL=${FRONTEND_URL}" >> .env.temp
           
           # Start services with both env files
           docker compose -f docker-compose.traefik.yml --env-file .env.production --env-file .env.temp up -d --force-recreate
