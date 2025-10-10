@@ -4,6 +4,7 @@ import { calendarApi, userApi, highlightsApi } from '../../lib/api';
 import { format } from 'date-fns';
 import { FOOTBALL_LEAGUES, FOOTBALL_TEAMS, F1_DRIVERS, NFL_TEAMS } from '../../data/teams';
 import { LiveData } from '../LiveData';
+import { SportsKalendarBanner, SportsKalendarSquare } from '../Ads/AdManager';
 
 interface Event {
   id: string;
@@ -337,6 +338,11 @@ export function Calendar() {
               </div>
             </div>
 
+            {/* Ad Banner */}
+            <div className="relative">
+              <SportsKalendarBanner />
+            </div>
+
             {/* My Teams - Elegant Card */}
             <div className="relative group">
               <div className="absolute -inset-1 bg-gradient-to-r from-indigo-500 to-purple-600 rounded-3xl blur opacity-75 group-hover:opacity-100 transition duration-1000"></div>
@@ -599,6 +605,11 @@ export function Calendar() {
                     </div>
                   </div>
             )}
+
+            {/* Ad Square */}
+            <div className="relative">
+              <SportsKalendarSquare />
+            </div>
           </div>
             </div>
           </div>

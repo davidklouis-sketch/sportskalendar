@@ -104,3 +104,4 @@ function addStructuredData(data: object) {
   script.textContent = JSON.stringify(data);
   document.head.appendChild(script);
 }
+

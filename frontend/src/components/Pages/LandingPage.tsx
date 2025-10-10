@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { SEOHead } from '../SEO/SEOHead';
+import { SportsKalendarBanner, SportsKalendarLeaderboard } from '../Ads/AdManager';
 
 interface LandingPageProps {
   onShowLogin: () => void;
@@ -88,7 +89,7 @@ export function LandingPage({ onShowLogin, onShowRegister }: LandingPageProps) {
         }}
       />
       
-      <div className="max-w-7xl mx-auto px-4 py-8">
+      <div className="max-w-7xl mx-auto px-4 py-8 pt-24">
       {/* Hero Section */}
       <div className="text-center mb-12">
         <div className="mb-6">
@@ -138,6 +139,11 @@ export function LandingPage({ onShowLogin, onShowRegister }: LandingPageProps) {
             </div>
           ))}
         </div>
+      </div>
+
+      {/* Ad Leaderboard */}
+      <div className="mb-12">
+        <SportsKalendarLeaderboard />
       </div>
 
       {/* Premium Section */}
@@ -197,6 +203,11 @@ export function LandingPage({ onShowLogin, onShowRegister }: LandingPageProps) {
             Sofortiger Zugang zu allen Premium-Features
           </p>
         </div>
+      </div>
+
+      {/* Ad Banner */}
+      <div className="mb-12">
+        <SportsKalendarBanner />
       </div>
 
       {/* Social Proof */}

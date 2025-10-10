@@ -15,6 +15,7 @@ import { Settings } from './components/Pages/Settings';
 import { LandingPage } from './components/Pages/LandingPage';
 import Privacy from './components/Pages/Privacy';
 import Contact from './components/Pages/Contact';
+import { AdManager, useAdTrigger, SportsKalendarInterstitial } from './components/Ads/AdManager';
 
 type AuthView = 'login' | 'register' | null;
 type Page = 'calendar' | 'live' | 'highlights' | 'admin' | 'settings' | 'privacy' | 'contact';
@@ -25,6 +26,7 @@ function App() {
   const [authView, setAuthView] = useState<AuthView | null>(null);
   const [currentPage, setCurrentPage] = useState<Page>('calendar');
   const [isInitializing, setIsInitializing] = useState(false);
+  const { interstitialTrigger } = useAdTrigger();
 
   // Initialize theme on mount
   useEffect(() => {
@@ -100,66 +102,71 @@ function App() {
   }
 
   return (
-    <div className="min-h-screen flex flex-col">
-      {/* SEO Head for current page */}
-      <PageSEO page={currentPage} user={user} />
-      
-      <Header 
-        currentPage={currentPage} 
-        onNavigate={setCurrentPage}
-        onShowLogin={() => setAuthView('login')}
-        onShowRegister={() => setAuthView('register')}
-      />
-      
-      <main className="flex-1">
-        {currentPage === 'calendar' && (user ? <Calendar /> : <LandingPage onShowLogin={() => setAuthView('login')} onShowRegister={() => setAuthView('register')} />)}
-        {currentPage === 'live' && (user ? <Live /> : <LandingPage onShowLogin={() => setAuthView('login')} onShowRegister={() => setAuthView('register')} />)}
-        {currentPage === 'highlights' && (user ? <Highlights /> : <LandingPage onShowLogin={() => setAuthView('login')} onShowRegister={() => setAuthView('register')} />)}
-        {currentPage === 'admin' && user?.role === 'admin' ? (
-          <Admin />
-        ) : currentPage === 'admin' ? (
-          <div className="card p-12 text-center">
-            <h2 className="text-2xl font-bold mb-4">🔒 Zugriff verweigert</h2>
-            <p className="text-gray-600 dark:text-gray-400 mb-6">
-              Nur Administratoren können auf diese Seite zugreifen.
-            </p>
-        <button 
-              onClick={() => setCurrentPage('calendar')}
-              className="btn btn-primary"
-            >
-              Zurück zum Kalender
-        </button>
-      </div>
-        ) : null}
-        {currentPage === 'settings' && user ? <Settings /> : currentPage === 'settings' ? (
-          <div className="card p-12 text-center">
-            <h2 className="text-2xl font-bold mb-4">🔒 Anmeldung erforderlich</h2>
-            <p className="text-gray-600 dark:text-gray-400 mb-6">
-              Bitte melden Sie sich an, um auf die Einstellungen zuzugreifen.
-            </p>
-            <div className="flex gap-3 justify-center">
-              <button 
-                onClick={() => setAuthView('login')}
+    <AdManager>
+      <div className="min-h-screen flex flex-col">
+        {/* SEO Head for current page */}
+        <PageSEO page={currentPage} user={user} />
+        
+        <Header 
+          currentPage={currentPage} 
+          onNavigate={setCurrentPage}
+          onShowLogin={() => setAuthView('login')}
+          onShowRegister={() => setAuthView('register')}
+        />
+        
+        <main className="flex-1">
+          {currentPage === 'calendar' && (user ? <Calendar /> : <LandingPage onShowLogin={() => setAuthView('login')} onShowRegister={() => setAuthView('register')} />)}
+          {currentPage === 'live' && (user ? <Live /> : <LandingPage onShowLogin={() => setAuthView('login')} onShowRegister={() => setAuthView('register')} />)}
+          {currentPage === 'highlights' && (user ? <Highlights /> : <LandingPage onShowLogin={() => setAuthView('login')} onShowRegister={() => setAuthView('register')} />)}
+          {currentPage === 'admin' && user?.role === 'admin' ? (
+            <Admin />
+          ) : currentPage === 'admin' ? (
+            <div className="card p-12 text-center">
+              <h2 className="text-2xl font-bold mb-4">🔒 Zugriff verweigert</h2>
+              <p className="text-gray-600 dark:text-gray-400 mb-6">
+                Nur Administratoren können auf diese Seite zugreifen.
+              </p>
+          <button 
+                onClick={() => setCurrentPage('calendar')}
                 className="btn btn-primary"
               >
-                Anmelden
-              </button>
-              <button 
-                onClick={() => setCurrentPage('calendar')}
-                className="btn btn-secondary"
-              >
                 Zurück zum Kalender
-              </button>
+          </button>
+        </div>
+          ) : null}
+          {currentPage === 'settings' && user ? <Settings /> : currentPage === 'settings' ? (
+            <div className="card p-12 text-center">
+              <h2 className="text-2xl font-bold mb-4">🔒 Anmeldung erforderlich</h2>
+              <p className="text-gray-600 dark:text-gray-400 mb-6">
+                Bitte melden Sie sich an, um auf die Einstellungen zuzugreifen.
+              </p>
+              <div className="flex gap-3 justify-center">
+                <button 
+                  onClick={() => setAuthView('login')}
+                  className="btn btn-primary"
+                >
+                  Anmelden
+                </button>
+                <button 
+                  onClick={() => setCurrentPage('calendar')}
+                  className="btn btn-secondary"
+                >
+                  Zurück zum Kalender
+                </button>
+              </div>
             </div>
-          </div>
-        ) : null}
-        {currentPage === 'privacy' && <Privacy />}
-        {currentPage === 'contact' && <Contact />}
-      </main>
+          ) : null}
+          {currentPage === 'privacy' && <Privacy />}
+          {currentPage === 'contact' && <Contact />}
+        </main>
 
-      <Footer onNavigate={setCurrentPage} />
-      <CookieBanner onNavigate={setCurrentPage} />
-    </div>
+        <Footer onNavigate={setCurrentPage} />
+        <CookieBanner onNavigate={setCurrentPage} />
+        
+        {/* Interstitial Ad */}
+        <SportsKalendarInterstitial trigger={interstitialTrigger} />
+      </div>
+    </AdManager>
   );
 }
 
