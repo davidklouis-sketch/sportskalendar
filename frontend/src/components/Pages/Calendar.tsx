@@ -31,6 +31,15 @@ export function Calendar() {
   const [f1Events, setF1Events] = useState<Event[]>([]);
   const [nflEvents, setNflEvents] = useState<Event[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  
+  // Debug state changes
+  useEffect(() => {
+    console.log('📊 Football events changed:', footballEvents.length, footballEvents);
+  }, [footballEvents]);
+  
+  useEffect(() => {
+    console.log('🔄 Loading state changed:', isLoading);
+  }, [isLoading]);
   const [selectedSport, setSelectedSport] = useState<'football' | 'nfl' | 'f1' | null>(null);
   const [showTeamSelector, setShowTeamSelector] = useState(false);
   // Local teams state to ensure UI updates work
@@ -44,33 +53,47 @@ export function Calendar() {
 
   // Load all events separately for better organization
   const loadAllEvents = async (teams: Array<{ sport: string; teamName: string; teamId?: string; leagueId?: number }>) => {
+    console.log('🔄 loadAllEvents called with teams:', teams);
+    console.log('🔄 isLoadingRef.current:', isLoadingRef.current);
+    
     // Prevent multiple simultaneous loads
     if (isLoadingRef.current) {
+      console.log('⚠️ Already loading, skipping...');
       return;
     }
     
     isLoadingRef.current = true;
     setIsLoading(true);
+    console.log('🔄 Starting to load events...');
+    
     try {
       // Reset all events first
+      console.log('🔄 Resetting all events...');
       setFootballEvents([]);
       setF1Events([]);
       setNflEvents([]);
       
       // Load Football Events
       const footballTeams = teams.filter(t => t.sport === 'football');
+      console.log('⚽ Football teams:', footballTeams);
       if (footballTeams.length > 0) {
         try {
           const leagues = footballTeams.map(t => t.leagueId).filter(Boolean) as number[];
+          console.log('⚽ Loading football events for leagues:', leagues);
           const response = await calendarApi.getEvents('football', leagues);
           let events = (response.data as Event[]) || [];
+          console.log('⚽ Raw football events from API:', events.length, events);
           
           // Filter events for selected teams
           const teamNames = footballTeams.map(t => t.teamName.toLowerCase());
+          console.log('⚽ Filtering for team names:', teamNames);
           events = events.filter(event => {
             const eventTitle = event.title.toLowerCase();
-            return teamNames.some(teamName => eventTitle.includes(teamName));
+            const matches = teamNames.some(teamName => eventTitle.includes(teamName));
+            console.log(`⚽ Event "${event.title}" matches teams:`, matches);
+            return matches;
           });
+          console.log('⚽ Filtered football events:', events.length, events);
           
           setFootballEvents(events);
         } catch (error) {
@@ -122,8 +145,9 @@ export function Calendar() {
       }
       
     } catch (error) {
-      console.error('Failed to load events:', error);
+      console.error('❌ Failed to load events:', error);
     } finally {
+      console.log('✅ loadAllEvents completed, setting loading to false');
       setIsLoading(false);
       isLoadingRef.current = false;
     }
@@ -201,15 +225,19 @@ export function Calendar() {
 
   // Load user teams and events on mount
   useEffect(() => {
+    console.log('👤 User teams changed:', user?.selectedTeams);
     if (user?.selectedTeams && user.selectedTeams.length > 0) {
+      console.log('👤 Setting local teams and loading events...');
       setLocalTeams(user.selectedTeams);
       // Auto-select first sport if not selected
       if (!selectedSport) {
+        console.log('👤 Auto-selecting first sport:', user.selectedTeams[0].sport);
         setSelectedSport(user.selectedTeams[0].sport as 'football' | 'nfl' | 'f1');
       }
       // Load events for teams
       loadAllEvents(user.selectedTeams);
     } else {
+      console.log('👤 No teams, stopping loading...');
       // No teams = stop loading immediately
       setIsLoading(false);
       setFootballEvents([]);
