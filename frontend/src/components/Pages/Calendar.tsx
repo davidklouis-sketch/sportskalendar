@@ -147,7 +147,6 @@ export function Calendar() {
       
       // Additional frontend filtering if needed (backend should handle most filtering now)
       if (currentTeam?.teamName && allHighlights.length > 0) {
-        const beforeFilter = allHighlights.length;
         allHighlights = allHighlights.filter((highlight: Highlight) => {
           const searchText = (highlight.title + ' ' + (highlight.description || '')).toLowerCase();
           
