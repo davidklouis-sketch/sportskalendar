@@ -6,6 +6,19 @@ import { UserRepository } from '../database/repositories/userRepository';
 
 export const stripeRouter = Router();
 
+// Debug endpoint to check Stripe configuration
+stripeRouter.get('/debug', (req, res) => {
+  res.json({
+    isStripeConfigured: isStripeConfigured(),
+    hasStripeInstance: !!stripe,
+    hasSecretKey: !!process.env.STRIPE_SECRET_KEY,
+    hasWebhookSecret: !!process.env.STRIPE_WEBHOOK_SECRET,
+    hasPriceId: !!process.env.STRIPE_PRICE_ID,
+    secretKeyPrefix: process.env.STRIPE_SECRET_KEY?.substring(0, 10) + '...' || 'undefined',
+    priceId: process.env.STRIPE_PRICE_ID || 'undefined'
+  });
+});
+
 // Create Stripe checkout session
 stripeRouter.post('/create-checkout-session', requireAuth, async (req, res) => {
   try {
