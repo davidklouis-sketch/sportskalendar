@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { adminApi } from '../../lib/api';
+import { adminApi, stripeApi } from '../../lib/api';
 import { useAuthStore } from '../../store/useAuthStore';
 
 interface User {
@@ -78,6 +78,36 @@ export function Admin() {
       const error = err as { response?: { data?: { message?: string } } };
       console.error('Failed to toggle premium:', err);
       alert('Fehler: ' + (error.response?.data?.message || 'Konnte Premium-Status nicht ändern'));
+    } finally {
+      setActionLoading(null);
+    }
+  };
+
+  const handleStripeUpgrade = async (userEmail: string) => {
+    setActionLoading(userEmail);
+    try {
+      await stripeApi.upgradeUser(userEmail);
+      await loadUsers();
+      alert(`User ${userEmail} wurde über Stripe zu Premium upgraded!`);
+    } catch (err) {
+      const error = err as { response?: { data?: { message?: string } } };
+      console.error('Failed to upgrade user via Stripe:', err);
+      alert('Fehler: ' + (error.response?.data?.message || 'Konnte User nicht über Stripe upgraden'));
+    } finally {
+      setActionLoading(null);
+    }
+  };
+
+  const handleStripeDowngrade = async (userEmail: string) => {
+    setActionLoading(userEmail);
+    try {
+      await stripeApi.downgradeUser(userEmail);
+      await loadUsers();
+      alert(`User ${userEmail} wurde über Stripe von Premium downgraded!`);
+    } catch (err) {
+      const error = err as { response?: { data?: { message?: string } } };
+      console.error('Failed to downgrade user via Stripe:', err);
+      alert('Fehler: ' + (error.response?.data?.message || 'Konnte User nicht über Stripe downgraden'));
     } finally {
       setActionLoading(null);
     }
@@ -180,6 +210,29 @@ export function Admin() {
                       >
                         {actionLoading === user.id ? '...' : user.isPremium ? '⭐ Premium entfernen' : '⭐ Premium geben'}
                       </button>
+
+                      {/* Stripe Premium Management */}
+                      <div className="flex gap-1">
+                        {user.isPremium ? (
+                          <button
+                            onClick={() => handleStripeDowngrade(user.email)}
+                            disabled={actionLoading === user.email}
+                            className="px-2 py-1 bg-red-500 hover:bg-red-600 text-white text-xs rounded transition-colors disabled:opacity-50"
+                            title="Stripe Downgrade"
+                          >
+                            {actionLoading === user.email ? '...' : '💳 Stripe ↓'}
+                          </button>
+                        ) : (
+                          <button
+                            onClick={() => handleStripeUpgrade(user.email)}
+                            disabled={actionLoading === user.email}
+                            className="px-2 py-1 bg-green-500 hover:bg-green-600 text-white text-xs rounded transition-colors disabled:opacity-50"
+                            title="Stripe Upgrade"
+                          >
+                            {actionLoading === user.email ? '...' : '💳 Stripe ↑'}
+                          </button>
+                        )}
+                      </div>
                     </div>
                   )}
                 </div>

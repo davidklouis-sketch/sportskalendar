@@ -12,6 +12,7 @@ import { tickerRouter } from './routes/ticker';
 import { adminRouter } from './routes/admin';
 import { userRouter } from './routes/user';
 import { liveRouter } from './routes/live';
+import { stripeRouter } from './routes/stripe';
 
 // Middleware imports
 import { enhancedSecurityMiddleware, validateJwtSecret } from './middleware/security-enhanced';
@@ -29,7 +30,7 @@ const app = express();
 app.set('trust proxy', true);
 
 // CORS-Konfiguration (konfigurierbar über CORS_ORIGIN, kommasepariert)
-const configuredOrigins = (process.env.CORS_ORIGIN || 'https://sportskalender.dlouis.ddnss.de,https://dlouis.ddnss.de,http://localhost:3000,http://localhost:5173')
+const configuredOrigins = (process.env.CORS_ORIGIN || 'https://sportskalendar.de,https://www.sportskalendar.de,https://sportskalender.dlouis.ddnss.de,https://dlouis.ddnss.de,http://localhost:3000,http://localhost:5173')
   .split(',')
   .map(s => s.trim())
   .filter(Boolean);
@@ -37,10 +38,23 @@ const configuredOrigins = (process.env.CORS_ORIGIN || 'https://sportskalender.dl
 console.log('🔒 CORS allowed origins:', configuredOrigins);
 
 const corsOptions = {
-  origin: configuredOrigins,
+  origin: (origin: string | undefined, callback: (err: Error | null, allow?: boolean) => void) => {
+    // Allow requests with no origin (like mobile apps, curl, Postman)
+    if (!origin) return callback(null, true);
+    
+    if (configuredOrigins.indexOf(origin) !== -1) {
+      callback(null, true);
+    } else {
+      console.warn(`⚠️ CORS blocked origin: ${origin}`);
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
   credentials: true,
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'X-CSRF-Token']
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'PATCH'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'X-CSRF-Token', 'Accept'],
+  exposedHeaders: ['Set-Cookie'],
+  preflightContinue: false,
+  optionsSuccessStatus: 204
 };
 
 app.use(cors(corsOptions));
@@ -101,6 +115,7 @@ app.use('/api/ticker', tickerRouter);
 app.use('/api/admin', adminRouter);
 app.use('/api/user', userRouter);
 app.use('/api/live', liveRouter);
+app.use('/api/stripe', stripeRouter);
 
 // Example protected endpoint for current user
 app.get('/api/user/me', requireAuth, (req, res) => {

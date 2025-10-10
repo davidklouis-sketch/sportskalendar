@@ -10,6 +10,7 @@ interface LoginProps {
 export function Login({ onSwitchToRegister, onSuccess }: LoginProps) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [keepLoggedIn, setKeepLoggedIn] = useState(true); // Default: angemeldet bleiben
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const setUser = useAuthStore((state) => state.setUser);
@@ -20,11 +21,19 @@ export function Login({ onSwitchToRegister, onSuccess }: LoginProps) {
     setIsLoading(true);
 
     try {
-      await authApi.login({ email, password });
+      await authApi.login({ email, password, keepLoggedIn });
       
       // Get user profile with premium status
       const { data } = await userApi.getProfile();
       setUser(data.user);
+      
+      // Store keepLoggedIn preference in localStorage
+      if (keepLoggedIn) {
+        localStorage.setItem('keepLoggedIn', 'true');
+      } else {
+        localStorage.removeItem('keepLoggedIn');
+      }
+      
       onSuccess();
     } catch (err) {
       const error = err as { response?: { data?: { message?: string } } };
@@ -64,6 +73,19 @@ export function Login({ onSwitchToRegister, onSuccess }: LoginProps) {
               required
               autoComplete="current-password"
             />
+          </div>
+
+          <div className="flex items-center">
+            <input
+              type="checkbox"
+              id="keepLoggedIn"
+              checked={keepLoggedIn}
+              onChange={(e) => setKeepLoggedIn(e.target.checked)}
+              className="w-4 h-4 text-primary-600 bg-gray-100 border-gray-300 rounded focus:ring-primary-500 dark:focus:ring-primary-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600"
+            />
+            <label htmlFor="keepLoggedIn" className="ml-2 text-sm font-medium text-gray-900 dark:text-gray-300">
+              Angemeldet bleiben (30 Tage)
+            </label>
           </div>
 
           {error && (

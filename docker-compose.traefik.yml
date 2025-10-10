@@ -71,6 +71,9 @@ services:
       API_FOOTBALL_KEY: ${API_FOOTBALL_KEY}
       NEWS_API_KEY: ${NEWS_API_KEY}
       CORS_ORIGIN: ${CORS_ORIGIN}
+      STRIPE_SECRET_KEY: ${STRIPE_SECRET_KEY}
+      STRIPE_WEBHOOK_SECRET: ${STRIPE_WEBHOOK_SECRET}
+      FRONTEND_URL: ${FRONTEND_URL}
     depends_on:
       postgres:
         condition: service_healthy

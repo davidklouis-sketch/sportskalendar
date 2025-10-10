@@ -31,11 +31,17 @@ api.interceptors.response.use(
         console.log('✅ Token refreshed successfully');
         return api(originalRequest);
       } catch (refreshError) {
-        console.log('❌ Token refresh failed, clearing auth state');
-        // Clear any stored tokens and auth state
-        localStorage.removeItem('accessToken');
-        localStorage.removeItem('refreshToken');
-        // Don't redirect in SPA - let the app handle auth state
+        console.log('❌ Token refresh failed:', refreshError);
+        // Only logout if it's a real authentication error, not a network error
+        if (error.response?.status === 401 || error.response?.status === 403) {
+          console.log('🔒 Authentication failed, logging out user');
+          // Clear any stored tokens and auth state
+          localStorage.removeItem('accessToken');
+          localStorage.removeItem('refreshToken');
+          // Force logout via auth store
+          const { useAuthStore } = await import('../store/useAuthStore');
+          useAuthStore.getState().logout();
+        }
         return Promise.reject(refreshError);
       }
     }
@@ -48,7 +54,7 @@ api.interceptors.response.use(
 export const authApi = {
   register: (data: { email: string; password: string; displayName: string }) =>
     api.post('/auth/register', data),
-  login: (data: { email: string; password: string }) =>
+  login: (data: { email: string; password: string; keepLoggedIn?: boolean }) =>
     api.post('/auth/login', data),
   logout: () => api.post('/auth/logout'),
   refresh: () => api.post('/auth/refresh'),
@@ -124,4 +130,12 @@ export const highlightsApi = {
     const queryString = params.toString();
     return api.get(`/highlights${queryString ? `?${queryString}` : ''}`);
   },
+};
+
+// Stripe
+export const stripeApi = {
+  createCheckoutSession: () => api.post('/stripe/create-checkout-session'),
+  getPremiumFeatures: () => api.get('/stripe/premium-features'),
+  upgradeUser: (email: string) => api.post('/stripe/admin/upgrade-user', { email }),
+  downgradeUser: (email: string) => api.post('/stripe/admin/downgrade-user', { email }),
 };
