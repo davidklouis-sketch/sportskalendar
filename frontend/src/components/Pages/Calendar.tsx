@@ -5,6 +5,7 @@ import { format } from 'date-fns';
 import { FOOTBALL_LEAGUES, FOOTBALL_TEAMS, F1_DRIVERS, NFL_TEAMS } from '../../data/teams';
 import { LiveData } from '../LiveData';
 import { SportsKalendarBanner, SportsKalendarSquare } from '../Ads/AdManager';
+import { AdDebug } from '../Ads/AdDebug';
 
 interface Event {
   id: string;
@@ -48,9 +49,10 @@ export function Calendar() {
       // Load Football Events
       const footballTeams = teams.filter(t => t.sport === 'football');
       if (footballTeams.length > 0) {
-        const leagues = footballTeams.map(t => t.leagueId).filter(Boolean) as number[];
-        const response = await calendarApi.getEvents('football', leagues);
-        let events = (response.data as Event[]) || [];
+        try {
+          const leagues = footballTeams.map(t => t.leagueId).filter(Boolean) as number[];
+          const response = await calendarApi.getEvents('football', leagues);
+          let events = (response.data as Event[]) || [];
         
         // Filter events by selected teams using improved matching
         const normalizeTeamName = (name: string): string[] => {
@@ -103,6 +105,10 @@ export function Calendar() {
         });
         
         setFootballEvents(events);
+        } catch (error) {
+          console.error('Failed to load football events:', error);
+          setFootballEvents([]);
+        }
       }
       
       // Load F1 Events
@@ -290,6 +296,11 @@ export function Calendar() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 dark:from-gray-900 dark:via-slate-900 dark:to-gray-800">
+      
+      {/* AdSense Debug Panel */}
+      <div className="max-w-7xl mx-auto px-4 pt-24">
+        <AdDebug />
+      </div>
       
       {/* Hero Section */}
       <div className="relative overflow-hidden">
