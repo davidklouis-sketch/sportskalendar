@@ -5,7 +5,7 @@ const API_URL = import.meta.env.VITE_API_URL || 'https://api.sportskalendar.de/a
 export const api = axios.create({
   baseURL: API_URL,
   withCredentials: true,
-  timeout: 10000, // 10 second timeout
+  timeout: 30000, // 30 second timeout - increased for slow backend
   headers: {
     'Content-Type': 'application/json',
   },

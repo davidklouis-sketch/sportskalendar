@@ -10,6 +10,7 @@ import { Calendar } from './components/Pages/Calendar';
 import { Live } from './components/Pages/Live';
 import { PageSEO } from './components/SEO/PageSEO';
 import { Highlights } from './components/Pages/Highlights';
+import { Premium } from './components/Pages/Premium';
 import { Admin } from './components/Pages/Admin';
 import { Settings } from './components/Pages/Settings';
 import { LandingPage } from './components/Pages/LandingPage';
@@ -18,7 +19,7 @@ import Contact from './components/Pages/Contact';
 import { AdManager, useAdTrigger, SportsKalendarInterstitial } from './components/Ads/AdManager';
 
 type AuthView = 'login' | 'register' | null;
-type Page = 'calendar' | 'live' | 'highlights' | 'admin' | 'settings' | 'privacy' | 'contact';
+type Page = 'calendar' | 'live' | 'highlights' | 'premium' | 'admin' | 'settings' | 'privacy' | 'contact';
 
 function App() {
   const { user, isAuthenticated, setUser, setLoading } = useAuthStore();
@@ -118,6 +119,7 @@ function App() {
           {currentPage === 'calendar' && (user ? <Calendar /> : <LandingPage onShowLogin={() => setAuthView('login')} onShowRegister={() => setAuthView('register')} />)}
           {currentPage === 'live' && (user ? <Live /> : <LandingPage onShowLogin={() => setAuthView('login')} onShowRegister={() => setAuthView('register')} />)}
           {currentPage === 'highlights' && (user ? <Highlights /> : <LandingPage onShowLogin={() => setAuthView('login')} onShowRegister={() => setAuthView('register')} />)}
+          {currentPage === 'premium' && <Premium onNavigate={setCurrentPage} />}
           {currentPage === 'admin' && user?.role === 'admin' ? (
             <Admin />
           ) : currentPage === 'admin' ? (

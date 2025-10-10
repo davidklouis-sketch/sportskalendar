@@ -1,241 +1,214 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useAuthStore } from '../../store/useAuthStore';
 import { stripeApi } from '../../lib/api';
+import { SEOHead } from '../SEO/SEOHead';
 
-export function Premium() {
-  const { user } = useAuthStore();
+interface PremiumProps {
+  onNavigate: (page: 'calendar' | 'live' | 'highlights' | 'premium' | 'admin' | 'settings' | 'privacy' | 'contact') => void;
+}
+
+export function Premium({ }: PremiumProps) {
+  const { user, isAuthenticated } = useAuthStore();
   const [isLoading, setIsLoading] = useState(false);
-  const [premiumFeatures, setPremiumFeatures] = useState<any>(null);
-
-  useEffect(() => {
-    const loadPremiumFeatures = async () => {
-      try {
-        const { data } = await stripeApi.getPremiumFeatures();
-        setPremiumFeatures(data);
-      } catch (error) {
-        console.error('Failed to load premium features:', error);
-      }
-    };
-
-    loadPremiumFeatures();
-  }, []);
+  const [error, setError] = useState<string | null>(null);
 
   const handleUpgrade = async () => {
-    if (!user) return;
+    if (!isAuthenticated) {
+      setError('Bitte melde dich zuerst an, um Premium zu aktivieren.');
+      return;
+    }
 
     setIsLoading(true);
+    setError(null);
+
     try {
-      const { data } = await stripeApi.createCheckoutSession();
-      
-      // Redirect to Stripe Checkout
-      if (data.url) {
-        window.location.href = data.url;
+      const response = await stripeApi.createCheckoutSession();
+      if (response.data?.url) {
+        window.location.href = response.data.url;
+      } else {
+        setError('Fehler beim Erstellen der Checkout-Session');
       }
-    } catch (error) {
-      console.error('Failed to create checkout session:', error);
-      alert('Fehler beim Erstellen der Zahlungssitzung. Bitte versuchen Sie es erneut.');
+    } catch (error: any) {
+      console.error('Premium upgrade error:', error);
+      setError(error.response?.data?.message || 'Fehler beim Upgrade zu Premium');
     } finally {
       setIsLoading(false);
     }
   };
 
-  if (user?.isPremium) {
-    return (
-      <div className="max-w-4xl mx-auto">
-        <div className="card p-8 text-center">
-          <div className="w-20 h-20 bg-gradient-to-r from-yellow-400 to-orange-500 rounded-full flex items-center justify-center mx-auto mb-6">
-            <span className="text-3xl">⭐</span>
-          </div>
-          
-          <h1 className="text-4xl font-bold text-gray-900 dark:text-white mb-4">
-            Willkommen bei Premium!
-          </h1>
-          
-          <p className="text-xl text-gray-600 dark:text-gray-400 mb-8">
-            Du genießt bereits alle Premium-Features von Sportskalendar.
-          </p>
-
-          <div className="grid md:grid-cols-2 gap-6 max-w-2xl mx-auto">
-            {premiumFeatures?.features.map((feature: string, index: number) => (
-              <div key={index} className="flex items-center p-4 bg-green-50 dark:bg-green-900/20 rounded-lg">
-                <svg className="w-6 h-6 text-green-500 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                </svg>
-                <span className="text-green-800 dark:text-green-200 font-medium">{feature}</span>
-              </div>
-            ))}
-          </div>
-
-          <div className="mt-8 p-6 bg-gradient-to-r from-yellow-50 to-orange-50 dark:from-yellow-900/20 dark:to-orange-900/20 border border-yellow-200 dark:border-yellow-800 rounded-xl">
-            <h3 className="text-lg font-semibold text-yellow-800 dark:text-yellow-200 mb-2">
-              🎉 Premium-Account aktiv
-            </h3>
-            <p className="text-yellow-700 dark:text-yellow-300">
-              Vielen Dank für deine Unterstützung! Du hast Zugang zu allen erweiterten Features.
-            </p>
-          </div>
-        </div>
-      </div>
-    );
-  }
+  const features = [
+    {
+      title: 'Werbefreie Erfahrung',
+      description: 'Genieße die App ohne störende Werbung',
+      icon: '🚫'
+    },
+    {
+      title: 'Erweiterte Statistiken',
+      description: 'Detaillierte Analysen und Trends',
+      icon: '📊'
+    },
+    {
+      title: 'Prioritäts-Support',
+      description: 'Schnellere Antworten auf deine Anfragen',
+      icon: '⚡'
+    },
+    {
+      title: 'Exklusive Features',
+      description: 'Früher Zugang zu neuen Funktionen',
+      icon: '🎯'
+    },
+    {
+      title: 'Erweiterte Kalender-Features',
+      description: 'Mehr Teams, bessere Synchronisation',
+      icon: '📅'
+    },
+    {
+      title: 'Premium-Highlights',
+      description: 'Exklusive Videos und Analysen',
+      icon: '🎬'
+    }
+  ];
 
   return (
-    <div className="max-w-6xl mx-auto">
-      {/* Hero Section */}
-      <div className="text-center mb-12">
-        <h1 className="text-5xl font-bold text-gray-900 dark:text-white mb-6">
-          Upgrade zu <span className="bg-gradient-to-r from-yellow-400 to-orange-500 bg-clip-text text-transparent">Premium</span>
-        </h1>
-        <p className="text-xl text-gray-600 dark:text-gray-400 max-w-3xl mx-auto">
-          Entdecke alle erweiterten Features und genieße die beste Sportskalendar-Erfahrung
-        </p>
-      </div>
+    <>
+      <SEOHead
+        title="Premium - Sportskalendar"
+        description="Upgrade zu Sportskalendar Premium und genieße eine werbefreie Erfahrung mit erweiterten Features."
+        keywords="Premium, Sportskalendar, Werbefrei, Upgrade, Features"
+        canonical="https://sportskalendar.de/premium"
+      />
+      
+      <div className="max-w-6xl mx-auto px-4 py-8 pt-24">
+        {/* Hero Section */}
+        <div className="text-center mb-12">
+          <h1 className="text-4xl md:text-6xl font-bold mb-4 bg-gradient-to-r from-primary-600 to-purple-600 bg-clip-text text-transparent">
+            ⭐ Premium
+          </h1>
+          <p className="text-xl text-gray-600 dark:text-gray-300 mb-8">
+            Upgrade zu Sportskalendar Premium und genieße alle Vorteile
+          </p>
+        </div>
 
-      {/* Pricing Card */}
-      <div className="max-w-4xl mx-auto mb-12">
-        <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl border border-gray-200 dark:border-gray-700 overflow-hidden">
-          <div className="bg-gradient-to-r from-yellow-400 to-orange-500 p-8 text-center">
-            <h2 className="text-3xl font-bold text-white mb-2">Premium Plan</h2>
-            <div className="text-6xl font-bold text-white mb-2">
-              {premiumFeatures?.price?.formatted || '€9.99'}
+        {/* Current Status */}
+        <div className="bg-gradient-to-r from-primary-50 to-purple-50 dark:from-primary-900/20 dark:to-purple-900/20 rounded-2xl p-6 mb-8">
+          <div className="flex items-center justify-center space-x-4">
+            <div className="text-4xl">
+              {user?.isPremium ? '👑' : '⭐'}
             </div>
-            <p className="text-yellow-100">pro Monat</p>
-          </div>
-
-          <div className="p-8">
-            <div className="grid md:grid-cols-2 gap-6 mb-8">
-              {premiumFeatures?.features.map((feature: string, index: number) => (
-                <div key={index} className="flex items-center">
-                  <svg className="w-6 h-6 text-green-500 mr-3 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                  </svg>
-                  <span className="text-gray-700 dark:text-gray-300">{feature}</span>
-                </div>
-              ))}
+            <div className="text-center">
+              <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
+                {user?.isPremium ? 'Du bist bereits Premium!' : 'Aktueller Status: Standard'}
+              </h2>
+              <p className="text-gray-600 dark:text-gray-300">
+                {user?.isPremium 
+                  ? 'Genieße alle Premium-Features' 
+                  : 'Upgrade jetzt für nur 9,99€/Monat'
+                }
+              </p>
             </div>
+          </div>
+        </div>
 
-            <button
-              onClick={handleUpgrade}
-              disabled={isLoading}
-              className="w-full bg-gradient-to-r from-yellow-400 to-orange-500 hover:from-yellow-500 hover:to-orange-600 text-white font-bold py-4 px-8 rounded-xl text-lg transition-all duration-200 transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none shadow-lg"
-            >
-              {isLoading ? (
-                <div className="flex items-center justify-center">
-                  <div className="w-6 h-6 border-2 border-white/30 border-t-white rounded-full animate-spin mr-3"></div>
-                  Wird verarbeitet...
+        {/* Features Grid */}
+        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 mb-12">
+          {features.map((feature, index) => (
+            <div key={index} className="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-lg border border-gray-200 dark:border-gray-700 hover:shadow-xl transition-shadow">
+              <div className="text-3xl mb-4">{feature.icon}</div>
+              <h3 className="text-xl font-semibold mb-2 text-gray-900 dark:text-white">
+                {feature.title}
+              </h3>
+              <p className="text-gray-600 dark:text-gray-300">
+                {feature.description}
+              </p>
+            </div>
+          ))}
+        </div>
+
+        {/* Pricing */}
+        <div className="bg-white dark:bg-gray-800 rounded-2xl p-8 shadow-xl border border-gray-200 dark:border-gray-700 mb-8">
+          <div className="text-center">
+            <h2 className="text-3xl font-bold mb-4 text-gray-900 dark:text-white">
+              Premium für nur 9,99€/Monat
+            </h2>
+            <div className="text-6xl font-bold mb-4 bg-gradient-to-r from-primary-600 to-purple-600 bg-clip-text text-transparent">
+              9,99€
+            </div>
+            <p className="text-gray-600 dark:text-gray-300 mb-8">
+              Jederzeit kündbar • Keine versteckten Kosten • Sofort aktiv
+            </p>
+            
+            {error && (
+              <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-4 mb-6">
+                <p className="text-red-800 dark:text-red-200">{error}</p>
+              </div>
+            )}
+
+            {!user?.isPremium && (
+              <button
+                onClick={handleUpgrade}
+                disabled={isLoading}
+                className="bg-gradient-to-r from-primary-600 to-purple-600 hover:from-primary-700 hover:to-purple-700 text-white font-bold py-4 px-8 rounded-xl text-lg transition-all transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
+              >
+                {isLoading ? (
+                  <div className="flex items-center space-x-2">
+                    <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
+                    <span>Wird verarbeitet...</span>
+                  </div>
+                ) : (
+                  'Jetzt upgraden ⭐'
+                )}
+              </button>
+            )}
+
+            {user?.isPremium && (
+              <div className="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg p-6">
+                <div className="flex items-center justify-center space-x-2 mb-2">
+                  <span className="text-2xl">🎉</span>
+                  <h3 className="text-xl font-semibold text-green-800 dark:text-green-200">
+                    Premium aktiv!
+                  </h3>
                 </div>
-              ) : (
-                'Jetzt upgraden'
-              )}
-            </button>
+                <p className="text-green-700 dark:text-green-300">
+                  Du genießt bereits alle Premium-Features. Vielen Dank für deine Unterstützung!
+                </p>
+              </div>
+            )}
+          </div>
+        </div>
 
-            <p className="text-center text-sm text-gray-500 dark:text-gray-400 mt-4">
-              Sichere Zahlung über Stripe • Jederzeit kündbar
-            </p>
+        {/* FAQ */}
+        <div className="bg-gray-50 dark:bg-gray-800 rounded-2xl p-8">
+          <h2 className="text-2xl font-bold mb-6 text-center text-gray-900 dark:text-white">
+            Häufige Fragen
+          </h2>
+          <div className="space-y-4">
+            <div className="border-b border-gray-200 dark:border-gray-700 pb-4">
+              <h3 className="font-semibold text-gray-900 dark:text-white">
+                Kann ich Premium jederzeit kündigen?
+              </h3>
+              <p className="text-gray-600 dark:text-gray-300 mt-1">
+                Ja, du kannst dein Premium-Abonnement jederzeit in den Einstellungen kündigen.
+              </p>
+            </div>
+            <div className="border-b border-gray-200 dark:border-gray-700 pb-4">
+              <h3 className="font-semibold text-gray-900 dark:text-white">
+                Wird mein Premium sofort aktiv?
+              </h3>
+              <p className="text-gray-600 dark:text-gray-300 mt-1">
+                Ja, nach erfolgreicher Zahlung hast du sofort Zugang zu allen Premium-Features.
+              </p>
+            </div>
+            <div>
+              <h3 className="font-semibold text-gray-900 dark:text-white">
+                Welche Zahlungsmethoden werden akzeptiert?
+              </h3>
+              <p className="text-gray-600 dark:text-gray-300 mt-1">
+                Wir akzeptieren alle gängigen Kreditkarten über unseren sicheren Stripe-Payment-Provider.
+              </p>
+            </div>
           </div>
         </div>
       </div>
-
-      {/* Features Comparison */}
-      <div className="grid md:grid-cols-2 gap-8 mb-12">
-        <div className="card p-6">
-          <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">Free Plan</h3>
-          <ul className="space-y-3">
-            <li className="flex items-center">
-              <svg className="w-5 h-5 text-gray-400 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-              </svg>
-              <span className="text-gray-600 dark:text-gray-400">1 Team auswählen</span>
-            </li>
-            <li className="flex items-center">
-              <svg className="w-5 h-5 text-gray-400 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-              </svg>
-              <span className="text-gray-600 dark:text-gray-400">Basis-Kalender</span>
-            </li>
-            <li className="flex items-center">
-              <svg className="w-5 h-5 text-gray-400 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-              </svg>
-              <span className="text-gray-600 dark:text-gray-400">Community-Support</span>
-            </li>
-          </ul>
-        </div>
-
-        <div className="card p-6 border-2 border-yellow-400">
-          <div className="flex items-center mb-4">
-            <h3 className="text-2xl font-bold text-gray-900 dark:text-white">Premium Plan</h3>
-            <span className="ml-3 bg-yellow-400 text-yellow-900 px-3 py-1 rounded-full text-sm font-semibold">
-              Empfohlen
-            </span>
-          </div>
-          <ul className="space-y-3">
-            <li className="flex items-center">
-              <svg className="w-5 h-5 text-green-500 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-              </svg>
-              <span className="text-gray-700 dark:text-gray-300">Unbegrenzte Teams</span>
-            </li>
-            <li className="flex items-center">
-              <svg className="w-5 h-5 text-green-500 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-              </svg>
-              <span className="text-gray-700 dark:text-gray-300">Erweiterte Features</span>
-            </li>
-            <li className="flex items-center">
-              <svg className="w-5 h-5 text-green-500 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-              </svg>
-              <span className="text-gray-700 dark:text-gray-300">Prioritäts-Support</span>
-            </li>
-          </ul>
-        </div>
-      </div>
-
-      {/* FAQ Section */}
-      <div className="card p-8">
-        <h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-8 text-center">
-          Häufig gestellte Fragen
-        </h2>
-        
-        <div className="grid md:grid-cols-2 gap-8">
-          <div>
-            <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">
-              Kann ich jederzeit kündigen?
-            </h3>
-            <p className="text-gray-600 dark:text-gray-400">
-              Ja, du kannst dein Premium-Abonnement jederzeit in deinen Einstellungen kündigen.
-            </p>
-          </div>
-          
-          <div>
-            <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">
-              Wie funktioniert die Zahlung?
-            </h3>
-            <p className="text-gray-600 dark:text-gray-400">
-              Wir verwenden Stripe für sichere Zahlungen. Deine Kreditkartendaten werden sicher verarbeitet.
-            </p>
-          </div>
-          
-          <div>
-            <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">
-              Bekomme ich eine Rechnung?
-            </h3>
-            <p className="text-gray-600 dark:text-gray-400">
-              Ja, du erhältst eine E-Mail-Rechnung nach jeder erfolgreichen Zahlung.
-            </p>
-          </div>
-          
-          <div>
-            <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">
-              Sind alle Features sofort verfügbar?
-            </h3>
-            <p className="text-gray-600 dark:text-gray-400">
-              Ja, nach der erfolgreichen Zahlung hast du sofort Zugang zu allen Premium-Features.
-            </p>
-          </div>
-        </div>
-      </div>
-    </div>
+    </>
   );
 }
