@@ -24,11 +24,17 @@ export function Header({ currentPage, onNavigate, onShowLogin, onShowRegister }:
     logout();
   };
 
+  // Navigation items - Live und Highlights nur für angemeldete Benutzer
   const navigationItems = [
-    { key: 'calendar', label: 'Kalender', icon: '📅' },
-    { key: 'live', label: 'Live', icon: '🔴' },
-    { key: 'highlights', label: 'Highlights', icon: '🎬' }
+    { key: 'calendar', label: 'Kalender', icon: '📅', requiresAuth: false },
+    { key: 'live', label: 'Live', icon: '🔴', requiresAuth: true },
+    { key: 'highlights', label: 'Highlights', icon: '🎬', requiresAuth: true }
   ];
+
+  // Filter navigation items based on authentication status
+  const visibleNavigationItems = navigationItems.filter(item => 
+    !item.requiresAuth || isAuthenticated
+  );
 
   const getPageIcon = (page: string) => {
     switch (page) {
@@ -69,7 +75,7 @@ export function Header({ currentPage, onNavigate, onShowLogin, onShowRegister }:
 
           {/* Desktop Navigation */}
           <nav className="hidden lg:flex items-center gap-1">
-            {navigationItems.map((item) => (
+            {visibleNavigationItems.map((item) => (
               <button
                 key={item.key}
                 onClick={() => onNavigate(item.key as any)}
@@ -277,7 +283,7 @@ export function Header({ currentPage, onNavigate, onShowLogin, onShowRegister }:
                 
                 {/* Main Navigation */}
                 <div className="space-y-1">
-                  {navigationItems.map((item) => (
+                  {visibleNavigationItems.map((item) => (
                     <button
                       key={item.key}
                       onClick={() => {
