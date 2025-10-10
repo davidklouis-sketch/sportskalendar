@@ -126,7 +126,10 @@ jobs:
           # Stop and remove old containers
           docker compose -f docker-compose.traefik.yml --env-file .env.production down
           
-          # Start services
+          # Start services with Stripe secrets
+          STRIPE_SECRET_KEY="${{ secrets.STRIPE_SECRET_KEY }}" \
+          STRIPE_WEBHOOK_SECRET="${{ secrets.STRIPE_WEBHOOK_SECRET }}" \
+          STRIPE_PRICE_ID="${{ secrets.STRIPE_PRICE_ID }}" \
           docker compose -f docker-compose.traefik.yml --env-file .env.production up -d
           
           # Clean up old images
