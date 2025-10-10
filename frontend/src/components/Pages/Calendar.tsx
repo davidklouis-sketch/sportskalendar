@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { useAuthStore } from '../../store/useAuthStore';
 import { calendarApi, userApi, highlightsApi } from '../../lib/api';
 import { format } from 'date-fns';
@@ -210,18 +210,24 @@ export function Calendar() {
   }, [user?.selectedTeams]);
 
   // Load events when teams change
+  const loadAllEventsRef = useRef(loadAllEvents);
+  loadAllEventsRef.current = loadAllEvents;
+  
   useEffect(() => {
     if (localTeams.length > 0) {
-      loadAllEvents();
+      loadAllEventsRef.current();
     }
-  }, [localTeams, loadAllEvents]); // Include loadAllEvents in dependencies
+  }, [localTeams]);
 
   // Load highlights when sport selection changes
+  const loadHighlightsRef = useRef(loadHighlights);
+  loadHighlightsRef.current = loadHighlights;
+  
   useEffect(() => {
     if (selectedSport) {
-      loadHighlights();
+      loadHighlightsRef.current();
     }
-  }, [selectedSport, loadHighlights]); // Include loadHighlights in dependencies
+  }, [selectedSport]);
 
   // Auto-select first sport if available
   useEffect(() => {
