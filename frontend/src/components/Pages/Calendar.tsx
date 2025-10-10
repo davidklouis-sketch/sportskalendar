@@ -89,7 +89,39 @@ export function Calendar() {
           console.log('⚽ Filtering for team names:', teamNames);
           events = events.filter(event => {
             const eventTitle = event.title.toLowerCase();
-            const matches = teamNames.some(teamName => eventTitle.includes(teamName));
+            
+            // Enhanced matching with team name variations
+            const matches = teamNames.some(teamName => {
+              // Direct match
+              if (eventTitle.includes(teamName)) return true;
+              
+              // Team name variations mapping
+              const teamVariations: Record<string, string[]> = {
+                'bayern munich': ['fc bayern', 'bayern münchen', 'fc bayern münchen', 'bayern'],
+                'borussia dortmund': ['bvb', 'borussia', 'bvb dortmund', 'dortmund'],
+                'bayer leverkusen': ['bayer 04', 'leverkusen', 'bayer', 'werkself'],
+                'rb leipzig': ['rb', 'leipzig'],
+                'vfl wolfsburg': ['wolfsburg', 'vfl'],
+                'vfb stuttgart': ['stuttgart', 'vfb'],
+                'eintracht frankfurt': ['frankfurt', 'eintracht'],
+                'borussia mönchengladbach': ['mönchengladbach', 'gladbach', 'borussia'],
+                '1. fsv mainz 05': ['mainz', 'mainz 05', 'fsv mainz'],
+                'tsg hoffenheim': ['hoffenheim', 'tsg'],
+                'sc freiburg': ['freiburg', 'sc'],
+                'fc augsburg': ['augsburg', 'fc augsburg'],
+                '1. fc köln': ['köln', 'fc köln', '1. fc köln'],
+                '1. fc union berlin': ['union berlin', 'fc union', 'union'],
+                'sv werder bremen': ['werder bremen', 'werder', 'bremen'],
+                '1. fc heidenheim 1846': ['heidenheim', 'fc heidenheim'],
+                'fc st. pauli': ['st. pauli', 'pauli', 'st pauli'],
+                'hamburger sv': ['hamburg', 'hsv', 'hamburger']
+              };
+              
+              // Check variations
+              const variations = teamVariations[teamName] || [];
+              return variations.some(variation => eventTitle.includes(variation));
+            });
+            
             console.log(`⚽ Event "${event.title}" matches teams:`, matches);
             return matches;
           });
