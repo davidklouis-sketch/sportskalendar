@@ -255,34 +255,43 @@ export function Calendar() {
     return variations;
   };
 
-  // Memoize teams to prevent unnecessary re-renders
-  const memoizedTeams = useMemo(() => {
-    return user?.selectedTeams || [];
-  }, [user?.selectedTeams]);
-
-  // Load user teams and events on mount
+  // Load user teams and events on mount - with ref to prevent loops
+  const lastTeamsRef = useRef<string>('');
+  
   useEffect(() => {
-    console.log('👤 User teams changed:', memoizedTeams);
+    const teams = user?.selectedTeams || [];
+    const teamsString = JSON.stringify(teams.sort((a, b) => a.teamName.localeCompare(b.teamName)));
     
-    if (memoizedTeams.length > 0) {
-      console.log('👤 Setting local teams and loading events...');
-      setLocalTeams(memoizedTeams);
-      // Auto-select first sport if not selected
-      if (!selectedSport) {
-        console.log('👤 Auto-selecting first sport:', memoizedTeams[0].sport);
-        setSelectedSport(memoizedTeams[0].sport as 'football' | 'nfl' | 'f1');
+    console.log('👤 User teams changed:', teams);
+    console.log('👤 Last teams string:', lastTeamsRef.current);
+    console.log('👤 New teams string:', teamsString);
+    
+    if (teams.length > 0) {
+      // Only load if teams actually changed
+      if (lastTeamsRef.current !== teamsString) {
+        console.log('👤 Teams actually changed, loading events...');
+        lastTeamsRef.current = teamsString;
+        setLocalTeams(teams);
+        // Auto-select first sport if not selected
+        if (!selectedSport) {
+          console.log('👤 Auto-selecting first sport:', teams[0].sport);
+          setSelectedSport(teams[0].sport as 'football' | 'nfl' | 'f1');
+        }
+        // Load events for teams
+        loadAllEvents(teams);
+      } else {
+        console.log('👤 Teams unchanged, skipping load...');
       }
-      // Load events for teams
-      loadAllEvents(memoizedTeams);
     } else {
       console.log('👤 No teams, stopping loading...');
+      lastTeamsRef.current = '';
       // No teams = stop loading immediately
       setIsLoading(false);
       setFootballEvents([]);
       setF1Events([]);
       setNflEvents([]);
     }
-  }, [memoizedTeams]);
+  }, [user?.selectedTeams]);
 
   // Load highlights when sport selection changes (but only if we have teams)
   useEffect(() => {
