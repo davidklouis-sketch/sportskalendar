@@ -51,41 +51,45 @@ export function Header({ currentPage, onNavigate, onShowLogin, onShowRegister }:
 
   return (
     <header className="fixed top-0 left-0 right-0 z-50">
-      {/* Background with blur effect */}
-      <div className="absolute inset-0 bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl border-b border-white/20 dark:border-gray-700/50"></div>
+      {/* Logo-inspired Background */}
+      <div className="absolute inset-0 glass-dark border-b border-dark-600/50"></div>
       
-      {/* Gradient overlay */}
-      <div className="absolute inset-0 bg-gradient-to-r from-indigo-500/10 via-purple-500/10 to-pink-500/10"></div>
+      {/* Sport Gradient overlay */}
+      <div className="absolute inset-0 bg-sport-gradient opacity-5"></div>
       
       <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
           
           {/* Logo Section */}
           <div className="flex items-center gap-3">
-            <div className="relative group">
-              <div className="absolute -inset-1 bg-gradient-to-r from-sport-400 to-energy-400 rounded-2xl blur opacity-75 group-hover:opacity-100 transition duration-300"></div>
-              <div className="relative w-10 h-10 rounded-2xl overflow-hidden flex items-center justify-center bg-white dark:bg-gray-800 shadow-lg">
+            <div className="relative group shape-sport">
+              {/* Logo-inspired geometric shapes */}
+              <div className="absolute -inset-1 bg-sport-gradient rounded-2xl blur opacity-75 group-hover:opacity-100 transition duration-300 animate-sport-pulse"></div>
+              <div className="relative w-10 h-10 rounded-2xl overflow-hidden flex items-center justify-center bg-dark-800 shadow-xl border border-cyan-400/20">
                 <img 
                   src="/logo.png" 
                   alt="Sportskalendar Logo" 
                   className="w-full h-full object-contain"
                   onError={(e) => {
-                    // Fallback to text if image fails to load
+                    // Fallback to sport-inspired design
                     const target = e.target as HTMLImageElement;
                     target.style.display = 'none';
                     const fallback = target.nextElementSibling as HTMLElement;
                     if (fallback) fallback.style.display = 'flex';
                   }}
                 />
-                <div className="w-full h-full bg-gradient-to-r from-sport-400 to-energy-400 rounded-2xl flex items-center justify-center hidden">
+                <div className="w-full h-full bg-sport-gradient rounded-2xl flex items-center justify-center hidden">
                   <span className="text-white font-bold text-lg">S</span>
                 </div>
               </div>
             </div>
             <div className="hidden sm:block">
-              <h1 className="text-xl font-bold bg-gradient-to-r from-gray-900 to-gray-700 dark:from-white dark:to-gray-300 bg-clip-text text-transparent">
-                Sportskalendar
+              <h1 className="text-xl font-bold heading-sport">
+                SPORTS KALENDAR
               </h1>
+              <div className="text-xs text-cyan-400 font-medium tracking-wider">
+                .de
+              </div>
             </div>
           </div>
 
@@ -95,16 +99,16 @@ export function Header({ currentPage, onNavigate, onShowLogin, onShowRegister }:
               <button
                 key={item.key}
                 onClick={() => onNavigate(item.key as any)}
-                className={`group relative px-4 py-2 rounded-2xl font-medium transition-all duration-300 transform hover:scale-105 ${
-                  currentPage === item.key
-                    ? 'bg-gradient-to-r from-indigo-600 to-purple-600 text-white shadow-lg shadow-indigo-500/25'
-                    : 'text-gray-700 dark:text-gray-300 hover:bg-white/50 dark:hover:bg-gray-800/50 hover:text-indigo-600 dark:hover:text-indigo-400'
+                className={`nav-link group relative ${
+                  currentPage === item.key ? 'active' : ''
                 }`}
               >
-                <span className="mr-2">{item.icon}</span>
-                {item.label}
+                <span className="relative z-10 flex items-center gap-2">
+                  <span>{item.icon}</span>
+                  {item.label}
+                </span>
                 {currentPage === item.key && (
-                  <div className="absolute -inset-1 bg-gradient-to-r from-white/20 to-white/10 rounded-2xl blur opacity-75"></div>
+                  <div className="absolute -inset-1 bg-sport-gradient rounded-2xl blur opacity-20"></div>
                 )}
               </button>
             ))}
@@ -116,17 +120,17 @@ export function Header({ currentPage, onNavigate, onShowLogin, onShowRegister }:
             {/* Theme Toggle */}
             <button
               onClick={toggleTheme}
-              className="group relative p-2 rounded-2xl bg-white/50 dark:bg-gray-800/50 hover:bg-white dark:hover:bg-gray-800 transition-all duration-300 transform hover:scale-105 backdrop-blur-sm border border-white/20 dark:border-gray-700/50"
+              className="group relative p-2 rounded-2xl glass-dark hover:bg-dark-700 transition-all duration-300 transform hover:scale-105"
               aria-label="Toggle dark mode"
             >
-              <div className="absolute -inset-1 bg-gradient-to-r from-yellow-400 to-orange-500 rounded-2xl blur opacity-0 group-hover:opacity-50 transition duration-300"></div>
+              <div className="absolute -inset-1 bg-sport-gradient rounded-2xl blur opacity-0 group-hover:opacity-30 transition duration-300"></div>
               <div className="relative">
                 {isDark ? (
-                  <svg className="w-5 h-5 text-yellow-500" fill="currentColor" viewBox="0 0 20 20">
+                  <svg className="w-5 h-5 text-orange-400" fill="currentColor" viewBox="0 0 20 20">
                     <path d="M10 2a1 1 0 011 1v1a1 1 0 11-2 0V3a1 1 0 011-1zm4 8a4 4 0 11-8 0 4 4 0 018 0zm-.464 4.95l.707.707a1 1 0 001.414-1.414l-.707-.707a1 1 0 00-1.414 1.414zm2.12-10.607a1 1 0 010 1.414l-.706.707a1 1 0 11-1.414-1.414l.707-.707a1 1 0 011.414 0zM17 11a1 1 0 100-2h-1a1 1 0 100 2h1zm-7 4a1 1 0 011 1v1a1 1 0 11-2 0v-1a1 1 0 011-1zM5.05 6.464A1 1 0 106.465 5.05l-.708-.707a1 1 0 00-1.414 1.414l.707.707zm1.414 8.486l-.707.707a1 1 0 01-1.414-1.414l.707-.707a1 1 0 011.414 1.414zM4 11a1 1 0 100-2H3a1 1 0 000 2h1z" />
                   </svg>
                 ) : (
-                  <svg className="w-5 h-5 text-gray-600 dark:text-gray-400" fill="currentColor" viewBox="0 0 20 20">
+                  <svg className="w-5 h-5 text-lime-400" fill="currentColor" viewBox="0 0 20 20">
                     <path d="M17.293 13.293A8 8 0 016.707 2.707a8.001 8.001 0 1010.586 10.586z" />
                   </svg>
                 )}
@@ -139,9 +143,9 @@ export function Header({ currentPage, onNavigate, onShowLogin, onShowRegister }:
                 {/* Premium Badge */}
                 {user.isPremium && (
                   <div className="relative group">
-                    <div className="absolute -inset-1 bg-gradient-to-r from-yellow-400 to-orange-500 rounded-2xl blur opacity-75 group-hover:opacity-100 transition duration-300"></div>
-                    <div className="relative px-3 py-1 bg-gradient-to-r from-yellow-400 to-orange-500 text-white text-xs font-bold rounded-2xl shadow-lg">
-                      PREMIUM
+                    <div className="absolute -inset-1 bg-orange-500 rounded-2xl blur opacity-75 group-hover:opacity-100 transition duration-300 animate-sport-pulse"></div>
+                    <div className="relative px-3 py-1 bg-orange-500 text-white text-xs font-bold rounded-2xl shadow-orange">
+                      ⭐ PREMIUM
                     </div>
                   </div>
                 )}
@@ -257,17 +261,15 @@ export function Header({ currentPage, onNavigate, onShowLogin, onShowRegister }:
                 {/* Login/Register for non-authenticated users */}
                 <button
                   onClick={onShowLogin}
-                  className="group relative px-4 py-2 bg-white/50 dark:bg-gray-800/50 text-gray-700 dark:text-gray-300 hover:bg-white dark:hover:bg-gray-800 text-sm font-medium rounded-2xl transition-all duration-300 transform hover:scale-105 backdrop-blur-sm border border-white/20 dark:border-gray-700/50"
+                  className="btn btn-secondary"
                 >
-                  <div className="absolute -inset-1 bg-gradient-to-r from-gray-400 to-gray-600 rounded-2xl blur opacity-0 group-hover:opacity-50 transition duration-300"></div>
-                  <span className="relative">Anmelden</span>
+                  Anmelden
                 </button>
                 <button
                   onClick={onShowRegister}
-                  className="group relative px-4 py-2 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white text-sm font-medium rounded-2xl transition-all duration-300 transform hover:scale-105 shadow-lg shadow-indigo-500/25"
+                  className="btn btn-primary"
                 >
-                  <div className="absolute -inset-1 bg-gradient-to-r from-indigo-600 to-purple-600 rounded-2xl blur opacity-0 group-hover:opacity-50 transition duration-300"></div>
-                  <span className="relative">Registrieren</span>
+                  Registrieren
                 </button>
               </>
             )}

@@ -114,64 +114,84 @@ export function Highlights() {
 
   if (!user?.selectedTeams?.length) {
     return (
-      <div className="max-w-7xl mx-auto">
-        <div className="card p-12 text-center">
-          <h2 className="text-2xl font-bold mb-4">Keine Teams ausgewählt</h2>
-          <p className="text-gray-500 dark:text-gray-400 mb-6">
-            Wähle zuerst ein Team im Kalender aus, um Highlights zu sehen.
-          </p>
-          <button
-            onClick={() => window.location.reload()}
-            className="btn btn-primary"
-          >
-            Zum Kalender
-          </button>
+      <div className="min-h-screen hero-gradient pt-24">
+        <div className="max-w-7xl mx-auto px-4 py-8">
+          <div className="card p-12 text-center">
+            <h2 className="text-2xl font-bold mb-4 text-white">Keine Teams ausgewählt</h2>
+            <p className="text-dark-300 mb-6">
+              Wähle zuerst ein Team im Kalender aus, um Highlights zu sehen.
+            </p>
+            <button
+              onClick={() => window.location.reload()}
+              className="btn btn-primary"
+            >
+              Zum Kalender
+            </button>
+          </div>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="max-w-7xl mx-auto">
-      {/* Sport Selector */}
-      {user.selectedTeams.length > 1 && (
-        <div className="card p-4 mb-6">
-          <label className="block text-sm font-medium mb-2">Team auswählen</label>
-          <select
-            value={selectedSport || ''}
-            onChange={(e) => setSelectedSport(e.target.value as 'football' | 'nfl' | 'f1')}
-            className="input"
-          >
-            {user.selectedTeams.map((team, index) => (
-              <option key={index} value={team.sport}>
-                {team.teamName} ({team.sport === 'football' ? '⚽' : team.sport === 'nfl' ? '🏈' : '🏎️'})
-              </option>
-            ))}
-          </select>
+    <div className="min-h-screen hero-gradient pt-24">
+      <div className="max-w-7xl mx-auto px-4 py-8">
+        {/* Hero Section */}
+        <div className="text-center mb-12">
+          <div className="relative group mx-auto mb-6">
+            <div className="w-16 h-16 bg-orange-500/20 backdrop-blur-sm rounded-2xl flex items-center justify-center mx-auto shadow-xl border border-orange-400/30">
+              <svg className="w-8 h-8 text-orange-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
+              </svg>
+            </div>
+          </div>
+          <h1 className="text-4xl md:text-6xl font-bold heading-sport mb-4">
+            📺 HIGHLIGHTS
+          </h1>
+          <p className="text-xl text-cyan-400 mb-8">
+            Die besten Momente deiner Teams
+          </p>
         </div>
-      )}
 
-      {/* Highlights Grid */}
-      <div className="card p-6">
-        <div className="mb-6">
-          <h2 className="text-2xl font-bold mb-2">Highlights & News</h2>
-          {user?.selectedTeams?.find(t => t.sport === selectedSport) && (
-            <p className="text-sm text-gray-600 dark:text-gray-400">
-              Highlights für: <span className="font-semibold">
-                {user.selectedTeams.find(t => t.sport === selectedSport)?.teamName}
-              </span>
-            </p>
-          )}
-        </div>
+        {/* Sport Selector */}
+        {user.selectedTeams.length > 1 && (
+          <div className="card-sport p-4 mb-6">
+            <label className="block text-sm font-medium text-cyan-400 mb-2">Team auswählen</label>
+            <select
+              value={selectedSport || ''}
+              onChange={(e) => setSelectedSport(e.target.value as 'football' | 'nfl' | 'f1')}
+              className="input"
+            >
+              {user.selectedTeams.map((team, index) => (
+                <option key={index} value={team.sport}>
+                  {team.teamName} ({team.sport === 'football' ? '⚽' : team.sport === 'nfl' ? '🏈' : '🏎️'})
+                </option>
+              ))}
+            </select>
+          </div>
+        )}
+
+        {/* Highlights Grid */}
+        <div className="card-sport p-6">
+          <div className="mb-6">
+            <h2 className="text-2xl font-bold mb-2 text-white">Highlights & News</h2>
+            {user?.selectedTeams?.find(t => t.sport === selectedSport) && (
+              <p className="text-sm text-cyan-400">
+                Highlights für: <span className="font-semibold text-lime-400">
+                  {user.selectedTeams.find(t => t.sport === selectedSport)?.teamName}
+                </span>
+              </p>
+            )}
+          </div>
 
         {isLoading ? (
           <div className="text-center py-12">
-            <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600"></div>
-            <p className="mt-4 text-gray-500 dark:text-gray-400">Lade Highlights...</p>
+            <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-orange-500"></div>
+            <p className="mt-4 text-dark-300">Lade Highlights...</p>
           </div>
         ) : highlights.length === 0 ? (
           <div className="text-center py-12">
-            <p className="text-gray-500 dark:text-gray-400">
+            <p className="text-dark-300">
               Keine Highlights verfügbar
             </p>
           </div>
@@ -183,24 +203,24 @@ export function Highlights() {
                 href={highlight.url}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="group card p-0 overflow-hidden hover:shadow-lg transition-all"
+                className="group card p-0 overflow-hidden hover:shadow-2xl transition-all duration-300 transform hover:scale-105"
               >
                 {/* Thumbnail */}
                 {highlight.thumbnail ? (
-                  <div className="relative aspect-video bg-gray-200 dark:bg-gray-700">
+                  <div className="relative aspect-video bg-dark-700">
                     <img
                       src={highlight.thumbnail}
                       alt={highlight.title}
-                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                      className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
                     />
                     {highlight.duration && (
-                      <div className="absolute bottom-2 right-2 px-2 py-1 bg-black/80 text-white text-xs rounded">
+                      <div className="absolute bottom-2 right-2 px-2 py-1 bg-dark-900/80 text-white text-xs rounded">
                         {highlight.duration}
                       </div>
                     )}
                   </div>
                 ) : (
-                  <div className="aspect-video bg-gradient-to-br from-primary-400 to-primary-600 flex items-center justify-center">
+                  <div className="aspect-video bg-sport-gradient flex items-center justify-center">
                     <svg className="w-16 h-16 text-white opacity-50" fill="currentColor" viewBox="0 0 20 20">
                       <path d="M10 18a8 8 0 100-16 8 8 0 000 16zM9.555 7.168A1 1 0 008 8v4a1 1 0 001.555.832l3-2a1 1 0 000-1.664l-3-2z" />
                     </svg>
@@ -209,17 +229,17 @@ export function Highlights() {
 
                 {/* Content */}
                 <div className="p-4">
-                  <h3 className="font-semibold text-lg mb-2 line-clamp-2 group-hover:text-primary-600 dark:group-hover:text-primary-400 transition-colors">
+                  <h3 className="font-semibold text-lg mb-2 line-clamp-2 text-white group-hover:text-cyan-400 transition-colors">
                     {highlight.title}
                   </h3>
 
                   {highlight.description && (
-                    <p className="text-sm text-gray-600 dark:text-gray-400 mb-3 line-clamp-2">
+                    <p className="text-sm text-dark-300 mb-3 line-clamp-2">
                       {highlight.description}
                     </p>
                   )}
 
-                  <div className="flex items-center justify-between text-xs text-gray-500 dark:text-gray-400">
+                  <div className="flex items-center justify-between text-xs text-dark-400">
                     <span>{new Date(highlight.createdAt).toLocaleDateString('de-DE')}</span>
                     {highlight.views && (
                       <span className="flex items-center gap-1">
@@ -236,6 +256,7 @@ export function Highlights() {
             ))}
           </div>
         )}
+      </div>
       </div>
     </div>
   );

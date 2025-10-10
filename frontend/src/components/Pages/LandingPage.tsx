@@ -91,62 +91,70 @@ export function LandingPage({ onShowLogin, onShowRegister }: LandingPageProps) {
       
       <div className="max-w-7xl mx-auto px-4 py-8 pt-24">
       {/* Hero Section */}
-      <div className="text-center mb-12">
-        <div className="mb-6">
+      <div className="text-center mb-12 hero-gradient rounded-3xl p-12 relative overflow-hidden">
+        {/* Logo-inspired geometric shapes */}
+        <div className="absolute top-10 right-10 w-20 h-20 bg-cyan-500/20 rotate-45 rounded-lg animate-float"></div>
+        <div className="absolute bottom-10 left-10 w-16 h-16 bg-lime-500/20 rotate-45 rounded-lg animate-float" style={{animationDelay: '1s'}}></div>
+        <div className="absolute top-1/2 left-5 w-12 h-12 bg-orange-500/20 rotate-45 rounded-lg animate-float" style={{animationDelay: '2s'}}></div>
+        
+        <div className="mb-6 relative z-10">
           {/* Logo */}
           <div className="flex justify-center mb-6">
-            <div className="relative group">
-              <div className="absolute -inset-2 bg-gradient-to-r from-sport-400 to-energy-400 rounded-3xl blur opacity-75 group-hover:opacity-100 transition duration-300"></div>
-              <div className="relative w-24 h-24 md:w-32 md:h-32 rounded-3xl overflow-hidden flex items-center justify-center bg-white dark:bg-gray-800 shadow-2xl">
+            <div className="relative group shape-sport">
+              <div className="absolute -inset-2 bg-sport-gradient rounded-3xl blur opacity-75 group-hover:opacity-100 transition duration-300 animate-sport-pulse"></div>
+              <div className="relative w-24 h-24 md:w-32 md:h-32 rounded-3xl overflow-hidden flex items-center justify-center bg-dark-800 shadow-2xl border border-cyan-400/20">
                 <img 
                   src="/logo.png" 
                   alt="Sportskalendar Logo" 
                   className="w-full h-full object-contain"
                   onError={(e) => {
-                    // Fallback to text if image fails to load
+                    // Fallback to sport-inspired design
                     const target = e.target as HTMLImageElement;
                     target.style.display = 'none';
                     const fallback = target.nextElementSibling as HTMLElement;
                     if (fallback) fallback.style.display = 'flex';
                   }}
                 />
-                <div className="w-full h-full bg-gradient-to-r from-sport-400 to-energy-400 rounded-3xl flex items-center justify-center hidden">
+                <div className="w-full h-full bg-sport-gradient rounded-3xl flex items-center justify-center hidden">
                   <span className="text-white font-bold text-3xl md:text-4xl">S</span>
                 </div>
               </div>
             </div>
           </div>
           
-          <h1 className="text-4xl md:text-6xl font-bold mb-4 bg-gradient-to-r from-sport-500 to-energy-500 bg-clip-text text-transparent">
-            Sportskalendar
+          <h1 className="text-4xl md:text-6xl font-bold mb-4 heading-sport">
+            SPORTS KALENDAR
           </h1>
-          <p className="text-xl md:text-2xl text-gray-600 dark:text-gray-300 mb-6">
+          <div className="text-lg text-cyan-400 font-medium tracking-wider mb-4">
+            .de
+          </div>
+          <p className="text-xl md:text-2xl text-lime-400 mb-6">
             Der intelligente Kalender für alle Sportfans
           </p>
-          <p className="text-lg text-gray-500 dark:text-gray-400 max-w-3xl mx-auto">
+          <p className="text-lg text-dark-300 max-w-3xl mx-auto">
             Verwalte alle Spiele deiner Lieblingsteams, erhalte Live-Updates und synchronisiere 
             deine Termine mit allen wichtigen Kalender-Apps.
           </p>
         </div>
 
         {/* CTA Buttons */}
-        <div className="flex flex-col sm:flex-row gap-4 justify-center items-center mb-8">
+        <div className="flex flex-col sm:flex-row gap-4 justify-center items-center mb-8 relative z-10">
           <button
             onClick={onShowRegister}
-            className="px-8 py-4 bg-gradient-to-r from-indigo-600 to-purple-600 text-white text-lg font-semibold rounded-xl hover:from-indigo-700 hover:to-purple-700 transition-all transform hover:scale-105 shadow-lg hover:shadow-xl"
+            className="btn btn-primary text-lg px-8 py-4"
           >
             🚀 Jetzt kostenlos starten
           </button>
           <button
             onClick={onShowLogin}
-            className="px-8 py-4 border-2 border-indigo-600 text-indigo-600 dark:text-indigo-400 text-lg font-semibold rounded-xl hover:bg-indigo-50 dark:hover:bg-indigo-900/20 transition-all transform hover:scale-105"
+            className="btn btn-secondary text-lg px-8 py-4"
           >
             Anmelden
           </button>
         </div>
 
         {/* Premium Badge */}
-        <div className="inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-yellow-400 to-orange-500 text-white rounded-full text-sm font-semibold mb-8">
+        <div className="inline-flex items-center gap-2 px-6 py-3 bg-orange-500 text-white rounded-full text-sm font-bold mb-8 shadow-orange relative z-10">
           ⭐ Premium Features verfügbar - Jetzt entdecken!
         </div>
       </div>
