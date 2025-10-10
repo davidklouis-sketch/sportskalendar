@@ -10,12 +10,13 @@ export const stripe = process.env.STRIPE_SECRET_KEY
 
 // Check if Stripe is properly configured
 export const isStripeConfigured = () => {
-  const hasSecretKey = !!process.env.STRIPE_SECRET_KEY;
+  const hasSecretKey = !!process.env.STRIPE_SECRET_KEY && process.env.STRIPE_SECRET_KEY !== 'sk_live_your_stripe_secret_key_here';
   console.log('🔍 Stripe configuration check:', {
     hasSecretKey,
     secretKeyPrefix: process.env.STRIPE_SECRET_KEY?.substring(0, 10) + '...' || 'undefined',
     nodeEnv: process.env.NODE_ENV,
-    allEnvKeys: Object.keys(process.env).filter(key => key.includes('STRIPE'))
+    allEnvKeys: Object.keys(process.env).filter(key => key.includes('STRIPE')),
+    isPlaceholder: process.env.STRIPE_SECRET_KEY === 'sk_live_your_stripe_secret_key_here'
   });
   return hasSecretKey;
 };

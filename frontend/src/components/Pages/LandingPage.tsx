@@ -99,7 +99,7 @@ export function LandingPage({ onShowLogin, onShowRegister }: LandingPageProps) {
               <div className="absolute -inset-2 bg-gradient-to-r from-sport-400 to-energy-400 rounded-3xl blur opacity-75 group-hover:opacity-100 transition duration-300"></div>
               <div className="relative w-24 h-24 md:w-32 md:h-32 rounded-3xl overflow-hidden flex items-center justify-center bg-white dark:bg-gray-800 shadow-2xl">
                 <img 
-                  src="/logos/logo-large.svg" 
+                  src="/logo.png" 
                   alt="Sportskalendar Logo" 
                   className="w-full h-full object-contain"
                   onError={(e) => {
