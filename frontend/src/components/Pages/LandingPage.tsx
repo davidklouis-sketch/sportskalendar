@@ -93,7 +93,31 @@ export function LandingPage({ onShowLogin, onShowRegister }: LandingPageProps) {
       {/* Hero Section */}
       <div className="text-center mb-12">
         <div className="mb-6">
-          <h1 className="text-4xl md:text-6xl font-bold mb-4 bg-gradient-to-r from-primary-600 to-purple-600 bg-clip-text text-transparent">
+          {/* Logo */}
+          <div className="flex justify-center mb-6">
+            <div className="relative group">
+              <div className="absolute -inset-2 bg-gradient-to-r from-sport-400 to-energy-400 rounded-3xl blur opacity-75 group-hover:opacity-100 transition duration-300"></div>
+              <div className="relative w-24 h-24 md:w-32 md:h-32 rounded-3xl overflow-hidden flex items-center justify-center bg-white dark:bg-gray-800 shadow-2xl">
+                <img 
+                  src="/logos/Sportskalendar.de Logo - Flat Vector Style (1024 x 1024 px).svg" 
+                  alt="Sportskalendar Logo" 
+                  className="w-full h-full object-contain"
+                  onError={(e) => {
+                    // Fallback to text if image fails to load
+                    const target = e.target as HTMLImageElement;
+                    target.style.display = 'none';
+                    const fallback = target.nextElementSibling as HTMLElement;
+                    if (fallback) fallback.style.display = 'flex';
+                  }}
+                />
+                <div className="w-full h-full bg-gradient-to-r from-sport-400 to-energy-400 rounded-3xl flex items-center justify-center hidden">
+                  <span className="text-white font-bold text-3xl md:text-4xl">S</span>
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          <h1 className="text-4xl md:text-6xl font-bold mb-4 bg-gradient-to-r from-sport-500 to-energy-500 bg-clip-text text-transparent">
             Sportskalendar
           </h1>
           <p className="text-xl md:text-2xl text-gray-600 dark:text-gray-300 mb-6">
@@ -147,7 +171,7 @@ export function LandingPage({ onShowLogin, onShowRegister }: LandingPageProps) {
       </div>
 
       {/* Premium Section */}
-      <div className="bg-gradient-to-br from-purple-600 to-primary-600 rounded-2xl p-8 text-white mb-12">
+      <div className="bg-gradient-to-br from-sport-500 to-energy-500 rounded-2xl p-8 text-white mb-12">
         <div className="text-center mb-8">
           <h2 className="text-3xl font-bold mb-4">⭐ Sportskalendar Premium</h2>
           <p className="text-xl opacity-90 mb-6">

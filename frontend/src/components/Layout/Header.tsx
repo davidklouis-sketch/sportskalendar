@@ -63,9 +63,23 @@ export function Header({ currentPage, onNavigate, onShowLogin, onShowRegister }:
           {/* Logo Section */}
           <div className="flex items-center gap-3">
             <div className="relative group">
-              <div className="absolute -inset-1 bg-gradient-to-r from-indigo-600 to-purple-600 rounded-2xl blur opacity-75 group-hover:opacity-100 transition duration-300"></div>
-              <div className="relative w-10 h-10 bg-gradient-to-r from-indigo-600 to-purple-600 rounded-2xl flex items-center justify-center">
-                <span className="text-white font-bold text-lg">S</span>
+              <div className="absolute -inset-1 bg-gradient-to-r from-sport-400 to-energy-400 rounded-2xl blur opacity-75 group-hover:opacity-100 transition duration-300"></div>
+              <div className="relative w-10 h-10 rounded-2xl overflow-hidden flex items-center justify-center bg-white dark:bg-gray-800 shadow-lg">
+                <img 
+                  src="/logos/Sportskalendar.de Logo - Flat Vector Style (512 x 512 px).svg" 
+                  alt="Sportskalendar Logo" 
+                  className="w-full h-full object-contain"
+                  onError={(e) => {
+                    // Fallback to text if image fails to load
+                    const target = e.target as HTMLImageElement;
+                    target.style.display = 'none';
+                    const fallback = target.nextElementSibling as HTMLElement;
+                    if (fallback) fallback.style.display = 'flex';
+                  }}
+                />
+                <div className="w-full h-full bg-gradient-to-r from-sport-400 to-energy-400 rounded-2xl flex items-center justify-center hidden">
+                  <span className="text-white font-bold text-lg">S</span>
+                </div>
               </div>
             </div>
             <div className="hidden sm:block">
