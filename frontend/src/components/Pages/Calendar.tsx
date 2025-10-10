@@ -46,6 +46,11 @@ export function Calendar() {
     try {
       console.log('🔄 Loading events for teams:', teams);
       
+      // Reset all events first
+      setFootballEvents([]);
+      setF1Events([]);
+      setNflEvents([]);
+      
       // Load Football Events
       const footballTeams = teams.filter(t => t.sport === 'football');
       if (footballTeams.length > 0) {
@@ -220,8 +225,11 @@ export function Calendar() {
     if (localTeams.length > 0) {
       loadAllEvents(localTeams);
     } else {
-      // Keine Teams = Loading beenden
+      // Keine Teams = Loading beenden und leere Events setzen
       setIsLoading(false);
+      setFootballEvents([]);
+      setF1Events([]);
+      setNflEvents([]);
     }
   }, [localTeams]);
 
