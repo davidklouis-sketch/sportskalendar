@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useMemo } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useAuthStore } from '../../store/useAuthStore';
 import { calendarApi, userApi, highlightsApi } from '../../lib/api';
 import { format } from 'date-fns';
