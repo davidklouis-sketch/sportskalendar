@@ -215,3 +215,4 @@ export function AuthModal({ onClose, initialMode = 'login' }: AuthModalProps) {
   );
 }
 
+

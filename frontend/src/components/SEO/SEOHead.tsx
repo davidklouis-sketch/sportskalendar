@@ -105,3 +105,4 @@ function addStructuredData(data: object) {
   document.head.appendChild(script);
 }
 
+

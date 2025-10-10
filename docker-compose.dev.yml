@@ -46,6 +46,10 @@ services:
       - CORS_ORIGIN=http://localhost:5173,http://localhost:3000
       - FOOTBALL_DATA_KEY=${FOOTBALL_DATA_KEY:-}
       - API_FOOTBALL_KEY=${API_FOOTBALL_KEY:-}
+      - STRIPE_SECRET_KEY=${STRIPE_SECRET_KEY:-}
+      - STRIPE_WEBHOOK_SECRET=${STRIPE_WEBHOOK_SECRET:-}
+      - STRIPE_PRICE_ID=${STRIPE_PRICE_ID:-}
+      - FRONTEND_URL=${FRONTEND_URL:-http://localhost:5173}
     depends_on:
       postgres:
         condition: service_healthy
