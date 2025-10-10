@@ -13,6 +13,8 @@ export function Premium({ }: PremiumProps) {
   const [error, setError] = useState<string | null>(null);
 
   const handleUpgrade = async () => {
+    console.log('🔍 Premium upgrade attempt:', { isAuthenticated, user });
+    
     if (!isAuthenticated) {
       setError('Bitte melde dich zuerst an, um Premium zu aktivieren.');
       return;
@@ -22,14 +24,18 @@ export function Premium({ }: PremiumProps) {
     setError(null);
 
     try {
+      console.log('🚀 Creating checkout session...');
       const response = await stripeApi.createCheckoutSession();
+      console.log('✅ Checkout session response:', response);
+      
       if (response.data?.url) {
         window.location.href = response.data.url;
       } else {
         setError('Fehler beim Erstellen der Checkout-Session');
       }
     } catch (error: any) {
-      console.error('Premium upgrade error:', error);
+      console.error('❌ Premium upgrade error:', error);
+      console.error('❌ Error response:', error.response?.data);
       setError(error.response?.data?.message || 'Fehler beim Upgrade zu Premium');
     } finally {
       setIsLoading(false);
