@@ -18,14 +18,15 @@ export function AdBanner({ slotId, style, className, format = 'auto' }: AdBanner
 
   useEffect(() => {
     try {
-      // AdSense Initialisierung
+      // AdSense Initialisierung für diese spezifische Ad
       if (typeof window !== 'undefined' && (window as any).adsbygoogle) {
         ((window as any).adsbygoogle = (window as any).adsbygoogle || []).push({});
+        console.log('AdSense Banner initialisiert für Slot:', slotId);
       }
     } catch (error) {
-      console.error('AdSense initialization error:', error);
+      console.error('AdSense Banner initialization error:', error);
     }
-  }, []);
+  }, [slotId]);
 
   // Zeige Platzhalter wenn keine AdSense Publisher ID konfiguriert ist
   if (!import.meta.env.VITE_ADMOB_CLIENT_ID || import.meta.env.VITE_ADMOB_CLIENT_ID === 'ca-pub-xxxxxxxxxxxxxxxx') {

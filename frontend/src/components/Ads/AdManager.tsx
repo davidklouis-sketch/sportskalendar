@@ -11,30 +11,11 @@ interface AdManagerProps {
 
 export function AdManager({ children }: AdManagerProps) {
   useEffect(() => {
-    // AdSense Script laden
-    if (import.meta.env.MODE === 'production') {
-      const loadAdSense = () => {
-        if (typeof window !== 'undefined' && !(window as any).adsbygoogle) {
-          const script = document.createElement('script');
-          script.async = true;
-          script.src = 'https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js';
-          script.crossOrigin = 'anonymous';
-          script.setAttribute('data-ad-client', import.meta.env.VITE_ADMOB_CLIENT_ID);
-          document.head.appendChild(script);
-          
-          script.onload = () => {
-            console.log('AdSense Script geladen');
-            // Ads initialisieren
-            try {
-              ((window as any).adsbygoogle = (window as any).adsbygoogle || []).push({});
-            } catch (error) {
-              console.error('Fehler beim Initialisieren von AdSense:', error);
-            }
-          };
-        }
-      };
-
-      loadAdSense();
+    // AdSense Script ist bereits in index.html geladen
+    // Hier nur sicherstellen, dass adsbygoogle Array existiert
+    if (typeof window !== 'undefined') {
+      (window as any).adsbygoogle = (window as any).adsbygoogle || [];
+      console.log('AdSense Manager initialisiert');
     }
   }, []);
 
