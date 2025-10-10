@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useAuthStore } from '../../store/useAuthStore';
 import { calendarApi, userApi, highlightsApi } from '../../lib/api';
 import { format } from 'date-fns';
@@ -38,12 +38,20 @@ export function Calendar() {
   // Highlights state
   const [highlights, setHighlights] = useState<Highlight[]>([]);
   const [isLoadingHighlights, setIsLoadingHighlights] = useState(false);
+  
+  // Ref to prevent multiple simultaneous loads
+  const isLoadingRef = useRef(false);
 
   // Load all events separately for better organization
   const loadAllEvents = async (teams: Array<{ sport: string; teamName: string; teamId?: string; leagueId?: number }>) => {
+    // Prevent multiple simultaneous loads
+    if (isLoadingRef.current) {
+      return;
+    }
+    
+    isLoadingRef.current = true;
     setIsLoading(true);
     try {
-      
       // Reset all events first
       setFootballEvents([]);
       setF1Events([]);
@@ -117,6 +125,7 @@ export function Calendar() {
       console.error('Failed to load events:', error);
     } finally {
       setIsLoading(false);
+      isLoadingRef.current = false;
     }
   };
 
@@ -190,42 +199,31 @@ export function Calendar() {
     return variations;
   };
 
-  // Load user teams on mount
+  // Load user teams and events on mount
   useEffect(() => {
-    if (user?.selectedTeams) {
+    if (user?.selectedTeams && user.selectedTeams.length > 0) {
       setLocalTeams(user.selectedTeams);
+      // Auto-select first sport if not selected
+      if (!selectedSport) {
+        setSelectedSport(user.selectedTeams[0].sport as 'football' | 'nfl' | 'f1');
+      }
+      // Load events for teams
+      loadAllEvents(user.selectedTeams);
     } else {
       // No teams = stop loading immediately
-      setIsLoading(false);
-    }
-  }, [user?.selectedTeams]);
-
-  // Load events when teams change
-  useEffect(() => {
-    if (localTeams.length > 0) {
-      loadAllEvents(localTeams);
-    } else {
-      // Keine Teams = Loading beenden und leere Events setzen
       setIsLoading(false);
       setFootballEvents([]);
       setF1Events([]);
       setNflEvents([]);
     }
-  }, [localTeams]);
+  }, [user?.selectedTeams]);
 
-  // Load highlights when sport selection changes
+  // Load highlights when sport selection changes (but only if we have teams)
   useEffect(() => {
     if (selectedSport && localTeams.length > 0) {
       loadHighlights();
     }
-  }, [selectedSport, localTeams]);
-
-  // Auto-select first sport if available
-  useEffect(() => {
-    if (user?.selectedTeams?.length && !selectedSport) {
-      setSelectedSport(user.selectedTeams[0].sport as 'football' | 'nfl' | 'f1');
-    }
-  }, [user?.selectedTeams, selectedSport]);
+  }, [selectedSport]);
 
   const handleAddTeam = async (sport: string, teamName: string, teamId?: string, leagueId?: number) => {
     if (!user) return;
