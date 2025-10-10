@@ -59,55 +59,10 @@ export function Calendar() {
           const response = await calendarApi.getEvents('football', leagues);
           let events = (response.data as Event[]) || [];
         
-        // Filter events by selected teams using improved matching
-        const normalizeTeamName = (name: string): string[] => {
-          const normalized = name.toLowerCase().trim();
-          const variations: string[] = [normalized];
-          
-          const mappings: Record<string, string[]> = {
-            'bayern munich': ['fc bayern', 'bayern münchen', 'fc bayern münchen', 'bayern'],
-            'borussia dortmund': ['bvb', 'borussia', 'bvb dortmund', 'dortmund'],
-            'bayer leverkusen': ['bayer 04', 'leverkusen', 'bayer', 'werkself'],
-            'schalke 04': ['schalke', 's04', 'schalke 04'],
-            'eintracht frankfurt': ['eintracht', 'frankfurt', 'sg eintracht'],
-            'vfl wolfsburg': ['wolfsburg', 'vfl', 'vfl wolfsburg'],
-            'borussia mönchengladbach': ['gladbach', 'borussia mönchengladbach', 'bmg'],
-            'tsg hoffenheim': ['hoffenheim', 'tsg', 'tsg hoffenheim'],
-            '1. fc union berlin': ['union berlin', 'union', '1. fc union'],
-            'sc freiburg': ['freiburg', 'sc freiburg'],
-            '1. fc köln': ['köln', '1. fc köln', 'fc köln'],
-            'hertha bsc': ['hertha', 'hertha bsc', 'hertha berlin'],
-            'vfb stuttgart': ['stuttgart', 'vfb', 'vfb stuttgart'],
-            'werder bremen': ['bremen', 'werder', 'werder bremen'],
-            '1. fsv mainz 05': ['mainz', '1. fsv mainz', 'mainz 05'],
-            'fc augsburg': ['augsburg', 'fc augsburg'],
-            'arminia bielefeld': ['bielefeld', 'arminia', 'arminia bielefeld'],
-            'greuther fürth': ['fürth', 'greuther', 'greuther fürth'],
-            'bochum': ['bochum', 'vfl bochum'],
-            'darmstadt': ['darmstadt', 'sv darmstadt']
-          };
-          
-          for (const [key, values] of Object.entries(mappings)) {
-            if (normalized.includes(key)) {
-              variations.push(...values);
-              break;
-            }
-          }
-          return variations;
-        };
-        
-        events = events.filter((event: Event) => {
-          const matches = footballTeams.some(team => {
-                const eventTitle = event.title.toLowerCase();
-            const teamVariations = normalizeTeamName(team.teamName);
-            const match = teamVariations.some(variation => eventTitle.includes(variation));
-            if (match) {
-              console.log(`✅ Event "${event.title}" matches team "${team.teamName}"`);
-            }
-            return match;
-          });
-          return matches;
-        });
+        // Temporär: Alle Events anzeigen ohne Filterung für Debugging
+        console.log(`📊 Gefundene Events: ${events.length}`);
+        console.log('Events:', events);
+        console.log('Teams:', footballTeams);
         
         setFootballEvents(events);
         } catch (error) {
