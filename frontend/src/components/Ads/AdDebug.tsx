@@ -15,6 +15,15 @@ export function AdDebug() {
       </h3>
       
       <div className="space-y-2 text-sm">
+        {/* Legende */}
+        <div className="mb-3 p-2 bg-gray-50 dark:bg-gray-800/50 rounded border border-gray-200 dark:border-gray-700">
+          <div className="text-xs font-medium text-gray-600 dark:text-gray-400 mb-1">Farb-Legende:</div>
+          <div className="flex flex-wrap gap-2 text-xs">
+            <span className="px-2 py-1 rounded bg-green-100 text-green-800">✅ Konfiguriert</span>
+            <span className="px-2 py-1 rounded bg-blue-100 text-blue-800">ℹ️ Standard-Wert</span>
+            <span className="px-2 py-1 rounded bg-red-100 text-red-800">❌ Nicht gesetzt</span>
+          </div>
+        </div>
         <div>
           <span className="font-medium">Mode:</span> 
           <span className={`ml-2 px-2 py-1 rounded text-xs ${
@@ -37,28 +46,52 @@ export function AdDebug() {
         
         <div>
           <span className="font-medium">Banner Slot:</span>
-          <span className="ml-2 px-2 py-1 rounded text-xs bg-gray-100 text-gray-800">
+          <span className={`ml-2 px-2 py-1 rounded text-xs ${
+            bannerSlot && bannerSlot !== '7002462664' 
+              ? 'bg-green-100 text-green-800' 
+              : bannerSlot 
+                ? 'bg-blue-100 text-blue-800'
+                : 'bg-red-100 text-red-800'
+          }`}>
             {bannerSlot || 'NICHT GESETZT'}
           </span>
         </div>
         
         <div>
           <span className="font-medium">Square Slot:</span>
-          <span className="ml-2 px-2 py-1 rounded text-xs bg-gray-100 text-gray-800">
+          <span className={`ml-2 px-2 py-1 rounded text-xs ${
+            squareSlot && squareSlot !== '5008646728' 
+              ? 'bg-green-100 text-green-800' 
+              : squareSlot 
+                ? 'bg-blue-100 text-blue-800'
+                : 'bg-red-100 text-red-800'
+          }`}>
             {squareSlot || 'NICHT GESETZT'}
           </span>
         </div>
         
         <div>
           <span className="font-medium">Leaderboard Slot:</span>
-          <span className="ml-2 px-2 py-1 rounded text-xs bg-gray-100 text-gray-800">
+          <span className={`ml-2 px-2 py-1 rounded text-xs ${
+            leaderboardSlot && leaderboardSlot !== '4384038187' 
+              ? 'bg-green-100 text-green-800' 
+              : leaderboardSlot 
+                ? 'bg-blue-100 text-blue-800'
+                : 'bg-red-100 text-red-800'
+          }`}>
             {leaderboardSlot || 'NICHT GESETZT'}
           </span>
         </div>
         
         <div>
           <span className="font-medium">Interstitial Slot:</span>
-          <span className="ml-2 px-2 py-1 rounded text-xs bg-gray-100 text-gray-800">
+          <span className={`ml-2 px-2 py-1 rounded text-xs ${
+            interstitialSlot && interstitialSlot !== '9901880755' 
+              ? 'bg-green-100 text-green-800' 
+              : interstitialSlot 
+                ? 'bg-blue-100 text-blue-800'
+                : 'bg-red-100 text-red-800'
+          }`}>
             {interstitialSlot || 'NICHT GESETZT'}
           </span>
         </div>
