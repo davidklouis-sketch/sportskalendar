@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useMemo } from 'react';
 import { useAuthStore } from '../../store/useAuthStore';
 import { calendarApi, userApi, highlightsApi } from '../../lib/api';
 import { format } from 'date-fns';
@@ -255,19 +255,25 @@ export function Calendar() {
     return variations;
   };
 
+  // Memoize teams to prevent unnecessary re-renders
+  const memoizedTeams = useMemo(() => {
+    return user?.selectedTeams || [];
+  }, [user?.selectedTeams]);
+
   // Load user teams and events on mount
   useEffect(() => {
-    console.log('👤 User teams changed:', user?.selectedTeams);
-    if (user?.selectedTeams && user.selectedTeams.length > 0) {
+    console.log('👤 User teams changed:', memoizedTeams);
+    
+    if (memoizedTeams.length > 0) {
       console.log('👤 Setting local teams and loading events...');
-      setLocalTeams(user.selectedTeams);
+      setLocalTeams(memoizedTeams);
       // Auto-select first sport if not selected
       if (!selectedSport) {
-        console.log('👤 Auto-selecting first sport:', user.selectedTeams[0].sport);
-        setSelectedSport(user.selectedTeams[0].sport as 'football' | 'nfl' | 'f1');
+        console.log('👤 Auto-selecting first sport:', memoizedTeams[0].sport);
+        setSelectedSport(memoizedTeams[0].sport as 'football' | 'nfl' | 'f1');
       }
       // Load events for teams
-      loadAllEvents(user.selectedTeams);
+      loadAllEvents(memoizedTeams);
     } else {
       console.log('👤 No teams, stopping loading...');
       // No teams = stop loading immediately
@@ -276,7 +282,7 @@ export function Calendar() {
       setF1Events([]);
       setNflEvents([]);
     }
-  }, [user?.selectedTeams]);
+  }, [memoizedTeams]);
 
   // Load highlights when sport selection changes (but only if we have teams)
   useEffect(() => {
