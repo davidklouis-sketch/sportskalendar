@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { SEOHead } from '../SEO/SEOHead';
 import { SportsKalendarBanner, SportsKalendarLeaderboard } from '../Ads/AdManager';
+import { AdDebug } from '../Ads/AdDebug';
 
 interface LandingPageProps {
   onShowLogin: () => void;
@@ -90,6 +91,9 @@ export function LandingPage({ onShowLogin, onShowRegister }: LandingPageProps) {
       />
       
       <div className="max-w-7xl mx-auto px-4 py-8 pt-24">
+      {/* AdMob Debug Information */}
+      <AdDebug />
+      
       {/* Hero Section */}
       <div className="text-center mb-12">
         <div className="mb-6">

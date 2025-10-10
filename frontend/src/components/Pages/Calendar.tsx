@@ -214,14 +214,14 @@ export function Calendar() {
     if (localTeams.length > 0) {
       loadAllEvents();
     }
-  }, [localTeams]); // Remove loadAllEvents from dependencies to prevent loop
+  }, [localTeams, loadAllEvents]); // Include loadAllEvents in dependencies
 
   // Load highlights when sport selection changes
   useEffect(() => {
     if (selectedSport) {
       loadHighlights();
     }
-  }, [selectedSport]); // Remove loadHighlights from dependencies to prevent loop
+  }, [selectedSport, loadHighlights]); // Include loadHighlights in dependencies
 
   // Auto-select first sport if available
   useEffect(() => {
