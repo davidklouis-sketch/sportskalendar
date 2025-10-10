@@ -14,7 +14,8 @@ export const isStripeConfigured = () => {
   console.log('🔍 Stripe configuration check:', {
     hasSecretKey,
     secretKeyPrefix: process.env.STRIPE_SECRET_KEY?.substring(0, 10) + '...' || 'undefined',
-    nodeEnv: process.env.NODE_ENV
+    nodeEnv: process.env.NODE_ENV,
+    allEnvKeys: Object.keys(process.env).filter(key => key.includes('STRIPE'))
   });
   return hasSecretKey;
 };

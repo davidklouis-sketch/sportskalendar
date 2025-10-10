@@ -139,15 +139,20 @@ jobs:
           echo "STRIPE_PRICE_ID: ${STRIPE_PRICE_ID}"
           echo "FRONTEND_URL: ${FRONTEND_URL}"
           
-          # Test: Create a temporary env file with Stripe variables
-          echo "🔍 Creating temporary environment file..."
-          echo "STRIPE_SECRET_KEY=${STRIPE_SECRET_KEY}" > .env.temp
-          echo "STRIPE_WEBHOOK_SECRET=${STRIPE_WEBHOOK_SECRET}" >> .env.temp
-          echo "STRIPE_PRICE_ID=${STRIPE_PRICE_ID}" >> .env.temp
-          echo "FRONTEND_URL=${FRONTEND_URL}" >> .env.temp
+          # Test: Create a complete environment file with all variables
+          echo "🔍 Creating complete environment file..."
+          cp .env.production .env.complete
+          echo "STRIPE_SECRET_KEY=${STRIPE_SECRET_KEY}" >> .env.complete
+          echo "STRIPE_WEBHOOK_SECRET=${STRIPE_WEBHOOK_SECRET}" >> .env.complete
+          echo "STRIPE_PRICE_ID=${STRIPE_PRICE_ID}" >> .env.complete
+          echo "FRONTEND_URL=${FRONTEND_URL}" >> .env.complete
           
-          # Start services with both env files
-          docker compose -f docker-compose.traefik.yml --env-file .env.production --env-file .env.temp up -d --force-recreate
+          # Debug: Show the complete env file (without sensitive data)
+          echo "🔍 Complete environment file contents:"
+          sed 's/STRIPE_SECRET_KEY=.*/STRIPE_SECRET_KEY=***/' .env.complete | grep STRIPE
+          
+          # Start services with complete env file
+          docker compose -f docker-compose.traefik.yml --env-file .env.complete up -d --force-recreate
           
           # Clean up old images
           docker image prune -f
