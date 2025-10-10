@@ -1,4 +1,5 @@
 // AdSense Debug Component
+import { useAuthStore } from '../../store/useAuthStore';
 
 export function AdDebug() {
   const admobClientId = import.meta.env.VITE_ADMOB_CLIENT_ID;
