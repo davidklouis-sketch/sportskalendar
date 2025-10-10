@@ -28,29 +28,23 @@ export function AdBanner({ slotId, style, className, format = 'auto' }: AdBanner
     }
   }, [slotId]);
 
-  // Zeige Platzhalter wenn keine AdSense Publisher ID konfiguriert ist
-  if (!import.meta.env.VITE_ADMOB_CLIENT_ID || import.meta.env.VITE_ADMOB_CLIENT_ID === 'ca-pub-xxxxxxxxxxxxxxxx' || import.meta.env.VITE_ADMOB_CLIENT_ID === '') {
-    return (
-      <div 
-        className={`bg-gray-200 dark:bg-gray-700 border-2 border-dashed border-gray-400 dark:border-gray-500 rounded-lg flex items-center justify-center text-gray-500 dark:text-gray-400 text-sm ${className || ''}`}
-        style={defaultStyle}
-      >
-        <div className="text-center p-4">
-          <div className="text-lg mb-2">📢</div>
-          <div>Ad Banner Platzhalter</div>
-          <div className="text-xs mt-1">Slot: {slotId}</div>
-          <div className="text-xs mt-1 text-red-500">⚠️ AdSense Publisher ID nicht konfiguriert</div>
-        </div>
-      </div>
-    );
-  }
+  // Temporär: Immer echte AdSense-Anzeige anzeigen für Debugging
+  const clientId = import.meta.env.VITE_ADMOB_CLIENT_ID || 'ca-pub-2481184858901580';
+  
+  // Debug: Zeige Environment Variable Status
+  console.log('AdBanner Debug:', {
+    clientId,
+    slotId,
+    hasClientId: !!import.meta.env.VITE_ADMOB_CLIENT_ID,
+    envClientId: import.meta.env.VITE_ADMOB_CLIENT_ID
+  });
 
   return (
     <div className={className} style={defaultStyle}>
       <ins
         className="adsbygoogle"
         style={{ display: 'block' }}
-        data-ad-client={import.meta.env.VITE_ADMOB_CLIENT_ID}
+        data-ad-client={clientId}
         data-ad-slot={slotId}
         data-ad-format={format}
         data-full-width-responsive="true"
