@@ -6,6 +6,8 @@ import { FOOTBALL_LEAGUES, FOOTBALL_TEAMS, F1_DRIVERS, NFL_TEAMS } from '../../d
 import { LiveData } from '../LiveData';
 import { SportsKalendarBanner, SportsKalendarSquare } from '../Ads/AdManager';
 import { AdDebug } from '../Ads/AdDebug';
+import { AdBanner } from '../Ads/AdBanner';
+import { AdSquare } from '../Ads/AdSquare';
 
 interface Event {
   id: string;
@@ -268,6 +270,23 @@ export function Calendar() {
       {/* AdSense Debug Panel */}
       <div className="max-w-7xl mx-auto px-4 pt-24">
         <AdDebug />
+        
+        {/* Temporär: Direkte AdSense-Tests */}
+        <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4 mb-4">
+          <h3 className="text-lg font-semibold text-blue-800 dark:text-blue-200 mb-3">
+            🧪 AdSense Test-Anzeigen
+          </h3>
+          <div className="space-y-4">
+            <div>
+              <h4 className="font-medium text-blue-700 dark:text-blue-300 mb-2">Banner Ad Test:</h4>
+              <AdBanner slotId="7002462664" />
+            </div>
+            <div>
+              <h4 className="font-medium text-blue-700 dark:text-blue-300 mb-2">Square Ad Test:</h4>
+              <AdSquare slotId="5008646728" />
+            </div>
+          </div>
+        </div>
       </div>
       
       {/* Hero Section */}
