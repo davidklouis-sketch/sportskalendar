@@ -77,6 +77,10 @@ export function Calendar() {
       setFootballEvents([]);
       setF1Events([]);
       setNflEvents([]);
+      _setNbaEvents([]);
+      _setNhlEvents([]);
+      _setMlbEvents([]);
+      _setTennisEvents([]);
       
       // Load Football Events
       const footballTeams = teams.filter(t => t.sport === 'football');
@@ -178,6 +182,98 @@ export function Calendar() {
         } catch (error) {
           console.error('Failed to load NFL events:', error);
           setNflEvents([]);
+        }
+      }
+      
+      // Load NBA Events
+      const nbaTeams = teams.filter(t => t.sport === 'nba');
+      if (nbaTeams.length > 0) {
+        try {
+          console.log('🏀 Loading NBA events...');
+          const response = await calendarApi.getEvents('nba', []);
+          let events = (response.data as Event[]) || [];
+          
+          // Filter events for selected teams
+          const teamNames = nbaTeams.map(t => t.teamName.toLowerCase());
+          events = events.filter(event => {
+            const eventTitle = event.title.toLowerCase();
+            return teamNames.some(teamName => eventTitle.includes(teamName));
+          });
+          
+          _setNbaEvents(events);
+          console.log('🏀 NBA events loaded:', events.length);
+        } catch (error) {
+          console.error('Failed to load NBA events:', error);
+          _setNbaEvents([]);
+        }
+      }
+      
+      // Load NHL Events
+      const nhlTeams = teams.filter(t => t.sport === 'nhl');
+      if (nhlTeams.length > 0) {
+        try {
+          console.log('🏒 Loading NHL events...');
+          const response = await calendarApi.getEvents('nhl', []);
+          let events = (response.data as Event[]) || [];
+          
+          // Filter events for selected teams
+          const teamNames = nhlTeams.map(t => t.teamName.toLowerCase());
+          events = events.filter(event => {
+            const eventTitle = event.title.toLowerCase();
+            return teamNames.some(teamName => eventTitle.includes(teamName));
+          });
+          
+          _setNhlEvents(events);
+          console.log('🏒 NHL events loaded:', events.length);
+        } catch (error) {
+          console.error('Failed to load NHL events:', error);
+          _setNhlEvents([]);
+        }
+      }
+      
+      // Load MLB Events
+      const mlbTeams = teams.filter(t => t.sport === 'mlb');
+      if (mlbTeams.length > 0) {
+        try {
+          console.log('⚾ Loading MLB events...');
+          const response = await calendarApi.getEvents('mlb', []);
+          let events = (response.data as Event[]) || [];
+          
+          // Filter events for selected teams
+          const teamNames = mlbTeams.map(t => t.teamName.toLowerCase());
+          events = events.filter(event => {
+            const eventTitle = event.title.toLowerCase();
+            return teamNames.some(teamName => eventTitle.includes(teamName));
+          });
+          
+          _setMlbEvents(events);
+          console.log('⚾ MLB events loaded:', events.length);
+        } catch (error) {
+          console.error('Failed to load MLB events:', error);
+          _setMlbEvents([]);
+        }
+      }
+      
+      // Load Tennis Events
+      const tennisTeams = teams.filter(t => t.sport === 'tennis');
+      if (tennisTeams.length > 0) {
+        try {
+          console.log('🎾 Loading Tennis events...');
+          const response = await calendarApi.getEvents('tennis', []);
+          let events = (response.data as Event[]) || [];
+          
+          // Filter events for selected tours
+          const tourNames = tennisTeams.map(t => t.teamName.toLowerCase());
+          events = events.filter(event => {
+            const eventTitle = event.title.toLowerCase();
+            return tourNames.some(tourName => eventTitle.includes(tourName));
+          });
+          
+          _setTennisEvents(events);
+          console.log('🎾 Tennis events loaded:', events.length);
+        } catch (error) {
+          console.error('Failed to load Tennis events:', error);
+          _setTennisEvents([]);
         }
       }
       
@@ -527,14 +623,24 @@ export function Calendar() {
             {/* Sport Selection - Floating Pills */}
             {localTeams.length > 0 && (
               <div className="flex flex-wrap gap-3 justify-center lg:justify-start">
-                {['football', 'f1', 'nfl'].map((sport) => {
+                {['football', 'f1', 'nfl', 'nba', 'nhl', 'mlb', 'tennis'].map((sport) => {
                   const hasTeams = localTeams.some(t => t.sport === sport);
                   if (!hasTeams) return null;
+                  
+                  const sportNames: Record<string, string> = {
+                    'football': 'Fußball',
+                    'f1': 'Formel 1',
+                    'nfl': 'NFL',
+                    'nba': 'NBA',
+                    'nhl': 'NHL',
+                    'mlb': 'MLB',
+                    'tennis': 'Tennis'
+                  };
                   
                   return (
                     <button
                       key={sport}
-                      onClick={() => setSelectedSport(sport as 'football' | 'f1' | 'nfl')}
+                      onClick={() => setSelectedSport(sport as 'football' | 'f1' | 'nfl' | 'nba' | 'nhl' | 'mlb' | 'tennis')}
                       className={`group relative px-6 py-3 rounded-2xl font-semibold transition-all duration-300 transform hover:scale-105 ${
                         selectedSport === sport
                           ? `bg-gradient-to-r ${getSportColor(sport)} text-white shadow-xl`
@@ -542,7 +648,7 @@ export function Calendar() {
                       }`}
                     >
                       <span className="text-lg mr-2">{getSportIcon(sport)}</span>
-                      {sport === 'football' ? 'Fußball' : sport.toUpperCase()}
+                      {sportNames[sport]}
                       {selectedSport === sport && (
                         <div className="absolute -inset-1 bg-gradient-to-r from-white/20 to-white/10 rounded-2xl blur opacity-75"></div>
                       )}
@@ -564,12 +670,28 @@ export function Calendar() {
                       </div>
               <div>
                         <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
-                          {selectedSport === 'football' ? 'Fußball Events' : `${selectedSport.toUpperCase()} Events`}
+                          {(() => {
+                            const sportNames: Record<string, string> = {
+                              'football': 'Fußball Events',
+                              'f1': 'Formel 1 Events',
+                              'nfl': 'NFL Events',
+                              'nba': 'NBA Events',
+                              'nhl': 'NHL Events',
+                              'mlb': 'MLB Events',
+                              'tennis': 'Tennis Events'
+                            };
+                            return sportNames[selectedSport] || `${selectedSport.toUpperCase()} Events`;
+                          })()}
                         </h2>
                         <p className="text-gray-600 dark:text-gray-400">
                           {(() => {
                             const events = selectedSport === 'football' ? footballEvents : 
-                                         selectedSport === 'f1' ? f1Events : nflEvents;
+                                         selectedSport === 'f1' ? f1Events : 
+                                         selectedSport === 'nfl' ? nflEvents :
+                                         selectedSport === 'nba' ? _nbaEvents :
+                                         selectedSport === 'nhl' ? _nhlEvents :
+                                         selectedSport === 'mlb' ? _mlbEvents :
+                                         selectedSport === 'tennis' ? _tennisEvents : [];
                             return `${events.length} kommende Spiele`;
                           })()}
                         </p>
@@ -584,7 +706,12 @@ export function Calendar() {
             </div>
                       ) : (() => {
                         const events = selectedSport === 'football' ? footballEvents : 
-                                     selectedSport === 'f1' ? f1Events : nflEvents;
+                                     selectedSport === 'f1' ? f1Events : 
+                                     selectedSport === 'nfl' ? nflEvents :
+                                     selectedSport === 'nba' ? _nbaEvents :
+                                     selectedSport === 'nhl' ? _nhlEvents :
+                                     selectedSport === 'mlb' ? _mlbEvents :
+                                     selectedSport === 'tennis' ? _tennisEvents : [];
                         
                         if (events.length === 0) {
                           return (
