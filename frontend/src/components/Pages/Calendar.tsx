@@ -651,7 +651,10 @@ export function Calendar() {
 
   // Expose force load function to global scope for debugging
   useEffect(() => {
-    (window as any).forceLoadEvents = () => {
+    // Store references in a way that persists across re-renders
+    const globalScope = window as any;
+    
+    globalScope.forceLoadEvents = () => {
       console.log('🔧 Manual force load triggered from console');
       if (localTeams.length > 0) {
         loadAllEvents(localTeams);
@@ -660,7 +663,7 @@ export function Calendar() {
       }
     };
     
-    (window as any).debugEvents = () => {
+    globalScope.debugEvents = () => {
       console.log('🔍 Current event states:');
       console.log('⚽ Football Events:', footballEvents);
       console.log('🏀 NBA Events:', _nbaEvents);
@@ -672,7 +675,18 @@ export function Calendar() {
       console.log('👥 Local Teams:', localTeams);
       console.log('⏰ Next Event:', nextEvent);
     };
-  }, [localTeams, footballEvents, f1Events, _nbaEvents, nflEvents, _nhlEvents, _mlbEvents, _tennisEvents, nextEvent]);
+    
+    globalScope.findNextEventNow = () => {
+      console.log('🔧 Manual findNextEvent triggered from console');
+      findNextEvent();
+    };
+    
+    // Also log immediately when events change for easier debugging
+    if (footballEvents.length > 0 || _nbaEvents.length > 0 || f1Events.length > 0) {
+      console.log('📊 Events are loaded - you can now use debugEvents() in console');
+      console.log('Available commands: debugEvents(), forceLoadEvents(), findNextEventNow()');
+    }
+  }, [localTeams, footballEvents, f1Events, _nbaEvents, nflEvents, _nhlEvents, _mlbEvents, _tennisEvents, nextEvent, findNextEvent]);
 
   // Debug: Log all events when they change
   useEffect(() => {
@@ -684,6 +698,34 @@ export function Calendar() {
     console.log('🏒 NHL Events:', _nhlEvents.map(e => ({ title: e.title, startsAt: e.startsAt })));
     console.log('⚾ MLB Events:', _mlbEvents.map(e => ({ title: e.title, startsAt: e.startsAt })));
     console.log('🎾 Tennis Events:', _tennisEvents.map(e => ({ title: e.title, startsAt: e.startsAt })));
+    
+    // Show detailed date analysis for each event
+    const allEvents = [
+      ...footballEvents.map(e => ({ ...e, sport: 'football' })),
+      ...f1Events.map(e => ({ ...e, sport: 'f1' })),
+      ...nflEvents.map(e => ({ ...e, sport: 'nfl' })),
+      ..._nbaEvents.map(e => ({ ...e, sport: 'nba' })),
+      ..._nhlEvents.map(e => ({ ...e, sport: 'nhl' })),
+      ..._mlbEvents.map(e => ({ ...e, sport: 'mlb' })),
+      ..._tennisEvents.map(e => ({ ...e, sport: 'tennis' })),
+    ];
+    
+    if (allEvents.length > 0) {
+      console.log('📅 DETAILED DATE ANALYSIS:');
+      const now = new Date();
+      allEvents.forEach((event, index) => {
+        const eventDate = new Date(event.startsAt);
+        const timeDiff = eventDate.getTime() - now.getTime();
+        const daysDiff = Math.ceil(timeDiff / (1000 * 60 * 60 * 24));
+        const isValid = !isNaN(eventDate.getTime());
+        const isFuture = eventDate > now;
+        
+        console.log(`${index + 1}. [${event.sport}] "${event.title}"`);
+        console.log(`   Raw date: "${event.startsAt}"`);
+        console.log(`   Parsed: ${eventDate.toISOString()}`);
+        console.log(`   Valid: ${isValid}, Future: ${isFuture}, Days from now: ${daysDiff}`);
+      });
+    }
     
     // Auto-trigger findNextEvent when events change
     setTimeout(() => {
