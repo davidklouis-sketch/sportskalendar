@@ -29,13 +29,18 @@ export function Header({ currentPage, onNavigate, onShowLogin, onShowRegister }:
     { key: 'calendar', label: 'Kalender', icon: '📅', requiresAuth: false },
     { key: 'live', label: 'Live', icon: '🔴', requiresAuth: true },
     { key: 'highlights', label: 'Highlights', icon: '🎬', requiresAuth: true },
-    { key: 'premium', label: 'Premium', icon: '⭐', requiresAuth: false }
+    { key: 'premium', label: 'Premium', icon: '⭐', requiresAuth: false, hideForPremium: true }
   ];
 
-  // Filter navigation items based on authentication status
-  const visibleNavigationItems = navigationItems.filter(item => 
-    !item.requiresAuth || isAuthenticated
-  );
+  // Filter navigation items based on authentication status and premium status
+  const visibleNavigationItems = navigationItems.filter(item => {
+    // Hide premium navigation item for premium users
+    if (item.hideForPremium && user?.isPremium) {
+      return false;
+    }
+    // Standard auth filtering
+    return !item.requiresAuth || isAuthenticated;
+  });
 
   const getPageIcon = (page: string) => {
     switch (page) {
