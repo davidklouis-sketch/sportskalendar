@@ -167,41 +167,41 @@ export function EventCountdown({ eventTitle, eventDate, sport, compact = false }
           {!timeRemaining.isLive && !timeRemaining.isPast && (
             <div className="grid grid-cols-4 gap-3">
               {/* Days */}
-              <div className="bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-700 dark:to-gray-600 rounded-xl p-4 text-center">
-                <div className="text-3xl font-bold text-gray-900 dark:text-white mb-1">
+              <div className="bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-700 dark:to-gray-600 rounded-xl p-4 text-center flex flex-col justify-center items-center min-h-[80px]">
+                <div className="text-3xl font-bold text-gray-900 dark:text-white mb-2 leading-none">
                   {String(timeRemaining.days).padStart(2, '0')}
                 </div>
-                <div className="text-xs text-gray-500 dark:text-gray-400 uppercase font-semibold">
+                <div className="text-xs text-gray-500 dark:text-gray-400 uppercase font-semibold tracking-wide">
                   Tage
                 </div>
               </div>
 
               {/* Hours */}
-              <div className="bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-700 dark:to-gray-600 rounded-xl p-4 text-center">
-                <div className="text-3xl font-bold text-gray-900 dark:text-white mb-1">
+              <div className="bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-700 dark:to-gray-600 rounded-xl p-4 text-center flex flex-col justify-center items-center min-h-[80px]">
+                <div className="text-3xl font-bold text-gray-900 dark:text-white mb-2 leading-none">
                   {String(timeRemaining.hours).padStart(2, '0')}
                 </div>
-                <div className="text-xs text-gray-500 dark:text-gray-400 uppercase font-semibold">
+                <div className="text-xs text-gray-500 dark:text-gray-400 uppercase font-semibold tracking-wide">
                   Stunden
                 </div>
               </div>
 
               {/* Minutes */}
-              <div className="bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-700 dark:to-gray-600 rounded-xl p-4 text-center">
-                <div className="text-3xl font-bold text-gray-900 dark:text-white mb-1">
+              <div className="bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-700 dark:to-gray-600 rounded-xl p-4 text-center flex flex-col justify-center items-center min-h-[80px]">
+                <div className="text-3xl font-bold text-gray-900 dark:text-white mb-2 leading-none">
                   {String(timeRemaining.minutes).padStart(2, '0')}
                 </div>
-                <div className="text-xs text-gray-500 dark:text-gray-400 uppercase font-semibold">
+                <div className="text-xs text-gray-500 dark:text-gray-400 uppercase font-semibold tracking-wide">
                   Minuten
                 </div>
               </div>
 
               {/* Seconds */}
-              <div className="bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-700 dark:to-gray-600 rounded-xl p-4 text-center">
-                <div className="text-3xl font-bold text-gray-900 dark:text-white mb-1">
+              <div className="bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-700 dark:to-gray-600 rounded-xl p-4 text-center flex flex-col justify-center items-center min-h-[80px]">
+                <div className="text-3xl font-bold text-gray-900 dark:text-white mb-2 leading-none">
                   {String(timeRemaining.seconds).padStart(2, '0')}
                 </div>
-                <div className="text-xs text-gray-500 dark:text-gray-400 uppercase font-semibold">
+                <div className="text-xs text-gray-500 dark:text-gray-400 uppercase font-semibold tracking-wide">
                   Sekunden
                 </div>
               </div>
