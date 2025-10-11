@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { useAuthStore } from '../../store/useAuthStore';
-import { calendarApi, userApi, highlightsApi, liveApi } from '../../lib/api';
+import { calendarApi, userApi, highlightsApi, liveApi, sportsApi } from '../../lib/api';
 import { format } from 'date-fns';
 import { FOOTBALL_LEAGUES, FOOTBALL_TEAMS, F1_DRIVERS, NFL_TEAMS, NBA_TEAMS, NHL_TEAMS, MLB_TEAMS } from '../../data/teams';
 import { LiveData } from '../LiveData';
@@ -25,6 +25,16 @@ interface Highlight {
   thumbnail?: string;
   duration?: string;
   views?: number;
+}
+
+interface ApiTeam {
+  id: string;
+  name: string;
+  shortName?: string;
+  badge?: string;
+  logo?: string;
+  stadium?: string;
+  division?: string;
 }
 
 export function Calendar() {
@@ -55,6 +65,12 @@ export function Calendar() {
   // Highlights state
   const [highlights, setHighlights] = useState<Highlight[]>([]);
   const [isLoadingHighlights, setIsLoadingHighlights] = useState(false);
+  
+  // API Teams state (with images)
+  const [nbaTeamsFromApi, setNbaTeamsFromApi] = useState<ApiTeam[]>([]);
+  const [nhlTeamsFromApi, setNhlTeamsFromApi] = useState<ApiTeam[]>([]);
+  const [mlbTeamsFromApi, setMlbTeamsFromApi] = useState<ApiTeam[]>([]);
+  const [isLoadingTeams, setIsLoadingTeams] = useState(false);
   
   // Ref to prevent multiple simultaneous loads
   const isLoadingRef = useRef(false);
@@ -402,6 +418,39 @@ export function Calendar() {
       loadHighlights();
     }
   }, [selectedSport]);
+
+  // Load teams from API when modal opens
+  const loadTeamsFromApi = async () => {
+    setIsLoadingTeams(true);
+    try {
+      const [nbaResponse, nhlResponse, mlbResponse] = await Promise.all([
+        sportsApi.getNBATeams(),
+        sportsApi.getNHLTeams(),
+        sportsApi.getMLBTeams(),
+      ]);
+
+      if (nbaResponse.data.success && nbaResponse.data.teams) {
+        setNbaTeamsFromApi(nbaResponse.data.teams);
+      }
+      if (nhlResponse.data.success && nhlResponse.data.teams) {
+        setNhlTeamsFromApi(nhlResponse.data.teams);
+      }
+      if (mlbResponse.data.success && mlbResponse.data.teams) {
+        setMlbTeamsFromApi(mlbResponse.data.teams);
+      }
+    } catch (error) {
+      console.error('Failed to load teams from API:', error);
+    } finally {
+      setIsLoadingTeams(false);
+    }
+  };
+
+  // Load teams when modal opens
+  useEffect(() => {
+    if (showTeamSelector && (nbaTeamsFromApi.length === 0 || nhlTeamsFromApi.length === 0 || mlbTeamsFromApi.length === 0)) {
+      loadTeamsFromApi();
+    }
+  }, [showTeamSelector]);
 
   const handleAddTeam = async (sport: string, teamName: string, teamId?: string, leagueId?: number) => {
     if (!user) return;
@@ -1042,31 +1091,63 @@ export function Calendar() {
                     <p className="text-gray-600 dark:text-gray-400">Alle 30 NBA Teams</p>
                   </div>
                   
-                  <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
-                    {NBA_TEAMS.map((team) => (
-                      <button
-                        key={team.id}
-                        onClick={() => handleAddTeam('nba', team.name, team.id)}
-                        disabled={localTeams.some(t => t.teamName === team.name)}
-                        className="relative p-4 rounded-xl hover:bg-gray-100 dark:hover:bg-gray-800 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 border border-gray-200 dark:border-gray-700 hover:border-orange-300 dark:hover:border-orange-600 hover:shadow-md group"
-                      >
-                        <div className="flex flex-col items-center text-center">
-                          <div className="w-10 h-10 bg-gradient-to-r from-orange-500 to-orange-600 rounded-xl flex items-center justify-center mb-2 group-hover:scale-110 transition-transform">
-                            <span className="text-lg">🏀</span>
-                          </div>
-                          <span className="text-sm font-medium text-gray-900 dark:text-white leading-tight">{team.name}</span>
-                          <span className="text-xs text-gray-500 dark:text-gray-400 mt-1">{team.division}</span>
-                        </div>
-                        {localTeams.some(t => t.teamName === team.name) && (
-                          <div className="absolute top-2 right-2 w-6 h-6 bg-green-500 rounded-full flex items-center justify-center">
-                            <svg className="w-3 h-3 text-white" fill="currentColor" viewBox="0 0 20 20">
-                              <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
-                            </svg>
-                          </div>
-                        )}
-                      </button>
-                    ))}
-                  </div>
+                  {isLoadingTeams ? (
+                    <div className="text-center py-12">
+                      <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-orange-600"></div>
+                      <p className="mt-4 text-gray-500 dark:text-gray-400">Teams werden geladen...</p>
+                    </div>
+                  ) : (
+                    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
+                      {(nbaTeamsFromApi.length > 0 ? nbaTeamsFromApi : NBA_TEAMS).map((team) => {
+                        const teamName = team.name;
+                        const teamId = team.id;
+                        const teamBadge = 'badge' in team ? team.badge : undefined;
+                        const teamLogo = 'logo' in team ? team.logo : undefined;
+                        const teamDivision = team.division;
+                        
+                        return (
+                          <button
+                            key={teamId}
+                            onClick={() => handleAddTeam('nba', teamName, teamId)}
+                            disabled={localTeams.some(t => t.teamName === teamName)}
+                            className="relative p-4 rounded-xl hover:bg-gray-100 dark:hover:bg-gray-800 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 border border-gray-200 dark:border-gray-700 hover:border-orange-300 dark:hover:border-orange-600 hover:shadow-md group"
+                          >
+                            <div className="flex flex-col items-center text-center">
+                              {(teamBadge || teamLogo) ? (
+                                <div className="w-16 h-16 flex items-center justify-center mb-2 group-hover:scale-110 transition-transform">
+                                  <img 
+                                    src={teamBadge || teamLogo} 
+                                    alt={teamName}
+                                    className="w-full h-full object-contain"
+                                    onError={(e) => {
+                                      // Fallback to emoji icon if image fails to load
+                                      e.currentTarget.style.display = 'none';
+                                      e.currentTarget.parentElement!.innerHTML = '<span class="text-2xl">🏀</span>';
+                                    }}
+                                  />
+                                </div>
+                              ) : (
+                                <div className="w-10 h-10 bg-gradient-to-r from-orange-500 to-orange-600 rounded-xl flex items-center justify-center mb-2 group-hover:scale-110 transition-transform">
+                                  <span className="text-lg">🏀</span>
+                                </div>
+                              )}
+                              <span className="text-sm font-medium text-gray-900 dark:text-white leading-tight">{teamName}</span>
+                              {teamDivision && (
+                                <span className="text-xs text-gray-500 dark:text-gray-400 mt-1">{teamDivision}</span>
+                              )}
+                            </div>
+                            {localTeams.some(t => t.teamName === teamName) && (
+                              <div className="absolute top-2 right-2 w-6 h-6 bg-green-500 rounded-full flex items-center justify-center">
+                                <svg className="w-3 h-3 text-white" fill="currentColor" viewBox="0 0 20 20">
+                                  <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                                </svg>
+                              </div>
+                            )}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  )}
                 </div>
               )}
 
@@ -1080,31 +1161,63 @@ export function Calendar() {
                     <p className="text-gray-600 dark:text-gray-400">Alle 32 NHL Teams</p>
                   </div>
                   
-                  <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
-                    {NHL_TEAMS.map((team) => (
-                      <button
-                        key={team.id}
-                        onClick={() => handleAddTeam('nhl', team.name, team.id)}
-                        disabled={localTeams.some(t => t.teamName === team.name)}
-                        className="relative p-4 rounded-xl hover:bg-gray-100 dark:hover:bg-gray-800 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 border border-gray-200 dark:border-gray-700 hover:border-blue-300 dark:hover:border-blue-600 hover:shadow-md group"
-                      >
-                        <div className="flex flex-col items-center text-center">
-                          <div className="w-10 h-10 bg-gradient-to-r from-blue-500 to-cyan-600 rounded-xl flex items-center justify-center mb-2 group-hover:scale-110 transition-transform">
-                            <span className="text-lg">🏒</span>
-                          </div>
-                          <span className="text-sm font-medium text-gray-900 dark:text-white leading-tight">{team.name}</span>
-                          <span className="text-xs text-gray-500 dark:text-gray-400 mt-1">{team.division}</span>
-                        </div>
-                        {localTeams.some(t => t.teamName === team.name) && (
-                          <div className="absolute top-2 right-2 w-6 h-6 bg-green-500 rounded-full flex items-center justify-center">
-                            <svg className="w-3 h-3 text-white" fill="currentColor" viewBox="0 0 20 20">
-                              <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
-                            </svg>
-                          </div>
-                        )}
-                      </button>
-                    ))}
-                  </div>
+                  {isLoadingTeams ? (
+                    <div className="text-center py-12">
+                      <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+                      <p className="mt-4 text-gray-500 dark:text-gray-400">Teams werden geladen...</p>
+                    </div>
+                  ) : (
+                    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
+                      {(nhlTeamsFromApi.length > 0 ? nhlTeamsFromApi : NHL_TEAMS).map((team) => {
+                        const teamName = team.name;
+                        const teamId = team.id;
+                        const teamBadge = 'badge' in team ? team.badge : undefined;
+                        const teamLogo = 'logo' in team ? team.logo : undefined;
+                        const teamDivision = team.division;
+                        
+                        return (
+                          <button
+                            key={teamId}
+                            onClick={() => handleAddTeam('nhl', teamName, teamId)}
+                            disabled={localTeams.some(t => t.teamName === teamName)}
+                            className="relative p-4 rounded-xl hover:bg-gray-100 dark:hover:bg-gray-800 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 border border-gray-200 dark:border-gray-700 hover:border-blue-300 dark:hover:border-blue-600 hover:shadow-md group"
+                          >
+                            <div className="flex flex-col items-center text-center">
+                              {(teamBadge || teamLogo) ? (
+                                <div className="w-16 h-16 flex items-center justify-center mb-2 group-hover:scale-110 transition-transform">
+                                  <img 
+                                    src={teamBadge || teamLogo} 
+                                    alt={teamName}
+                                    className="w-full h-full object-contain"
+                                    onError={(e) => {
+                                      // Fallback to emoji icon if image fails to load
+                                      e.currentTarget.style.display = 'none';
+                                      e.currentTarget.parentElement!.innerHTML = '<span class="text-2xl">🏒</span>';
+                                    }}
+                                  />
+                                </div>
+                              ) : (
+                                <div className="w-10 h-10 bg-gradient-to-r from-blue-500 to-cyan-600 rounded-xl flex items-center justify-center mb-2 group-hover:scale-110 transition-transform">
+                                  <span className="text-lg">🏒</span>
+                                </div>
+                              )}
+                              <span className="text-sm font-medium text-gray-900 dark:text-white leading-tight">{teamName}</span>
+                              {teamDivision && (
+                                <span className="text-xs text-gray-500 dark:text-gray-400 mt-1">{teamDivision}</span>
+                              )}
+                            </div>
+                            {localTeams.some(t => t.teamName === teamName) && (
+                              <div className="absolute top-2 right-2 w-6 h-6 bg-green-500 rounded-full flex items-center justify-center">
+                                <svg className="w-3 h-3 text-white" fill="currentColor" viewBox="0 0 20 20">
+                                  <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                                </svg>
+                              </div>
+                            )}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  )}
                 </div>
               )}
 
@@ -1118,31 +1231,63 @@ export function Calendar() {
                     <p className="text-gray-600 dark:text-gray-400">Alle 30 MLB Teams</p>
                   </div>
                   
-                  <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
-                    {MLB_TEAMS.map((team) => (
-                      <button
-                        key={team.id}
-                        onClick={() => handleAddTeam('mlb', team.name, team.id)}
-                        disabled={localTeams.some(t => t.teamName === team.name)}
-                        className="relative p-4 rounded-xl hover:bg-gray-100 dark:hover:bg-gray-800 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 border border-gray-200 dark:border-gray-700 hover:border-blue-300 dark:hover:border-blue-600 hover:shadow-md group"
-                      >
-                        <div className="flex flex-col items-center text-center">
-                          <div className="w-10 h-10 bg-gradient-to-r from-blue-600 to-indigo-600 rounded-xl flex items-center justify-center mb-2 group-hover:scale-110 transition-transform">
-                            <span className="text-lg">⚾</span>
-                          </div>
-                          <span className="text-sm font-medium text-gray-900 dark:text-white leading-tight">{team.name}</span>
-                          <span className="text-xs text-gray-500 dark:text-gray-400 mt-1">{team.division}</span>
-                        </div>
-                        {localTeams.some(t => t.teamName === team.name) && (
-                          <div className="absolute top-2 right-2 w-6 h-6 bg-green-500 rounded-full flex items-center justify-center">
-                            <svg className="w-3 h-3 text-white" fill="currentColor" viewBox="0 0 20 20">
-                              <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
-                            </svg>
-                          </div>
-                        )}
-                      </button>
-                    ))}
-                  </div>
+                  {isLoadingTeams ? (
+                    <div className="text-center py-12">
+                      <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+                      <p className="mt-4 text-gray-500 dark:text-gray-400">Teams werden geladen...</p>
+                    </div>
+                  ) : (
+                    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
+                      {(mlbTeamsFromApi.length > 0 ? mlbTeamsFromApi : MLB_TEAMS).map((team) => {
+                        const teamName = team.name;
+                        const teamId = team.id;
+                        const teamBadge = 'badge' in team ? team.badge : undefined;
+                        const teamLogo = 'logo' in team ? team.logo : undefined;
+                        const teamDivision = 'division' in team ? team.division : undefined;
+                        
+                        return (
+                          <button
+                            key={teamId}
+                            onClick={() => handleAddTeam('mlb', teamName, teamId)}
+                            disabled={localTeams.some(t => t.teamName === teamName)}
+                            className="relative p-4 rounded-xl hover:bg-gray-100 dark:hover:bg-gray-800 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 border border-gray-200 dark:border-gray-700 hover:border-blue-300 dark:hover:border-blue-600 hover:shadow-md group"
+                          >
+                            <div className="flex flex-col items-center text-center">
+                              {(teamBadge || teamLogo) ? (
+                                <div className="w-16 h-16 flex items-center justify-center mb-2 group-hover:scale-110 transition-transform">
+                                  <img 
+                                    src={teamBadge || teamLogo} 
+                                    alt={teamName}
+                                    className="w-full h-full object-contain"
+                                    onError={(e) => {
+                                      // Fallback to emoji icon if image fails to load
+                                      e.currentTarget.style.display = 'none';
+                                      e.currentTarget.parentElement!.innerHTML = '<span class="text-2xl">⚾</span>';
+                                    }}
+                                  />
+                                </div>
+                              ) : (
+                                <div className="w-10 h-10 bg-gradient-to-r from-blue-600 to-indigo-600 rounded-xl flex items-center justify-center mb-2 group-hover:scale-110 transition-transform">
+                                  <span className="text-lg">⚾</span>
+                                </div>
+                              )}
+                              <span className="text-sm font-medium text-gray-900 dark:text-white leading-tight">{teamName}</span>
+                              {teamDivision && (
+                                <span className="text-xs text-gray-500 dark:text-gray-400 mt-1">{teamDivision}</span>
+                              )}
+                            </div>
+                            {localTeams.some(t => t.teamName === teamName) && (
+                              <div className="absolute top-2 right-2 w-6 h-6 bg-green-500 rounded-full flex items-center justify-center">
+                                <svg className="w-3 h-3 text-white" fill="currentColor" viewBox="0 0 20 20">
+                                  <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                                </svg>
+                              </div>
+                            )}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  )}
                 </div>
               )}
 

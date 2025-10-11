@@ -143,3 +143,10 @@ export const stripeApi = {
   upgradeUser: (email: string) => api.post('/stripe/admin/upgrade-user', { email }),
   downgradeUser: (email: string) => api.post('/stripe/admin/downgrade-user', { email }),
 };
+
+// Sports API (TheSportsDB)
+export const sportsApi = {
+  getNBATeams: () => api.get('/sports/nba/teams'),
+  getNHLTeams: () => api.get('/sports/nhl/teams'),
+  getMLBTeams: () => api.get('/sports/mlb/teams'),
+};
