@@ -50,14 +50,6 @@ export function Calendar() {
   const [_tennisEvents, _setTennisEvents] = useState<Event[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   
-  // Debug state changes
-  useEffect(() => {
-    console.log('📊 Football events changed:', footballEvents.length, footballEvents);
-  }, [footballEvents]);
-  
-  useEffect(() => {
-    console.log('🔄 Loading state changed:', isLoading);
-  }, [isLoading]);
   const [selectedSport, setSelectedSport] = useState<'football' | 'nfl' | 'f1' | 'nba' | 'nhl' | 'mlb' | 'tennis' | null>(null);
   const [showTeamSelector, setShowTeamSelector] = useState(false);
   const [selectedSportTab, setSelectedSportTab] = useState<'football' | 'nfl' | 'f1' | 'nba' | 'nhl' | 'mlb' | 'tennis'>('football');
@@ -81,22 +73,16 @@ export function Calendar() {
 
   // Load all events separately for better organization
   const loadAllEvents = async (teams: Array<{ sport: string; teamName: string; teamId?: string; leagueId?: number }>) => {
-    console.log('🔄 loadAllEvents called with teams:', teams);
-    console.log('🔄 isLoadingRef.current:', isLoadingRef.current);
-    
     // Prevent multiple simultaneous loads
     if (isLoadingRef.current) {
-      console.log('⚠️ Already loading, skipping...');
       return;
     }
     
     isLoadingRef.current = true;
     setIsLoading(true);
-    console.log('🔄 Starting to load events...');
     
     try {
       // Reset all events first
-      console.log('🔄 Resetting all events...');
       setFootballEvents([]);
       setF1Events([]);
       setNflEvents([]);
@@ -107,18 +93,14 @@ export function Calendar() {
       
       // Load Football Events
       const footballTeams = teams.filter(t => t.sport === 'football');
-      console.log('⚽ Football teams:', footballTeams);
       if (footballTeams.length > 0) {
         try {
           const leagues = footballTeams.map(t => t.leagueId).filter(Boolean) as number[];
-          console.log('⚽ Loading football events for leagues:', leagues);
           const response = await calendarApi.getEvents('football', leagues);
           let events = (response.data as Event[]) || [];
-          console.log('⚽ Raw football events from API:', events.length, events);
           
           // Filter events for selected teams
           const teamNames = footballTeams.map(t => t.teamName.toLowerCase());
-          console.log('⚽ Filtering for team names:', teamNames);
           events = events.filter(event => {
             const eventTitle = event.title.toLowerCase();
             
@@ -154,10 +136,8 @@ export function Calendar() {
               return variations.some(variation => eventTitle.includes(variation));
             });
             
-            console.log(`⚽ Event "${event.title}" matches teams:`, matches);
             return matches;
           });
-          console.log('⚽ Filtered football events:', events.length, events);
           
           setFootballEvents(events);
         } catch (error) {
@@ -170,16 +150,11 @@ export function Calendar() {
       const f1Teams = teams.filter(t => t.sport === 'f1');
       if (f1Teams.length > 0) {
         try {
-          console.log('🏎️ Loading F1 events for selected drivers:', f1Teams.map(t => t.teamName));
           const response = await calendarApi.getEvents('f1', []);
           let events = (response.data as Event[]) || [];
-          console.log('🏎️ Raw F1 events from API:', events.length, events);
           
           // Show ALL upcoming races when any driver is selected (don't filter by driver)
-          console.log('🏎️ Showing all upcoming F1 races (not filtering by driver)');
-          
           setF1Events(events);
-          console.log('🏎️ F1 events loaded:', events.length);
         } catch (error) {
           console.error('Failed to load F1 events:', error);
           setF1Events([]);
@@ -211,8 +186,6 @@ export function Calendar() {
       const nbaTeams = teams.filter(t => t.sport === 'nba');
       if (nbaTeams.length > 0) {
         try {
-          console.log('🏀 Loading NBA events...');
-          // Use the correct sports API endpoint instead of live API
           const response = await calendarApi.getEvents('nba', []);
           let events = (response.data as Event[]) || [];
           
@@ -222,7 +195,6 @@ export function Calendar() {
               const sportsResponse = await liveApi.getNBA();
               events = (sportsResponse.data.events as Event[]) || [];
             } catch (sportsError) {
-              console.log('Sports API also failed, trying direct sports endpoint...');
               const directResponse = await fetch('/api/sports/nba/events');
               if (directResponse.ok) {
                 const directData = await directResponse.json();
@@ -231,19 +203,14 @@ export function Calendar() {
             }
           }
           
-          console.log('🏀 Raw NBA events:', events);
-          
           // Filter events for selected teams
           const teamNames = nbaTeams.map(t => t.teamName.toLowerCase());
           events = events.filter(event => {
             const eventTitle = event.title.toLowerCase();
-            const matches = teamNames.some(teamName => eventTitle.includes(teamName));
-            console.log(`🏀 NBA Event "${event.title}" matches teams:`, matches);
-            return matches;
+            return teamNames.some(teamName => eventTitle.includes(teamName));
           });
           
           _setNbaEvents(events);
-          console.log('🏀 NBA events loaded:', events.length, events);
         } catch (error) {
           console.error('Failed to load NBA events:', error);
           _setNbaEvents([]);
@@ -254,8 +221,6 @@ export function Calendar() {
       const nhlTeams = teams.filter(t => t.sport === 'nhl');
       if (nhlTeams.length > 0) {
         try {
-          console.log('🏒 Loading NHL events...');
-          // Try multiple API endpoints for NHL events
           let events: Event[] = [];
           
           try {
@@ -265,24 +230,18 @@ export function Calendar() {
               events = directData.events || [];
             }
           } catch (directError) {
-            console.log('Direct NHL API failed, trying live API...');
             const response = await liveApi.getNHL();
             events = (response.data.events as Event[]) || [];
           }
-          
-          console.log('🏒 Raw NHL events:', events);
           
           // Filter events for selected teams
           const teamNames = nhlTeams.map(t => t.teamName.toLowerCase());
           events = events.filter(event => {
             const eventTitle = event.title.toLowerCase();
-            const matches = teamNames.some(teamName => eventTitle.includes(teamName));
-            console.log(`🏒 NHL Event "${event.title}" matches teams:`, matches);
-            return matches;
+            return teamNames.some(teamName => eventTitle.includes(teamName));
           });
           
           _setNhlEvents(events);
-          console.log('🏒 NHL events loaded:', events.length, events);
         } catch (error) {
           console.error('Failed to load NHL events:', error);
           _setNhlEvents([]);
@@ -293,8 +252,6 @@ export function Calendar() {
       const mlbTeams = teams.filter(t => t.sport === 'mlb');
       if (mlbTeams.length > 0) {
         try {
-          console.log('⚾ Loading MLB events...');
-          // Try multiple API endpoints for MLB events
           let events: Event[] = [];
           
           try {
@@ -304,24 +261,18 @@ export function Calendar() {
               events = directData.events || [];
             }
           } catch (directError) {
-            console.log('Direct MLB API failed, trying live API...');
             const response = await liveApi.getMLB();
             events = (response.data.events as Event[]) || [];
           }
-          
-          console.log('⚾ Raw MLB events:', events);
           
           // Filter events for selected teams
           const teamNames = mlbTeams.map(t => t.teamName.toLowerCase());
           events = events.filter(event => {
             const eventTitle = event.title.toLowerCase();
-            const matches = teamNames.some(teamName => eventTitle.includes(teamName));
-            console.log(`⚾ MLB Event "${event.title}" matches teams:`, matches);
-            return matches;
+            return teamNames.some(teamName => eventTitle.includes(teamName));
           });
           
           _setMlbEvents(events);
-          console.log('⚾ MLB events loaded:', events.length, events);
         } catch (error) {
           console.error('Failed to load MLB events:', error);
           _setMlbEvents([]);
@@ -332,7 +283,6 @@ export function Calendar() {
       const tennisTeams = teams.filter(t => t.sport === 'tennis');
       if (tennisTeams.length > 0) {
         try {
-          console.log('🎾 Loading Tennis events...');
           const response = await liveApi.getTennis();
           let events = (response.data.events as Event[]) || [];
           
@@ -344,7 +294,6 @@ export function Calendar() {
           });
           
           _setTennisEvents(events);
-          console.log('🎾 Tennis events loaded:', events.length);
         } catch (error) {
           console.error('Failed to load Tennis events:', error);
           _setTennisEvents([]);
@@ -354,7 +303,6 @@ export function Calendar() {
     } catch (error) {
       console.error('❌ Failed to load events:', error);
     } finally {
-      console.log('✅ loadAllEvents completed, setting loading to false');
       setIsLoading(false);
       isLoadingRef.current = false;
       
@@ -375,15 +323,6 @@ export function Calendar() {
       ..._tennisEvents,
     ];
 
-    console.log('🔍 Finding next event from all events:', allEvents.length);
-    console.log('⚽ Football events:', footballEvents.length);
-    console.log('🏀 NBA events:', _nbaEvents.length);
-    console.log('🏎️ F1 events:', f1Events.length);
-    console.log('🏈 NFL events:', nflEvents.length);
-    console.log('🏒 NHL events:', _nhlEvents.length);
-    console.log('⚾ MLB events:', _mlbEvents.length);
-    console.log('🎾 Tennis events:', _tennisEvents.length);
-
     if (allEvents.length === 0) {
       setNextEvent(null);
       return;
@@ -391,7 +330,6 @@ export function Calendar() {
 
     // Filter only future events and sort by date
     const now = new Date();
-    console.log('🕐 Current time:', now.toISOString());
     
     const upcomingEvents = allEvents
       .map(event => {
@@ -404,8 +342,6 @@ export function Calendar() {
           
           // Method 2: If invalid, try parsing different formats
           if (isNaN(eventDate.getTime())) {
-            console.log(`⚠️ Invalid date for "${event.title}": ${event.startsAt}`);
-            
             // Try parsing as YYYY-MM-DD HH:mm:ss format
             const parts = event.startsAt.split(' ');
             if (parts.length === 2) {
@@ -429,8 +365,6 @@ export function Calendar() {
           const timeDiff = eventDate.getTime() - now.getTime();
           const daysDiff = Math.ceil(timeDiff / (1000 * 60 * 60 * 24));
           
-          console.log(`📅 Event "${event.title}" at ${event.startsAt} -> ${eventDate.toISOString()} (${daysDiff} days from now, Future: ${isFuture})`);
-          
           return {
             ...event,
             parsedDate: eventDate,
@@ -445,13 +379,10 @@ export function Calendar() {
       .filter(event => event && event.isFuture)
       .sort((a, b) => a!.parsedDate.getTime() - b!.parsedDate.getTime());
 
-    console.log('⏰ Upcoming events found:', upcomingEvents.length);
     if (upcomingEvents.length > 0) {
       const nextEvent = upcomingEvents[0]!;
-      console.log('🎯 Next event:', nextEvent.title, 'at', nextEvent.startsAt, `(${nextEvent.daysDiff} days from now)`);
       setNextEvent(nextEvent);
     } else {
-      console.log('❌ No upcoming events found');
       setNextEvent(null);
     }
   };
@@ -533,10 +464,6 @@ export function Calendar() {
     const teams = user?.selectedTeams || [];
     const teamsString = JSON.stringify(teams.sort((a, b) => a.teamName.localeCompare(b.teamName)));
     
-    console.log('👤 User teams changed:', teams);
-    console.log('👤 Last teams string:', lastTeamsRef.current);
-    console.log('👤 New teams string:', teamsString);
-    
     if (teams.length > 0) {
       // Always update local teams state
       setLocalTeams(teams);
@@ -545,31 +472,18 @@ export function Calendar() {
       const hasEvents = footballEvents.length > 0 || f1Events.length > 0 || _nbaEvents.length > 0 || 
                        nflEvents.length > 0 || _nhlEvents.length > 0 || _mlbEvents.length > 0 || _tennisEvents.length > 0;
       
-      console.log('📊 Event counts - Football:', footballEvents.length, 'F1:', f1Events.length, 'NBA:', _nbaEvents.length, 'NFL:', nflEvents.length, 'NHL:', _nhlEvents.length, 'MLB:', _mlbEvents.length, 'Tennis:', _tennisEvents.length);
-      console.log('📊 Has events:', hasEvents);
-      
       if (lastTeamsRef.current !== teamsString || !hasEvents) {
-        console.log('👤 Teams changed or no events loaded yet, loading events...');
         lastTeamsRef.current = teamsString;
         
         // Auto-select first sport if not selected
         if (!selectedSport) {
-          console.log('👤 Auto-selecting first sport:', teams[0].sport);
           setSelectedSport(teams[0].sport as 'football' | 'nfl' | 'f1' | 'nba' | 'nhl' | 'mlb' | 'tennis');
         }
         
         // Load events for teams
         loadAllEvents(teams);
-      } else {
-        console.log('👤 Teams unchanged and events already loaded, but still updating local teams...');
-        console.log('🔍 Current events summary:');
-        console.log('⚽ Football:', footballEvents.length > 0 ? footballEvents.map(e => e.title) : 'No events');
-        console.log('🏀 NBA:', _nbaEvents.length > 0 ? _nbaEvents.map(e => e.title) : 'No events');
-        console.log('🏎️ F1:', f1Events.length > 0 ? f1Events.map(e => e.title) : 'No events');
-        // Still update local teams even if we don't reload events
       }
     } else {
-      console.log('👤 No teams, stopping loading...');
       lastTeamsRef.current = '';
       setLocalTeams([]);
       // No teams = stop loading immediately
@@ -631,16 +545,14 @@ export function Calendar() {
     }
   }, [footballEvents, f1Events, nflEvents, _nbaEvents, _nhlEvents, _mlbEvents, _tennisEvents, isLoading]);
 
-  // Force load events if we have teams but no events after 5 seconds
+  // Force load events if we have teams but no events after 2 seconds
   useEffect(() => {
     if (localTeams.length > 0) {
       const hasEvents = footballEvents.length > 0 || f1Events.length > 0 || _nbaEvents.length > 0 || 
                        nflEvents.length > 0 || _nhlEvents.length > 0 || _mlbEvents.length > 0 || _tennisEvents.length > 0;
       
       if (!hasEvents && !isLoading) {
-        console.log('🔄 No events loaded after teams set, forcing load...');
         const timer = setTimeout(() => {
-          console.log('⏰ Forcing event load after timeout...');
           loadAllEvents(localTeams);
         }, 2000); // Wait 2 seconds then force load
         
@@ -648,91 +560,6 @@ export function Calendar() {
       }
     }
   }, [localTeams, footballEvents, f1Events, _nbaEvents, nflEvents, _nhlEvents, _mlbEvents, _tennisEvents, isLoading]);
-
-  // Expose force load function to global scope for debugging
-  useEffect(() => {
-    // Store references in a way that persists across re-renders
-    const globalScope = window as any;
-    
-    globalScope.forceLoadEvents = () => {
-      console.log('🔧 Manual force load triggered from console');
-      if (localTeams.length > 0) {
-        loadAllEvents(localTeams);
-      } else {
-        console.log('❌ No teams available to load events for');
-      }
-    };
-    
-    globalScope.debugEvents = () => {
-      console.log('🔍 Current event states:');
-      console.log('⚽ Football Events:', footballEvents);
-      console.log('🏀 NBA Events:', _nbaEvents);
-      console.log('🏎️ F1 Events:', f1Events);
-      console.log('🏈 NFL Events:', nflEvents);
-      console.log('🏒 NHL Events:', _nhlEvents);
-      console.log('⚾ MLB Events:', _mlbEvents);
-      console.log('🎾 Tennis Events:', _tennisEvents);
-      console.log('👥 Local Teams:', localTeams);
-      console.log('⏰ Next Event:', nextEvent);
-    };
-    
-    globalScope.findNextEventNow = () => {
-      console.log('🔧 Manual findNextEvent triggered from console');
-      findNextEvent();
-    };
-    
-    // Also log immediately when events change for easier debugging
-    if (footballEvents.length > 0 || _nbaEvents.length > 0 || f1Events.length > 0) {
-      console.log('📊 Events are loaded - you can now use debugEvents() in console');
-      console.log('Available commands: debugEvents(), forceLoadEvents(), findNextEventNow()');
-    }
-  }, [localTeams, footballEvents, f1Events, _nbaEvents, nflEvents, _nhlEvents, _mlbEvents, _tennisEvents, nextEvent, findNextEvent]);
-
-  // Debug: Log all events when they change
-  useEffect(() => {
-    console.log('🔍 DEBUG: All events updated');
-    console.log('⚽ Football Events:', footballEvents.map(e => ({ title: e.title, startsAt: e.startsAt })));
-    console.log('🏀 NBA Events:', _nbaEvents.map(e => ({ title: e.title, startsAt: e.startsAt })));
-    console.log('🏎️ F1 Events:', f1Events.map(e => ({ title: e.title, startsAt: e.startsAt })));
-    console.log('🏈 NFL Events:', nflEvents.map(e => ({ title: e.title, startsAt: e.startsAt })));
-    console.log('🏒 NHL Events:', _nhlEvents.map(e => ({ title: e.title, startsAt: e.startsAt })));
-    console.log('⚾ MLB Events:', _mlbEvents.map(e => ({ title: e.title, startsAt: e.startsAt })));
-    console.log('🎾 Tennis Events:', _tennisEvents.map(e => ({ title: e.title, startsAt: e.startsAt })));
-    
-    // Show detailed date analysis for each event
-    const allEvents = [
-      ...footballEvents.map(e => ({ ...e, sport: 'football' })),
-      ...f1Events.map(e => ({ ...e, sport: 'f1' })),
-      ...nflEvents.map(e => ({ ...e, sport: 'nfl' })),
-      ..._nbaEvents.map(e => ({ ...e, sport: 'nba' })),
-      ..._nhlEvents.map(e => ({ ...e, sport: 'nhl' })),
-      ..._mlbEvents.map(e => ({ ...e, sport: 'mlb' })),
-      ..._tennisEvents.map(e => ({ ...e, sport: 'tennis' })),
-    ];
-    
-    if (allEvents.length > 0) {
-      console.log('📅 DETAILED DATE ANALYSIS:');
-      const now = new Date();
-      allEvents.forEach((event, index) => {
-        const eventDate = new Date(event.startsAt);
-        const timeDiff = eventDate.getTime() - now.getTime();
-        const daysDiff = Math.ceil(timeDiff / (1000 * 60 * 60 * 24));
-        const isValid = !isNaN(eventDate.getTime());
-        const isFuture = eventDate > now;
-        
-        console.log(`${index + 1}. [${event.sport}] "${event.title}"`);
-        console.log(`   Raw date: "${event.startsAt}"`);
-        console.log(`   Parsed: ${eventDate.toISOString()}`);
-        console.log(`   Valid: ${isValid}, Future: ${isFuture}, Days from now: ${daysDiff}`);
-      });
-    }
-    
-    // Auto-trigger findNextEvent when events change
-    setTimeout(() => {
-      console.log('🔄 Auto-triggering findNextEvent after events update...');
-      findNextEvent();
-    }, 100);
-  }, [footballEvents, _nbaEvents, f1Events, nflEvents, _nhlEvents, _mlbEvents, _tennisEvents]);
 
   const handleAddTeam = async (sport: string, teamName: string, teamId?: string, leagueId?: number) => {
     if (!user) return;
