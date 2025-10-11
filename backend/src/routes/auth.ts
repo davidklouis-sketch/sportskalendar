@@ -303,7 +303,9 @@ authRouter.post('/login', authRateLimit, async (req: Request, res: Response) => 
       id: user.id, 
       email: user.email, 
       displayName: user.displayName, 
-      role: user.role 
+      role: user.role,
+      isPremium: user.isPremium || false,
+      selectedTeams: user.selectedTeams || []
     };
     console.log('🔍 Login - Returning user data:', userData);
     res.json({ 
@@ -402,7 +404,7 @@ authRouter.post('/refresh', async (req: Request, res: Response) => {
     // Blacklist the old refresh token
     SessionManager.blacklistToken(refresh_token);
     
-    // Load fresh user data from database to get current role
+    // Load fresh user data from database to get current role and premium status
     let userPayload: { id: string; email: string; role?: 'user' | 'admin' } = payload;
     try {
       const { UserRepository } = await import('../database/repositories/userRepository');

@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { authApi, userApi } from '../../lib/api';
+import { authApi } from '../../lib/api';
 import { useAuthStore } from '../../store/useAuthStore';
 
 interface LoginProps {
@@ -21,11 +21,10 @@ export function Login({ onSwitchToRegister, onSuccess }: LoginProps) {
     setIsLoading(true);
 
     try {
-      await authApi.login({ email, password, keepLoggedIn });
+      const { data: loginData } = await authApi.login({ email, password, keepLoggedIn });
       
-      // Get user profile with premium status
-      const { data } = await userApi.getProfile();
-      setUser(data.user);
+      // Login response now includes premium status and selectedTeams
+      setUser(loginData.user);
       
       // Store keepLoggedIn preference in localStorage
       if (keepLoggedIn) {

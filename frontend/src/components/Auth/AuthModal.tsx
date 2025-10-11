@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { authApi, userApi } from '../../lib/api';
+import { authApi } from '../../lib/api';
 import { useAuthStore } from '../../store/useAuthStore';
 
 interface AuthModalProps {
@@ -24,11 +24,10 @@ export function AuthModal({ onClose, initialMode = 'login' }: AuthModalProps) {
 
     try {
       if (mode === 'login') {
-        await authApi.login({ email, password, keepLoggedIn });
+        const { data: loginData } = await authApi.login({ email, password, keepLoggedIn });
         
-        // Get user profile with premium status
-        const { data } = await userApi.getProfile();
-        setUser(data.user);
+        // Login response now includes premium status and selectedTeams
+        setUser(loginData.user);
         
         // Store keepLoggedIn preference in localStorage
         if (keepLoggedIn) {
