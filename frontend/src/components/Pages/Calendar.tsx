@@ -7,6 +7,7 @@ import { LiveData } from '../LiveData';
 import { SportsKalendarBanner, SportsKalendarSquare } from '../Ads/AdManager';
 import { t, getCurrentLanguage } from '../../lib/i18n';
 import { useLanguage } from '../../hooks/useLanguage';
+import { EventCountdown } from '../EventCountdown';
 
 interface Event {
   id: string;
@@ -74,6 +75,9 @@ export function Calendar() {
   
   // Ref to prevent multiple simultaneous loads
   const isLoadingRef = useRef(false);
+  
+  // Next event for countdown
+  const [nextEvent, setNextEvent] = useState<Event | null>(null);
 
   // Load all events separately for better organization
   const loadAllEvents = async (teams: Array<{ sport: string; teamName: string; teamId?: string; leagueId?: number }>) => {
@@ -301,6 +305,39 @@ export function Calendar() {
       console.log('✅ loadAllEvents completed, setting loading to false');
       setIsLoading(false);
       isLoadingRef.current = false;
+      
+      // Find next upcoming event for countdown
+      findNextEvent();
+    }
+  };
+
+  // Find the next upcoming event from all loaded events
+  const findNextEvent = () => {
+    const allEvents = [
+      ...footballEvents,
+      ...f1Events,
+      ...nflEvents,
+      ..._nbaEvents,
+      ..._nhlEvents,
+      ..._mlbEvents,
+      ..._tennisEvents,
+    ];
+
+    if (allEvents.length === 0) {
+      setNextEvent(null);
+      return;
+    }
+
+    // Filter only future events and sort by date
+    const now = new Date();
+    const upcomingEvents = allEvents
+      .filter(event => new Date(event.startsAt) > now)
+      .sort((a, b) => new Date(a.startsAt).getTime() - new Date(b.startsAt).getTime());
+
+    if (upcomingEvents.length > 0) {
+      setNextEvent(upcomingEvents[0]);
+    } else {
+      setNextEvent(null);
     }
   };
 
@@ -452,6 +489,13 @@ export function Calendar() {
     }
   }, [showTeamSelector]);
 
+  // Update next event when events change
+  useEffect(() => {
+    if (!isLoading) {
+      findNextEvent();
+    }
+  }, [footballEvents, f1Events, nflEvents, _nbaEvents, _nhlEvents, _mlbEvents, _tennisEvents, isLoading]);
+
   const handleAddTeam = async (sport: string, teamName: string, teamId?: string, leagueId?: number) => {
     if (!user) return;
 
@@ -571,6 +615,15 @@ export function Calendar() {
           
           {/* Left Sidebar */}
           <div className="lg:col-span-1 space-y-6">
+            
+            {/* Next Event Countdown */}
+            {nextEvent && localTeams.length > 0 && (
+              <EventCountdown
+                eventTitle={nextEvent.title}
+                eventDate={nextEvent.startsAt}
+                sport={nextEvent.sport}
+              />
+            )}
             
             {/* Live Events - Flowing Design */}
             <div className="relative">
