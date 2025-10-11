@@ -31,21 +31,21 @@ export async function seedDevUser() {
   console.log('📊 Using PostgreSQL database');
   try {
     const { UserRepository } = await import('../database/repositories/userRepository');
-    const existingUsers = await UserRepository.findAll();
-    console.log(`📊 Found ${existingUsers.length} existing users in PostgreSQL`);
     
-    // Always create demo users if we have less than 2 users (demo + admin)
-    if (existingUsers.length < 2) {
-      console.log('📊 Less than 2 users found, creating demo users...');
-    } else {
-      console.log('✅ PostgreSQL database already has sufficient users, skipping demo user seeding');
+    // Check if demo users already exist
+    let existingDemo = await UserRepository.findByEmail('demo@sportskalender.local');
+    let existingAdmin = await UserRepository.findByEmail('admin@sportskalender.local');
+    
+    if (existingDemo && existingAdmin) {
+      console.log('✅ Demo users already exist, skipping seeding');
       return;
     }
     
-    // Create demo user
-    const demoPasswordHash = await bcrypt.hash('password', 10);
-    const existingDemo = await UserRepository.findByEmail('demo@sportskalender.local');
+    console.log('📊 Creating missing demo users...');
+    
+    // Create demo user if it doesn't exist
     if (!existingDemo) {
+      const demoPasswordHash = await bcrypt.hash('password', 10);
       await UserRepository.create({
         email: 'demo@sportskalender.local',
         passwordHash: demoPasswordHash,
@@ -57,10 +57,9 @@ export async function seedDevUser() {
       console.log('✅ Demo user already exists: demo@sportskalender.local');
     }
     
-    // Create admin user
-    const adminPasswordHash = await bcrypt.hash('admin123', 10);
-    const existingAdmin = await UserRepository.findByEmail('admin@sportskalender.local');
+    // Create admin user if it doesn't exist
     if (!existingAdmin) {
+      const adminPasswordHash = await bcrypt.hash('admin123', 10);
       const adminUser = await UserRepository.create({
         email: 'admin@sportskalender.local',
         passwordHash: adminPasswordHash,
