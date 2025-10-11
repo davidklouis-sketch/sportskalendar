@@ -250,39 +250,60 @@ authRouter.post('/login', authRateLimit, async (req: Request, res: Response) => 
 
     const { email, password, keepLoggedIn } = parsed.data;
     
+    console.log('🔍 Starting database lookup for:', email);
+    
     // Find user in PostgreSQL
     if (!process.env.DATABASE_URL) {
+      console.log('❌ DATABASE_URL not configured');
       return res.status(500).json({ 
         error: 'Database not available',
         message: 'Login is currently unavailable' 
       });
     }
 
+    console.log('✅ DATABASE_URL configured, importing UserRepository...');
     const { UserRepository } = await import('../database/repositories/userRepository');
+    console.log('✅ UserRepository imported successfully');
+    
+    console.log('🔍 Searching for user in database...');
     const user = await UserRepository.findByEmail(email);
+    console.log('🔍 Database query result:', user ? 'User found' : 'User not found');
+    
     if (!user) {
+      console.log('❌ User not found in database, simulating password check...');
       // Simulate password check to prevent timing attacks
       await bcrypt.compare(password, '$2a$12$dummy.hash.to.prevent.timing.attacks');
+      console.log('❌ Returning 401 - User not found');
       return res.status(401).json({ 
         error: 'Invalid credentials',
         message: 'Email or password is incorrect' 
       });
     }
     
+    console.log('✅ User found, verifying password...');
     // Verify password
     const passwordValid = await bcrypt.compare(password, user.passwordHash);
+    console.log('🔍 Password verification result:', passwordValid ? 'Valid' : 'Invalid');
+    
     if (!passwordValid) {
+      console.log('❌ Password invalid, returning 401');
       return res.status(401).json({ 
         error: 'Invalid credentials',
         message: 'Email or password is incorrect' 
       });
     }
+    
+    console.log('✅ Password valid, proceeding with token generation...');
 
     // Generate tokens
     console.log('🔍 Login - User role from database:', user.role);
     console.log('🔍 Login - Keep logged in:', keepLoggedIn);
+    console.log('🔍 Generating access token...');
     const access = signAccess(user);
+    console.log('✅ Access token generated');
+    console.log('🔍 Generating refresh token...');
     const refresh = signRefresh(user, keepLoggedIn);
+    console.log('✅ Refresh token generated');
     
     // Set secure cookies
     setAuthCookies(res, { access, refresh }, keepLoggedIn);
