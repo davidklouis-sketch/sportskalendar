@@ -165,3 +165,136 @@ export const NFL_TEAMS = [
   { id: 'sea', name: 'Seattle Seahawks', division: 'NFC West' },
 ];
 
+// NBA Teams
+export const NBA_TEAMS = [
+  // Eastern Conference - Atlantic Division
+  { id: '134878', name: 'Boston Celtics', conference: 'Eastern', division: 'Atlantic' },
+  { id: '134879', name: 'Brooklyn Nets', conference: 'Eastern', division: 'Atlantic' },
+  { id: '134880', name: 'New York Knicks', conference: 'Eastern', division: 'Atlantic' },
+  { id: '134881', name: 'Philadelphia 76ers', conference: 'Eastern', division: 'Atlantic' },
+  { id: '134882', name: 'Toronto Raptors', conference: 'Eastern', division: 'Atlantic' },
+  
+  // Eastern Conference - Central Division
+  { id: '134883', name: 'Chicago Bulls', conference: 'Eastern', division: 'Central' },
+  { id: '134884', name: 'Cleveland Cavaliers', conference: 'Eastern', division: 'Central' },
+  { id: '134885', name: 'Detroit Pistons', conference: 'Eastern', division: 'Central' },
+  { id: '134886', name: 'Indiana Pacers', conference: 'Eastern', division: 'Central' },
+  { id: '134887', name: 'Milwaukee Bucks', conference: 'Eastern', division: 'Central' },
+  
+  // Eastern Conference - Southeast Division
+  { id: '134888', name: 'Atlanta Hawks', conference: 'Eastern', division: 'Southeast' },
+  { id: '134889', name: 'Charlotte Hornets', conference: 'Eastern', division: 'Southeast' },
+  { id: '134890', name: 'Miami Heat', conference: 'Eastern', division: 'Southeast' },
+  { id: '134891', name: 'Orlando Magic', conference: 'Eastern', division: 'Southeast' },
+  { id: '134892', name: 'Washington Wizards', conference: 'Eastern', division: 'Southeast' },
+  
+  // Western Conference - Northwest Division
+  { id: '134893', name: 'Denver Nuggets', conference: 'Western', division: 'Northwest' },
+  { id: '134894', name: 'Minnesota Timberwolves', conference: 'Western', division: 'Northwest' },
+  { id: '134895', name: 'Oklahoma City Thunder', conference: 'Western', division: 'Northwest' },
+  { id: '134896', name: 'Portland Trail Blazers', conference: 'Western', division: 'Northwest' },
+  { id: '134897', name: 'Utah Jazz', conference: 'Western', division: 'Northwest' },
+  
+  // Western Conference - Pacific Division
+  { id: '134898', name: 'Golden State Warriors', conference: 'Western', division: 'Pacific' },
+  { id: '134899', name: 'LA Clippers', conference: 'Western', division: 'Pacific' },
+  { id: '134900', name: 'Los Angeles Lakers', conference: 'Western', division: 'Pacific' },
+  { id: '134901', name: 'Phoenix Suns', conference: 'Western', division: 'Pacific' },
+  { id: '134902', name: 'Sacramento Kings', conference: 'Western', division: 'Pacific' },
+  
+  // Western Conference - Southwest Division
+  { id: '134903', name: 'Dallas Mavericks', conference: 'Western', division: 'Southwest' },
+  { id: '134904', name: 'Houston Rockets', conference: 'Western', division: 'Southwest' },
+  { id: '134905', name: 'Memphis Grizzlies', conference: 'Western', division: 'Southwest' },
+  { id: '134906', name: 'New Orleans Pelicans', conference: 'Western', division: 'Southwest' },
+  { id: '134907', name: 'San Antonio Spurs', conference: 'Western', division: 'Southwest' },
+];
+
+// NHL Teams
+export const NHL_TEAMS = [
+  // Eastern Conference - Atlantic Division
+  { id: '134938', name: 'Boston Bruins', conference: 'Eastern', division: 'Atlantic' },
+  { id: '134939', name: 'Buffalo Sabres', conference: 'Eastern', division: 'Atlantic' },
+  { id: '134940', name: 'Detroit Red Wings', conference: 'Eastern', division: 'Atlantic' },
+  { id: '134941', name: 'Florida Panthers', conference: 'Eastern', division: 'Atlantic' },
+  { id: '134942', name: 'Montreal Canadiens', conference: 'Eastern', division: 'Atlantic' },
+  { id: '134943', name: 'Ottawa Senators', conference: 'Eastern', division: 'Atlantic' },
+  { id: '134944', name: 'Tampa Bay Lightning', conference: 'Eastern', division: 'Atlantic' },
+  { id: '134945', name: 'Toronto Maple Leafs', conference: 'Eastern', division: 'Atlantic' },
+  
+  // Eastern Conference - Metropolitan Division
+  { id: '134946', name: 'Carolina Hurricanes', conference: 'Eastern', division: 'Metropolitan' },
+  { id: '134947', name: 'Columbus Blue Jackets', conference: 'Eastern', division: 'Metropolitan' },
+  { id: '134948', name: 'New Jersey Devils', conference: 'Eastern', division: 'Metropolitan' },
+  { id: '134949', name: 'New York Islanders', conference: 'Eastern', division: 'Metropolitan' },
+  { id: '134950', name: 'New York Rangers', conference: 'Eastern', division: 'Metropolitan' },
+  { id: '134951', name: 'Philadelphia Flyers', conference: 'Eastern', division: 'Metropolitan' },
+  { id: '134952', name: 'Pittsburgh Penguins', conference: 'Eastern', division: 'Metropolitan' },
+  { id: '134953', name: 'Washington Capitals', conference: 'Eastern', division: 'Metropolitan' },
+  
+  // Western Conference - Central Division
+  { id: '134954', name: 'Arizona Coyotes', conference: 'Western', division: 'Central' },
+  { id: '134955', name: 'Chicago Blackhawks', conference: 'Western', division: 'Central' },
+  { id: '134956', name: 'Colorado Avalanche', conference: 'Western', division: 'Central' },
+  { id: '134957', name: 'Dallas Stars', conference: 'Western', division: 'Central' },
+  { id: '134958', name: 'Minnesota Wild', conference: 'Western', division: 'Central' },
+  { id: '134959', name: 'Nashville Predators', conference: 'Western', division: 'Central' },
+  { id: '134960', name: 'St. Louis Blues', conference: 'Western', division: 'Central' },
+  { id: '134961', name: 'Winnipeg Jets', conference: 'Western', division: 'Central' },
+  
+  // Western Conference - Pacific Division
+  { id: '134962', name: 'Anaheim Ducks', conference: 'Western', division: 'Pacific' },
+  { id: '134963', name: 'Calgary Flames', conference: 'Western', division: 'Pacific' },
+  { id: '134964', name: 'Edmonton Oilers', conference: 'Western', division: 'Pacific' },
+  { id: '134965', name: 'Los Angeles Kings', conference: 'Western', division: 'Pacific' },
+  { id: '134966', name: 'San Jose Sharks', conference: 'Western', division: 'Pacific' },
+  { id: '134967', name: 'Seattle Kraken', conference: 'Western', division: 'Pacific' },
+  { id: '134968', name: 'Vancouver Canucks', conference: 'Western', division: 'Pacific' },
+  { id: '134969', name: 'Vegas Golden Knights', conference: 'Western', division: 'Pacific' },
+];
+
+// MLB Teams
+export const MLB_TEAMS = [
+  // American League - East
+  { id: '135255', name: 'Baltimore Orioles', league: 'American', division: 'East' },
+  { id: '135256', name: 'Boston Red Sox', league: 'American', division: 'East' },
+  { id: '135257', name: 'New York Yankees', league: 'American', division: 'East' },
+  { id: '135258', name: 'Tampa Bay Rays', league: 'American', division: 'East' },
+  { id: '135259', name: 'Toronto Blue Jays', league: 'American', division: 'East' },
+  
+  // American League - Central
+  { id: '135260', name: 'Chicago White Sox', league: 'American', division: 'Central' },
+  { id: '135261', name: 'Cleveland Guardians', league: 'American', division: 'Central' },
+  { id: '135262', name: 'Detroit Tigers', league: 'American', division: 'Central' },
+  { id: '135263', name: 'Kansas City Royals', league: 'American', division: 'Central' },
+  { id: '135264', name: 'Minnesota Twins', league: 'American', division: 'Central' },
+  
+  // American League - West
+  { id: '135265', name: 'Houston Astros', league: 'American', division: 'West' },
+  { id: '135266', name: 'Los Angeles Angels', league: 'American', division: 'West' },
+  { id: '135267', name: 'Oakland Athletics', league: 'American', division: 'West' },
+  { id: '135268', name: 'Seattle Mariners', league: 'American', division: 'West' },
+  { id: '135269', name: 'Texas Rangers', league: 'American', division: 'West' },
+  
+  // National League - East
+  { id: '135270', name: 'Atlanta Braves', league: 'National', division: 'East' },
+  { id: '135271', name: 'Miami Marlins', league: 'National', division: 'East' },
+  { id: '135272', name: 'New York Mets', league: 'National', division: 'East' },
+  { id: '135273', name: 'Philadelphia Phillies', league: 'National', division: 'East' },
+  { id: '135274', name: 'Washington Nationals', league: 'National', division: 'East' },
+  
+  // National League - Central
+  { id: '135275', name: 'Chicago Cubs', league: 'National', division: 'Central' },
+  { id: '135276', name: 'Cincinnati Reds', league: 'National', division: 'Central' },
+  { id: '135277', name: 'Milwaukee Brewers', league: 'National', division: 'Central' },
+  { id: '135278', name: 'Pittsburgh Pirates', league: 'National', division: 'Central' },
+  { id: '135279', name: 'St. Louis Cardinals', league: 'National', division: 'Central' },
+  
+  // National League - West
+  { id: '135280', name: 'Arizona Diamondbacks', league: 'National', division: 'West' },
+  { id: '135281', name: 'Colorado Rockies', league: 'National', division: 'West' },
+  { id: '135282', name: 'Los Angeles Dodgers', league: 'National', division: 'West' },
+  { id: '135283', name: 'San Diego Padres', league: 'National', division: 'West' },
+  { id: '135284', name: 'San Francisco Giants', league: 'National', division: 'West' },
+];
+

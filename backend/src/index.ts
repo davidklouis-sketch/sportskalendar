@@ -12,6 +12,7 @@ import { adminRouter } from './routes/admin';
 import { userRouter } from './routes/user';
 import { liveRouter } from './routes/live';
 import { stripeRouter, handleStripeWebhook } from './routes/stripe';
+import sportsRouter from './routes/sports';
 
 // Middleware imports
 import { enhancedSecurityMiddleware, validateJwtSecret } from './middleware/security-enhanced';
@@ -201,6 +202,7 @@ app.use('/api/admin', adminRouter);
 app.use('/api/user', userRouter);
 app.use('/api/live', liveRouter);
 app.use('/api/stripe', stripeRouter);
+app.use('/api/sports', sportsRouter); // TheSportsDB API for Basketball, Hockey, Baseball, Tennis, etc.
 
 // Example protected endpoint for current user
 app.get('/api/user/me', requireAuth, (req, res) => {
