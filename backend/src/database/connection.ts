@@ -15,17 +15,53 @@ export interface DatabaseConfig {
   connectionTimeoutMillis: number;
 }
 
-const dbConfig: DatabaseConfig = {
-  host: process.env.DB_HOST || 'localhost',
-  port: parseInt(process.env.DB_PORT || '5432'),
-  database: process.env.DB_NAME || 'sportskalendar',
-  user: process.env.DB_USER || 'postgres',
-  password: process.env.DB_PASSWORD || '',
-  ssl: false, // Disable SSL for Docker environment
-  max: 20,
-  idleTimeoutMillis: 30000,
-  connectionTimeoutMillis: 2000,
-};
+// Parse DATABASE_URL if provided (for production)
+let dbConfig: DatabaseConfig;
+
+if (process.env.DATABASE_URL) {
+  // Parse DATABASE_URL format: postgres://user:password@host:port/database
+  console.log('🔍 [DB Connection] Using DATABASE_URL');
+  const url = new URL(process.env.DATABASE_URL);
+  dbConfig = {
+    host: url.hostname,
+    port: parseInt(url.port || '5432'),
+    database: url.pathname.slice(1), // Remove leading '/'
+    user: url.username,
+    password: url.password,
+    ssl: false, // Disable SSL for Docker environment
+    max: 20,
+    idleTimeoutMillis: 30000,
+    connectionTimeoutMillis: 2000,
+  };
+  console.log('🔍 [DB Connection] Config from DATABASE_URL:', {
+    host: dbConfig.host,
+    port: dbConfig.port,
+    database: dbConfig.database,
+    user: dbConfig.user,
+    passwordSet: !!dbConfig.password
+  });
+} else {
+  // Use individual ENV variables (for development)
+  console.log('🔍 [DB Connection] Using individual DB_ env variables');
+  dbConfig = {
+    host: process.env.DB_HOST || 'localhost',
+    port: parseInt(process.env.DB_PORT || '5432'),
+    database: process.env.DB_NAME || 'sportskalendar',
+    user: process.env.DB_USER || 'postgres',
+    password: process.env.DB_PASSWORD || '',
+    ssl: false, // Disable SSL for Docker environment
+    max: 20,
+    idleTimeoutMillis: 30000,
+    connectionTimeoutMillis: 2000,
+  };
+  console.log('🔍 [DB Connection] Config from DB_ variables:', {
+    host: dbConfig.host,
+    port: dbConfig.port,
+    database: dbConfig.database,
+    user: dbConfig.user,
+    passwordSet: !!dbConfig.password
+  });
+}
 
 export const pool = new Pool(dbConfig);
 

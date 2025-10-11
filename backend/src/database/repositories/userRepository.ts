@@ -98,14 +98,25 @@ export class UserRepository {
   static async findByEmail(email: string): Promise<DatabaseUser | null> {
     const client = await pool.connect();
     try {
+      console.log('🔍 [UserRepository] findByEmail called with:', email);
       const query = 'SELECT * FROM users WHERE email = $1';
+      console.log('🔍 [UserRepository] Executing query:', query);
       const result = await client.query(query, [email]);
+      console.log('🔍 [UserRepository] Query result rows:', result.rows.length);
       
       if (result.rows.length === 0) {
+        // Debug: Try to find ANY users to see if database is working
+        const allUsersQuery = 'SELECT email FROM users LIMIT 5';
+        const allUsersResult = await client.query(allUsersQuery);
+        console.log('🔍 [UserRepository] Sample emails in database:', allUsersResult.rows.map(r => r.email));
         return null;
       }
       
+      console.log('✅ [UserRepository] User found:', result.rows[0].email);
       return this.mapRowToUser(result.rows[0]);
+    } catch (error) {
+      console.error('❌ [UserRepository] Database error:', error);
+      throw error;
     } finally {
       client.release();
     }
