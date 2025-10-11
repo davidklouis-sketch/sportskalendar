@@ -1,10 +1,84 @@
-import express, { Router } from 'express';
+import express, { Router, Request, Response } from 'express';
 import { z } from 'zod';
 import { stripe, PREMIUM_AMOUNT, PREMIUM_CURRENCY, PREMIUM_PRICE_ID, isStripeConfigured } from '../config/stripe';
 import { requireAuth } from '../middleware/auth';
 import { UserRepository } from '../database/repositories/userRepository';
 
 export const stripeRouter = Router();
+
+// Webhook handler (exported separately to be registered with raw body parser)
+export async function handleStripeWebhook(req: Request, res: Response) {
+  // Check if Stripe is configured
+  if (!isStripeConfigured() || !stripe) {
+    return res.status(503).json({
+      error: 'Service unavailable',
+      message: 'Payment processing is currently unavailable'
+    });
+  }
+
+  const sig = req.headers['stripe-signature'];
+  const endpointSecret = process.env.STRIPE_WEBHOOK_SECRET;
+
+  if (!endpointSecret) {
+    console.error('STRIPE_WEBHOOK_SECRET not configured');
+    return res.status(500).json({ error: 'Webhook secret not configured' });
+  }
+
+  let event;
+
+  try {
+    // Use raw body for signature verification (body is already raw from app-level middleware)
+    event = stripe!.webhooks.constructEvent(req.body, sig as string, endpointSecret);
+  } catch (err) {
+    console.error('Webhook signature verification failed:', err);
+    return res.status(400).json({ error: 'Invalid signature' });
+  }
+
+  try {
+    console.log(`🔍 Processing Stripe webhook event: ${event.type}`);
+    
+    switch (event.type) {
+      case 'checkout.session.completed':
+        const session = event.data.object as any;
+        console.log(`🔍 Checkout session completed:`, {
+          id: session.id,
+          metadata: session.metadata,
+          customer_email: session.customer_email,
+          payment_status: session.payment_status
+        });
+        
+        const userEmail = session.metadata?.userEmail || session.customer_email;
+        
+        if (userEmail) {
+          console.log(`🔍 Attempting to upgrade user to premium: ${userEmail}`);
+          const result = await UserRepository.updateByEmail(userEmail, { isPremium: true });
+          console.log(`✅ User ${userEmail} upgraded to premium via Stripe. Result:`, result);
+        } else {
+          console.log(`❌ No user email found in session metadata or customer_email`);
+        }
+        break;
+
+      case 'customer.subscription.deleted':
+        const subscription = event.data.object as any;
+        const customerEmail = subscription.metadata?.userEmail;
+        
+        if (customerEmail) {
+          // Downgrade user from premium
+          await UserRepository.updateByEmail(customerEmail, { isPremium: false });
+          console.log(`❌ User ${customerEmail} downgraded from premium via Stripe`);
+        }
+        break;
+
+      default:
+        console.log(`Unhandled event type: ${event.type}`);
+    }
+
+    res.json({ received: true });
+  } catch (error) {
+    console.error('Webhook processing failed:', error);
+    res.status(500).json({ error: 'Webhook processing failed' });
+  }
+}
 
 // Debug endpoint to check Stripe configuration
 stripeRouter.get('/debug', (req, res) => {
@@ -106,79 +180,9 @@ stripeRouter.post('/create-checkout-session', requireAuth, async (req, res) => {
   }
 });
 
-// Handle successful payment (webhook)
-stripeRouter.post('/webhook', express.raw({type: 'application/json'}), async (req, res) => {
-  // Check if Stripe is configured
-  if (!isStripeConfigured() || !stripe) {
-    return res.status(503).json({
-      error: 'Service unavailable',
-      message: 'Payment processing is currently unavailable'
-    });
-  }
-
-  const sig = req.headers['stripe-signature'];
-  const endpointSecret = process.env.STRIPE_WEBHOOK_SECRET;
-
-  if (!endpointSecret) {
-    console.error('STRIPE_WEBHOOK_SECRET not configured');
-    return res.status(500).json({ error: 'Webhook secret not configured' });
-  }
-
-  let event;
-
-  try {
-    // Use raw body for signature verification
-    event = stripe!.webhooks.constructEvent(req.body, sig as string, endpointSecret);
-  } catch (err) {
-    console.error('Webhook signature verification failed:', err);
-    return res.status(400).json({ error: 'Invalid signature' });
-  }
-
-  try {
-    console.log(`🔍 Processing Stripe webhook event: ${event.type}`);
-    
-    switch (event.type) {
-      case 'checkout.session.completed':
-        const session = event.data.object as any;
-        console.log(`🔍 Checkout session completed:`, {
-          id: session.id,
-          metadata: session.metadata,
-          customer_email: session.customer_email,
-          payment_status: session.payment_status
-        });
-        
-        const userEmail = session.metadata?.userEmail || session.customer_email;
-        
-        if (userEmail) {
-          console.log(`🔍 Attempting to upgrade user to premium: ${userEmail}`);
-          const result = await UserRepository.updateByEmail(userEmail, { isPremium: true });
-          console.log(`✅ User ${userEmail} upgraded to premium via Stripe. Result:`, result);
-        } else {
-          console.log(`❌ No user email found in session metadata or customer_email`);
-        }
-        break;
-
-      case 'customer.subscription.deleted':
-        const subscription = event.data.object as any;
-        const customerEmail = subscription.metadata?.userEmail;
-        
-        if (customerEmail) {
-          // Downgrade user from premium
-          await UserRepository.updateByEmail(customerEmail, { isPremium: false });
-          console.log(`❌ User ${customerEmail} downgraded from premium via Stripe`);
-        }
-        break;
-
-      default:
-        console.log(`Unhandled event type: ${event.type}`);
-    }
-
-    res.json({ received: true });
-  } catch (error) {
-    console.error('Webhook processing failed:', error);
-    res.status(500).json({ error: 'Webhook processing failed' });
-  }
-});
+// Note: The webhook handler is registered separately in index.ts with raw body parser
+// This route is here for documentation purposes but won't be used
+// The actual webhook is handled by the exported handleStripeWebhook function
 
 // Get premium features info
 stripeRouter.get('/premium-features', (req, res) => {

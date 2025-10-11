@@ -12,7 +12,7 @@ import { tickerRouter } from './routes/ticker';
 import { adminRouter } from './routes/admin';
 import { userRouter } from './routes/user';
 import { liveRouter } from './routes/live';
-import { stripeRouter } from './routes/stripe';
+import { stripeRouter, handleStripeWebhook } from './routes/stripe';
 
 // Middleware imports
 import { enhancedSecurityMiddleware, validateJwtSecret } from './middleware/security-enhanced';
@@ -27,7 +27,8 @@ dotenv.config();
 const app = express();
 
 // Trust proxy for rate limiting behind reverse proxy (NPM)
-app.set('trust proxy', true);
+// Set to 1 to indicate exactly one proxy hop (secure configuration)
+app.set('trust proxy', 1);
 
 // CORS-Konfiguration (konfigurierbar über CORS_ORIGIN, kommasepariert)
 const configuredOrigins = (process.env.CORS_ORIGIN || 'https://sportskalendar.de,https://www.sportskalendar.de,https://sportskalender.dlouis.ddnss.de,https://dlouis.ddnss.de,http://localhost:3000,http://localhost:5173')
@@ -58,6 +59,10 @@ const corsOptions = {
 };
 
 app.use(cors(corsOptions));
+
+// Stripe webhook MUST be registered before JSON body parser to receive raw body
+app.post('/api/stripe/webhook', express.raw({type: 'application/json'}), handleStripeWebhook);
+
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 
