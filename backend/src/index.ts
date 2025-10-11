@@ -62,6 +62,87 @@ app.use(cors(corsOptions));
 // Stripe webhook MUST be registered before JSON body parser to receive raw body
 app.post('/api/stripe/webhook', express.raw({type: 'application/json'}), handleStripeWebhook);
 
+// Refresh endpoint doesn't need body parsing (uses cookies only)
+app.post('/api/auth/refresh', async (req, res) => {
+  try {
+    const { refresh_token } = (req as any).cookies || {};
+    if (!refresh_token) {
+      return res.status(401).json({ 
+        error: 'Missing refresh token',
+        message: 'Refresh token not found' 
+      });
+    }
+    
+    // Check if token is blacklisted
+    const { SessionManager } = await import('./middleware/security-enhanced');
+    if (SessionManager.isTokenBlacklisted(refresh_token)) {
+      return res.status(401).json({ 
+        error: 'Token revoked',
+        message: 'Refresh token has been revoked' 
+      });
+    }
+    
+    const secret = process.env.JWT_SECRET;
+    if (!secret || secret === 'dev_secret_change_me') {
+      return res.status(500).json({ 
+        error: 'Server configuration error',
+        message: 'Authentication service unavailable' 
+      });
+    }
+    
+    const jwt = await import('jsonwebtoken');
+    const payload = jwt.verify(refresh_token, secret, {
+      issuer: 'sportskalendar',
+      audience: 'sportskalendar-users'
+    }) as { id: string; email: string; type?: string; iat?: number };
+    
+    if (payload.type !== 'refresh') {
+      return res.status(401).json({ 
+        error: 'Invalid token type',
+        message: 'Token is not a refresh token' 
+      });
+    }
+    
+    // Blacklist the old refresh token
+    SessionManager.blacklistToken(refresh_token);
+    
+    // Load fresh user data from database
+    let userPayload: { id: string; email: string; role?: 'user' | 'admin' } = payload;
+    try {
+      const { UserRepository } = await import('./database/repositories/userRepository');
+      const freshUser = await UserRepository.findByEmail(payload.email);
+      if (freshUser) {
+        userPayload = {
+          id: freshUser.id,
+          email: freshUser.email,
+          role: freshUser.role as 'user' | 'admin'
+        };
+      }
+    } catch (error) {
+      console.error('Failed to load fresh user data during refresh:', error);
+    }
+    
+    // Generate new tokens
+    const { signAccess, signRefresh, setAuthCookies } = await import('./routes/auth');
+    const access = signAccess(userPayload);
+    const refresh = signRefresh(userPayload);
+    
+    // Set new cookies
+    setAuthCookies(res, { access, refresh });
+    
+    res.json({ 
+      success: true,
+      message: 'Tokens refreshed successfully' 
+    });
+  } catch (error) {
+    console.error('Token refresh error:', error);
+    return res.status(401).json({ 
+      error: 'Invalid refresh token',
+      message: 'Token refresh failed' 
+    });
+  }
+});
+
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json({ limit: '10mb' }));
 
