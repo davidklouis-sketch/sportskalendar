@@ -45,8 +45,8 @@ stripeRouter.get('/debug/user/:email', async (req, res) => {
         email: user.email,
         displayName: user.displayName,
         isPremium: user.isPremium,
-        createdAt: user.createdAt,
-        updatedAt: user.updatedAt
+        createdAt: user.created_at,
+        updatedAt: user.updated_at
       } : null
     });
   } catch (error) {
