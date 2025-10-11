@@ -216,13 +216,18 @@ const loginSchema = z.object({
 
 authRouter.post('/login', authRateLimit, async (req: Request, res: Response) => {
   try {
+    console.log('🔍 Login endpoint reached - before JWT validation');
+    
     // Validate JWT secret
     if (!validateJwtSecret()) {
+      console.log('❌ JWT secret validation failed');
       return res.status(500).json({ 
         error: 'Server configuration error',
         message: 'Authentication service unavailable' 
       });
     }
+    
+    console.log('✅ JWT secret validation passed');
 
     console.log('🔍 Login request received');
     console.log('🔍 Request body type:', typeof req.body);
@@ -292,6 +297,7 @@ authRouter.post('/login', authRateLimit, async (req: Request, res: Response) => 
       selectedTeams: user.selectedTeams || []
     };
     console.log('🔍 Login - Returning user data:', userData);
+    console.log('✅ Login successful - sending response');
     res.json({ 
       success: true,
       user: userData

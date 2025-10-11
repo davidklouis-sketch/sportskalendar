@@ -146,19 +146,6 @@ app.post('/api/auth/refresh', async (req, res) => {
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json({ limit: '10mb' }));
 
-// Debug middleware to log request details
-app.use((req, res, next) => {
-  if (req.path.startsWith('/api/auth/')) {
-    console.log('🔍 Request Debug:', {
-      path: req.path,
-      method: req.method,
-      contentType: req.headers['content-type'],
-      bodyType: typeof req.body,
-      bodyKeys: req.body ? Object.keys(req.body) : 'no body'
-    });
-  }
-  next();
-});
 
 // Enhanced security middleware
 app.use(enhancedSecurityMiddleware);
