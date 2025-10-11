@@ -12,7 +12,7 @@ interface User {
   role: 'user' | 'admin';
   isPremium?: boolean;
   selectedTeams?: Array<{
-    sport: 'football' | 'nfl' | 'f1';
+    sport: 'football' | 'nfl' | 'f1' | 'nba' | 'nhl' | 'mlb' | 'tennis';
     teamName: string;
   }>;
 }
@@ -163,10 +163,10 @@ userRouter.post('/teams', async (req, res) => {
           message: 'Each team must have sport and teamName'
         });
       }
-      if (!['football', 'nfl', 'f1'].includes(team.sport)) {
+      if (!['football', 'nfl', 'f1', 'nba', 'nhl', 'mlb', 'tennis'].includes(team.sport)) {
         return res.status(400).json({
           error: 'Invalid sport',
-          message: 'Sport must be football, nfl, or f1'
+          message: 'Sport must be football, nfl, f1, nba, nhl, mlb, or tennis'
         });
       }
     }

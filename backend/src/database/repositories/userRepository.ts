@@ -9,7 +9,7 @@ export interface User {
   role: 'user' | 'admin';
   isPremium?: boolean;
   selectedTeams?: Array<{
-    sport: 'football' | 'nfl' | 'f1';
+    sport: 'football' | 'nfl' | 'f1' | 'nba' | 'nhl' | 'mlb' | 'tennis';
     teamId?: string;
     teamName: string;
     leagueId?: number;
@@ -20,7 +20,7 @@ export interface DatabaseUser extends Omit<User, 'id'> {
   id: string;
   isPremium: boolean;
   selectedTeams: Array<{
-    sport: 'football' | 'nfl' | 'f1';
+    sport: 'football' | 'nfl' | 'f1' | 'nba' | 'nhl' | 'mlb' | 'tennis';
     teamId?: string;
     teamName: string;
     leagueId?: number;
@@ -42,7 +42,7 @@ export interface CreateUserData {
   role?: 'user' | 'admin';
   isPremium?: boolean;
   selectedTeams?: Array<{
-    sport: 'football' | 'nfl' | 'f1';
+    sport: 'football' | 'nfl' | 'f1' | 'nba' | 'nhl' | 'mlb' | 'tennis';
     teamId?: string;
     teamName: string;
     leagueId?: number;
@@ -55,7 +55,7 @@ export interface UpdateUserData {
   role?: 'user' | 'admin';
   isPremium?: boolean;
   selectedTeams?: Array<{
-    sport: 'football' | 'nfl' | 'f1';
+    sport: 'football' | 'nfl' | 'f1' | 'nba' | 'nhl' | 'mlb' | 'tennis';
     teamId?: string;
     teamName: string;
     leagueId?: number;
