@@ -144,27 +144,32 @@ jobs:
           # Direct environment variable injection
           echo "🔍 Starting services with direct environment variable injection..."
           
-          # Append Stripe variables directly to .env.production (backup first)
-          cp .env.production .env.production.backup
+          # Export variables in current shell for docker compose
+          export STRIPE_SECRET_KEY="${STRIPE_SECRET_KEY}"
+          export STRIPE_WEBHOOK_SECRET="${STRIPE_WEBHOOK_SECRET}"
+          export STRIPE_PRICE_ID="${STRIPE_PRICE_ID}"
+          export FRONTEND_URL="${FRONTEND_URL}"
           
-          # Remove any existing STRIPE variables from .env.production
-          sed -i '/^STRIPE_/d' .env.production
+          # Verify exports
+          echo "🔍 Exported variables in shell:"
+          env | grep STRIPE | sed 's/=.*/=***/'
           
-          # Append new Stripe variables
-          echo "" >> .env.production
-          echo "# Stripe Configuration (injected by CI/CD)" >> .env.production
-          echo "STRIPE_SECRET_KEY=${STRIPE_SECRET_KEY}" >> .env.production
-          echo "STRIPE_WEBHOOK_SECRET=${STRIPE_WEBHOOK_SECRET}" >> .env.production
-          echo "STRIPE_PRICE_ID=${STRIPE_PRICE_ID}" >> .env.production
-          echo "FRONTEND_URL=${FRONTEND_URL}" >> .env.production
+          # Create a docker-compose override file that explicitly sets the environment variables
+          cat > docker-compose.override.yml << 'OVERRIDE_EOF'
+services:
+  backend:
+    environment:
+      - STRIPE_SECRET_KEY=${STRIPE_SECRET_KEY}
+      - STRIPE_WEBHOOK_SECRET=${STRIPE_WEBHOOK_SECRET}
+      - STRIPE_PRICE_ID=${STRIPE_PRICE_ID}
+      - FRONTEND_URL=${FRONTEND_URL}
+OVERRIDE_EOF
           
-          # Debug: Show that variables were added
-          echo "🔍 Stripe variables added to .env.production:"
-          grep "^STRIPE_" .env.production | sed 's/=.*/=***/' || echo "❌ Failed to add STRIPE variables!"
-          grep "^FRONTEND_URL" .env.production | sed 's/=.*/=***/' || echo "❌ Failed to add FRONTEND_URL!"
+          echo "🔍 Created docker-compose.override.yml"
+          cat docker-compose.override.yml
           
-          # Start services with updated .env.production
-          docker compose -f docker-compose.traefik.yml --env-file .env.production up -d --force-recreate
+          # Start services with base config, .env.production, AND override
+          docker compose -f docker-compose.traefik.yml -f docker-compose.override.yml --env-file .env.production up -d --force-recreate
           
           # Verify the backend container has the environment variables
           echo "🔍 Checking backend container environment:"
