@@ -146,33 +146,24 @@ export function Calendar() {
         }
       }
       
-      // Load F1 Events - Always load next 5 races regardless of driver selection
+      // Load F1 Events - Show all upcoming races when any driver is selected
       const f1Teams = teams.filter(t => t.sport === 'f1');
-      try {
-        console.log('🏎️ Loading F1 events...');
-        const response = await calendarApi.getEvents('f1', []);
-        let events = (response.data as Event[]) || [];
-        console.log('🏎️ Raw F1 events from API:', events.length, events);
-        
-        // If drivers are selected, filter for them; otherwise show all upcoming races
-        if (f1Teams.length > 0) {
-          const driverNames = f1Teams.map(t => t.teamName.toLowerCase());
-          console.log('🏎️ Filtering for driver names:', driverNames);
-          events = events.filter(event => {
-            const eventTitle = event.title.toLowerCase();
-            return driverNames.some(driverName => eventTitle.includes(driverName));
-          });
-          console.log('🏎️ Filtered F1 events for drivers:', events.length, events);
-        } else {
-          // Show all upcoming races if no drivers selected
-          console.log('🏎️ No drivers selected, showing all upcoming F1 races');
+      if (f1Teams.length > 0) {
+        try {
+          console.log('🏎️ Loading F1 events for selected drivers:', f1Teams.map(t => t.teamName));
+          const response = await calendarApi.getEvents('f1', []);
+          let events = (response.data as Event[]) || [];
+          console.log('🏎️ Raw F1 events from API:', events.length, events);
+          
+          // Show ALL upcoming races when any driver is selected (don't filter by driver)
+          console.log('🏎️ Showing all upcoming F1 races (not filtering by driver)');
+          
+          setF1Events(events);
+          console.log('🏎️ F1 events loaded:', events.length);
+        } catch (error) {
+          console.error('Failed to load F1 events:', error);
+          setF1Events([]);
         }
-        
-        setF1Events(events);
-        console.log('🏎️ F1 events loaded:', events.length);
-      } catch (error) {
-        console.error('Failed to load F1 events:', error);
-        setF1Events([]);
       }
       
       // Load NFL Events
