@@ -155,18 +155,12 @@ jobs:
           env | grep STRIPE | sed 's/=.*/=***/'
           
           # Create a docker-compose override file that explicitly sets the environment variables
-          cat > docker-compose.override.yml << 'OVERRIDE_EOF'
-services:
-  backend:
-    environment:
-      - STRIPE_SECRET_KEY=${STRIPE_SECRET_KEY}
-      - STRIPE_WEBHOOK_SECRET=${STRIPE_WEBHOOK_SECRET}
-      - STRIPE_PRICE_ID=${STRIPE_PRICE_ID}
-      - FRONTEND_URL=${FRONTEND_URL}
-OVERRIDE_EOF
+          printf 'services:\n  backend:\n    environment:\n      - STRIPE_SECRET_KEY=%s\n      - STRIPE_WEBHOOK_SECRET=%s\n      - STRIPE_PRICE_ID=%s\n      - FRONTEND_URL=%s\n' \
+            "${STRIPE_SECRET_KEY}" "${STRIPE_WEBHOOK_SECRET}" "${STRIPE_PRICE_ID}" "${FRONTEND_URL}" \
+            > docker-compose.override.yml
           
           echo "🔍 Created docker-compose.override.yml"
-          cat docker-compose.override.yml
+          cat docker-compose.override.yml | sed 's/STRIPE_[^=]*=.*/STRIPE_***=***/' | sed 's/FRONTEND_URL=.*/FRONTEND_URL=***/'
           
           # Start services with base config, .env.production, AND override
           docker compose -f docker-compose.traefik.yml -f docker-compose.override.yml --env-file .env.production up -d --force-recreate
