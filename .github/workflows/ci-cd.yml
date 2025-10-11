@@ -144,39 +144,31 @@ jobs:
           # Direct environment variable injection
           echo "🔍 Starting services with direct environment variable injection..."
           
-          # Create temporary environment file directly (without heredoc to avoid YAML issues)
-          echo "STRIPE_SECRET_KEY=${STRIPE_SECRET_KEY}" > .env.stripe
-          echo "STRIPE_WEBHOOK_SECRET=${STRIPE_WEBHOOK_SECRET}" >> .env.stripe
-          echo "STRIPE_PRICE_ID=${STRIPE_PRICE_ID}" >> .env.stripe
-          echo "FRONTEND_URL=${FRONTEND_URL}" >> .env.stripe
+          # Append Stripe variables directly to .env.production (backup first)
+          cp .env.production .env.production.backup
           
-          # Debug: Show that file was created and its contents (masked by GitHub)
-          echo "🔍 Created .env.stripe with Stripe variables"
-          ls -la .env.stripe
-          echo "🔍 File contents (values will be masked by GitHub):"
-          cat .env.stripe | sed 's/=.*/=***/'
+          # Remove any existing STRIPE variables from .env.production
+          sed -i '/^STRIPE_/d' .env.production
           
-          # Export all variables to current shell
-          export STRIPE_SECRET_KEY="${STRIPE_SECRET_KEY}"
-          export STRIPE_WEBHOOK_SECRET="${STRIPE_WEBHOOK_SECRET}"
-          export STRIPE_PRICE_ID="${STRIPE_PRICE_ID}"
-          export FRONTEND_URL="${FRONTEND_URL}"
+          # Append new Stripe variables
+          echo "" >> .env.production
+          echo "# Stripe Configuration (injected by CI/CD)" >> .env.production
+          echo "STRIPE_SECRET_KEY=${STRIPE_SECRET_KEY}" >> .env.production
+          echo "STRIPE_WEBHOOK_SECRET=${STRIPE_WEBHOOK_SECRET}" >> .env.production
+          echo "STRIPE_PRICE_ID=${STRIPE_PRICE_ID}" >> .env.production
+          echo "FRONTEND_URL=${FRONTEND_URL}" >> .env.production
           
-          # Verify exports worked
-          echo "🔍 Verifying exports:"
-          echo "STRIPE_SECRET_KEY in env: ${STRIPE_SECRET_KEY:+SET}"
-          echo "STRIPE_WEBHOOK_SECRET in env: ${STRIPE_WEBHOOK_SECRET:+SET}"
-          echo "STRIPE_PRICE_ID in env: ${STRIPE_PRICE_ID:+SET}"
+          # Debug: Show that variables were added
+          echo "🔍 Stripe variables added to .env.production:"
+          grep "^STRIPE_" .env.production | sed 's/=.*/=***/' || echo "❌ Failed to add STRIPE variables!"
+          grep "^FRONTEND_URL" .env.production | sed 's/=.*/=***/' || echo "❌ Failed to add FRONTEND_URL!"
           
-          # Start services with environment variables from files AND shell environment
-          docker compose -f docker-compose.traefik.yml --env-file .env.production --env-file .env.stripe up -d --force-recreate
+          # Start services with updated .env.production
+          docker compose -f docker-compose.traefik.yml --env-file .env.production up -d --force-recreate
           
           # Verify the backend container has the environment variables
           echo "🔍 Checking backend container environment:"
           docker exec sportskalendar-backend printenv | grep STRIPE || echo "❌ No STRIPE variables found in container!"
-          
-          # Clean up temporary environment file
-          rm -f .env.stripe
           
           # Clean up old images
           docker image prune -f
