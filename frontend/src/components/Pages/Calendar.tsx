@@ -308,6 +308,16 @@ export function Calendar() {
   const handleAddTeam = async (sport: string, teamName: string, teamId?: string, leagueId?: number) => {
     if (!user) return;
 
+    // Check if user already has a team and is not premium
+    if (!user.isPremium && (user.selectedTeams?.length || 0) >= 1) {
+      const confirmed = confirm('Premium erforderlich: Du kannst als kostenloser Nutzer nur ein Team auswählen. Möchtest du zu Premium upgraden?');
+      if (confirmed) {
+        setShowTeamSelector(false);
+        window.location.href = '/premium';
+      }
+      return;
+    }
+
     try {
       const newTeam = { sport: sport as 'football' | 'f1' | 'nfl' | 'nba' | 'nhl' | 'mlb' | 'tennis', teamName, teamId, leagueId };
       const updatedTeams = [...(user.selectedTeams || []), newTeam];
@@ -316,8 +326,17 @@ export function Calendar() {
       setUser({ ...user, selectedTeams: updatedTeams });
       setLocalTeams(updatedTeams);
       setShowTeamSelector(false);
-    } catch (error) {
+    } catch (error: any) {
       console.error('Failed to add team:', error);
+      
+      // Handle specific error cases
+      if (error.response?.status === 403) {
+        alert('Premium erforderlich: Du kannst als kostenloser Nutzer nur ein Team auswählen. Upgrade auf Premium für mehrere Teams!');
+      } else if (error.response?.status === 400) {
+        alert('Fehler beim Hinzufügen des Teams. Bitte versuche es erneut.');
+      } else {
+        alert('Ein Fehler ist aufgetreten. Bitte versuche es später erneut.');
+      }
     }
   };
 
@@ -1042,13 +1061,32 @@ export function Calendar() {
               <div className="flex items-center justify-between">
                 <div className="text-sm text-gray-600 dark:text-gray-400">
                   {localTeams.length} Team{localTeams.length !== 1 ? 's' : ''} ausgewählt
+                  {!user?.isPremium && localTeams.length >= 1 && (
+                    <span className="ml-2 text-orange-600 dark:text-orange-400 font-medium">
+                      (Premium für mehr Teams)
+                    </span>
+                  )}
                 </div>
-                <button
-                  onClick={() => setShowTeamSelector(false)}
-                  className="px-6 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl font-medium transition-colors"
-                >
-                  Fertig
-                </button>
+                <div className="flex items-center space-x-3">
+                  {!user?.isPremium && localTeams.length >= 1 && (
+                    <button
+                      onClick={() => {
+                        setShowTeamSelector(false);
+                        // Navigate to premium page
+                        window.location.href = '/premium';
+                      }}
+                      className="px-4 py-2 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white rounded-xl font-medium transition-all duration-200 text-sm"
+                    >
+                      🚀 Premium
+                    </button>
+                  )}
+                  <button
+                    onClick={() => setShowTeamSelector(false)}
+                    className="px-6 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl font-medium transition-colors"
+                  >
+                    Fertig
+                  </button>
+                </div>
               </div>
             </div>
           </div>

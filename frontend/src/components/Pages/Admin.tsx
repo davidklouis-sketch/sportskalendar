@@ -71,12 +71,17 @@ export function Admin() {
   const handleTogglePremium = async (userId: string) => {
     setActionLoading(userId);
     try {
-      await adminApi.togglePremium(userId);
+      console.log('🔍 Admin attempting to toggle premium for user:', userId);
+      console.log('🔍 Current admin user:', currentUser);
+      const response = await adminApi.togglePremium(userId);
+      console.log('✅ Toggle premium response:', response);
       await loadUsers();
       alert('Premium-Status wurde geändert!');
     } catch (err) {
-      const error = err as { response?: { data?: { message?: string } } };
-      console.error('Failed to toggle premium:', err);
+      const error = err as { response?: { data?: { message?: string }; status?: number } };
+      console.error('❌ Failed to toggle premium:', err);
+      console.error('❌ Error response:', error.response?.data);
+      console.error('❌ Error status:', error.response?.status);
       alert('Fehler: ' + (error.response?.data?.message || 'Konnte Premium-Status nicht ändern'));
     } finally {
       setActionLoading(null);
@@ -112,6 +117,28 @@ export function Admin() {
       setActionLoading(null);
     }
   };
+
+  // Check if current user is admin
+  if (currentUser?.role !== 'admin') {
+    return (
+      <div className="max-w-7xl mx-auto">
+        <div className="card p-8 text-center">
+          <div className="w-16 h-16 bg-red-500/20 backdrop-blur-sm rounded-2xl flex items-center justify-center mx-auto mb-6">
+            <svg className="w-8 h-8 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z" />
+            </svg>
+          </div>
+          <h2 className="text-3xl font-bold mb-4 text-red-400">Zugriff verweigert</h2>
+          <p className="text-gray-600 dark:text-gray-400 text-lg">
+            Du hast keine Berechtigung, auf diese Seite zuzugreifen.
+          </p>
+          <p className="text-sm text-gray-500 dark:text-gray-500 mt-2">
+            Nur Administratoren können das Admin-Panel verwenden.
+          </p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="max-w-7xl mx-auto">
