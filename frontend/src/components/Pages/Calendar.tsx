@@ -212,18 +212,38 @@ export function Calendar() {
       if (nbaTeams.length > 0) {
         try {
           console.log('🏀 Loading NBA events...');
-          const response = await liveApi.getNBA();
-          let events = (response.data.events as Event[]) || [];
+          // Use the correct sports API endpoint instead of live API
+          const response = await calendarApi.getEvents('nba', []);
+          let events = (response.data as Event[]) || [];
+          
+          // If calendar API doesn't have NBA events, try sports API
+          if (events.length === 0) {
+            try {
+              const sportsResponse = await liveApi.getNBA();
+              events = (sportsResponse.data.events as Event[]) || [];
+            } catch (sportsError) {
+              console.log('Sports API also failed, trying direct sports endpoint...');
+              const directResponse = await fetch('/api/sports/nba/events');
+              if (directResponse.ok) {
+                const directData = await directResponse.json();
+                events = directData.events || [];
+              }
+            }
+          }
+          
+          console.log('🏀 Raw NBA events:', events);
           
           // Filter events for selected teams
           const teamNames = nbaTeams.map(t => t.teamName.toLowerCase());
           events = events.filter(event => {
             const eventTitle = event.title.toLowerCase();
-            return teamNames.some(teamName => eventTitle.includes(teamName));
+            const matches = teamNames.some(teamName => eventTitle.includes(teamName));
+            console.log(`🏀 NBA Event "${event.title}" matches teams:`, matches);
+            return matches;
           });
           
           _setNbaEvents(events);
-          console.log('🏀 NBA events loaded:', events.length);
+          console.log('🏀 NBA events loaded:', events.length, events);
         } catch (error) {
           console.error('Failed to load NBA events:', error);
           _setNbaEvents([]);
@@ -235,18 +255,34 @@ export function Calendar() {
       if (nhlTeams.length > 0) {
         try {
           console.log('🏒 Loading NHL events...');
-          const response = await liveApi.getNHL();
-          let events = (response.data.events as Event[]) || [];
+          // Try multiple API endpoints for NHL events
+          let events: Event[] = [];
+          
+          try {
+            const directResponse = await fetch('/api/sports/nhl/events');
+            if (directResponse.ok) {
+              const directData = await directResponse.json();
+              events = directData.events || [];
+            }
+          } catch (directError) {
+            console.log('Direct NHL API failed, trying live API...');
+            const response = await liveApi.getNHL();
+            events = (response.data.events as Event[]) || [];
+          }
+          
+          console.log('🏒 Raw NHL events:', events);
           
           // Filter events for selected teams
           const teamNames = nhlTeams.map(t => t.teamName.toLowerCase());
           events = events.filter(event => {
             const eventTitle = event.title.toLowerCase();
-            return teamNames.some(teamName => eventTitle.includes(teamName));
+            const matches = teamNames.some(teamName => eventTitle.includes(teamName));
+            console.log(`🏒 NHL Event "${event.title}" matches teams:`, matches);
+            return matches;
           });
           
           _setNhlEvents(events);
-          console.log('🏒 NHL events loaded:', events.length);
+          console.log('🏒 NHL events loaded:', events.length, events);
         } catch (error) {
           console.error('Failed to load NHL events:', error);
           _setNhlEvents([]);
@@ -258,18 +294,34 @@ export function Calendar() {
       if (mlbTeams.length > 0) {
         try {
           console.log('⚾ Loading MLB events...');
-          const response = await liveApi.getMLB();
-          let events = (response.data.events as Event[]) || [];
+          // Try multiple API endpoints for MLB events
+          let events: Event[] = [];
+          
+          try {
+            const directResponse = await fetch('/api/sports/mlb/events');
+            if (directResponse.ok) {
+              const directData = await directResponse.json();
+              events = directData.events || [];
+            }
+          } catch (directError) {
+            console.log('Direct MLB API failed, trying live API...');
+            const response = await liveApi.getMLB();
+            events = (response.data.events as Event[]) || [];
+          }
+          
+          console.log('⚾ Raw MLB events:', events);
           
           // Filter events for selected teams
           const teamNames = mlbTeams.map(t => t.teamName.toLowerCase());
           events = events.filter(event => {
             const eventTitle = event.title.toLowerCase();
-            return teamNames.some(teamName => eventTitle.includes(teamName));
+            const matches = teamNames.some(teamName => eventTitle.includes(teamName));
+            console.log(`⚾ MLB Event "${event.title}" matches teams:`, matches);
+            return matches;
           });
           
           _setMlbEvents(events);
-          console.log('⚾ MLB events loaded:', events.length);
+          console.log('⚾ MLB events loaded:', events.length, events);
         } catch (error) {
           console.error('Failed to load MLB events:', error);
           _setMlbEvents([]);
@@ -323,6 +375,15 @@ export function Calendar() {
       ..._tennisEvents,
     ];
 
+    console.log('🔍 Finding next event from all events:', allEvents.length);
+    console.log('⚽ Football events:', footballEvents.length);
+    console.log('🏀 NBA events:', _nbaEvents.length);
+    console.log('🏎️ F1 events:', f1Events.length);
+    console.log('🏈 NFL events:', nflEvents.length);
+    console.log('🏒 NHL events:', _nhlEvents.length);
+    console.log('⚾ MLB events:', _mlbEvents.length);
+    console.log('🎾 Tennis events:', _tennisEvents.length);
+
     if (allEvents.length === 0) {
       setNextEvent(null);
       return;
@@ -331,12 +392,20 @@ export function Calendar() {
     // Filter only future events and sort by date
     const now = new Date();
     const upcomingEvents = allEvents
-      .filter(event => new Date(event.startsAt) > now)
+      .filter(event => {
+        const eventDate = new Date(event.startsAt);
+        const isFuture = eventDate > now;
+        console.log(`📅 Event "${event.title}" at ${event.startsAt} -> ${eventDate} (Future: ${isFuture})`);
+        return isFuture;
+      })
       .sort((a, b) => new Date(a.startsAt).getTime() - new Date(b.startsAt).getTime());
 
+    console.log('⏰ Upcoming events found:', upcomingEvents.length);
     if (upcomingEvents.length > 0) {
+      console.log('🎯 Next event:', upcomingEvents[0].title, 'at', upcomingEvents[0].startsAt);
       setNextEvent(upcomingEvents[0]);
     } else {
+      console.log('❌ No upcoming events found');
       setNextEvent(null);
     }
   };
