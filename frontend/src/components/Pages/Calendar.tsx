@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { useAuthStore } from '../../store/useAuthStore';
-import { calendarApi, userApi, highlightsApi } from '../../lib/api';
+import { calendarApi, userApi, highlightsApi, liveApi } from '../../lib/api';
 import { format } from 'date-fns';
 import { FOOTBALL_LEAGUES, FOOTBALL_TEAMS, F1_DRIVERS, NFL_TEAMS, NBA_TEAMS, NHL_TEAMS, MLB_TEAMS } from '../../data/teams';
 import { LiveData } from '../LiveData';
@@ -193,7 +193,7 @@ export function Calendar() {
       if (nbaTeams.length > 0) {
         try {
           console.log('🏀 Loading NBA events...');
-          const response = await calendarApi.getEvents('nba', []);
+          const response = await liveApi.getNBA();
           let events = (response.data as Event[]) || [];
           
           // Filter events for selected teams
@@ -216,7 +216,7 @@ export function Calendar() {
       if (nhlTeams.length > 0) {
         try {
           console.log('🏒 Loading NHL events...');
-          const response = await calendarApi.getEvents('nhl', []);
+          const response = await liveApi.getNHL();
           let events = (response.data as Event[]) || [];
           
           // Filter events for selected teams
@@ -239,7 +239,7 @@ export function Calendar() {
       if (mlbTeams.length > 0) {
         try {
           console.log('⚾ Loading MLB events...');
-          const response = await calendarApi.getEvents('mlb', []);
+          const response = await liveApi.getMLB();
           let events = (response.data as Event[]) || [];
           
           // Filter events for selected teams
@@ -262,7 +262,7 @@ export function Calendar() {
       if (tennisTeams.length > 0) {
         try {
           console.log('🎾 Loading Tennis events...');
-          const response = await calendarApi.getEvents('tennis', []);
+          const response = await liveApi.getTennis();
           let events = (response.data as Event[]) || [];
           
           // Filter events for selected tours
