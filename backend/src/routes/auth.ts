@@ -270,6 +270,15 @@ authRouter.post('/login', authRateLimit, async (req: Request, res: Response) => 
     console.log('🔍 Database query result:', user ? 'User found' : 'User not found');
     
     if (!user) {
+      // Debug: Show what we're searching for
+      console.log('🔍 Search details:');
+      console.log('  - Email searched:', email);
+      console.log('  - Email type:', typeof email);
+      console.log('  - Email length:', email.length);
+      console.log('  - Database connected:', !!process.env.DATABASE_URL);
+    }
+    
+    if (!user) {
       console.log('❌ User not found in database, simulating password check...');
       // Simulate password check to prevent timing attacks
       await bcrypt.compare(password, '$2a$12$dummy.hash.to.prevent.timing.attacks');
