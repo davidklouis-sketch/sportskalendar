@@ -391,19 +391,65 @@ export function Calendar() {
 
     // Filter only future events and sort by date
     const now = new Date();
+    console.log('🕐 Current time:', now.toISOString());
+    
     const upcomingEvents = allEvents
-      .filter(event => {
-        const eventDate = new Date(event.startsAt);
-        const isFuture = eventDate > now;
-        console.log(`📅 Event "${event.title}" at ${event.startsAt} -> ${eventDate} (Future: ${isFuture})`);
-        return isFuture;
+      .map(event => {
+        // Try multiple date parsing methods
+        let eventDate: Date;
+        
+        try {
+          // Method 1: Direct parsing
+          eventDate = new Date(event.startsAt);
+          
+          // Method 2: If invalid, try parsing different formats
+          if (isNaN(eventDate.getTime())) {
+            console.log(`⚠️ Invalid date for "${event.title}": ${event.startsAt}`);
+            
+            // Try parsing as YYYY-MM-DD HH:mm:ss format
+            const parts = event.startsAt.split(' ');
+            if (parts.length === 2) {
+              const [datePart, timePart] = parts;
+              const [year, month, day] = datePart.split('-');
+              const [hour, minute, second] = timePart.split(':');
+              eventDate = new Date(parseInt(year), parseInt(month) - 1, parseInt(day), parseInt(hour), parseInt(minute), parseInt(second) || 0);
+            }
+            
+            // Method 3: Try DD.MM.YYYY HH:mm format (German format)
+            if (isNaN(eventDate.getTime()) && event.startsAt.includes('.')) {
+              const germanDateMatch = event.startsAt.match(/(\d{2})\.(\d{2})\.(\d{4})\s+(\d{2}):(\d{2})/);
+              if (germanDateMatch) {
+                const [, day, month, year, hour, minute] = germanDateMatch;
+                eventDate = new Date(parseInt(year), parseInt(month) - 1, parseInt(day), parseInt(hour), parseInt(minute));
+              }
+            }
+          }
+          
+          const isFuture = eventDate > now;
+          const timeDiff = eventDate.getTime() - now.getTime();
+          const daysDiff = Math.ceil(timeDiff / (1000 * 60 * 60 * 24));
+          
+          console.log(`📅 Event "${event.title}" at ${event.startsAt} -> ${eventDate.toISOString()} (${daysDiff} days from now, Future: ${isFuture})`);
+          
+          return {
+            ...event,
+            parsedDate: eventDate,
+            isFuture,
+            daysDiff
+          };
+        } catch (error) {
+          console.error(`❌ Error parsing date for event "${event.title}":`, event.startsAt, error);
+          return null;
+        }
       })
-      .sort((a, b) => new Date(a.startsAt).getTime() - new Date(b.startsAt).getTime());
+      .filter(event => event && event.isFuture)
+      .sort((a, b) => a!.parsedDate.getTime() - b!.parsedDate.getTime());
 
     console.log('⏰ Upcoming events found:', upcomingEvents.length);
     if (upcomingEvents.length > 0) {
-      console.log('🎯 Next event:', upcomingEvents[0].title, 'at', upcomingEvents[0].startsAt);
-      setNextEvent(upcomingEvents[0]);
+      const nextEvent = upcomingEvents[0]!;
+      console.log('🎯 Next event:', nextEvent.title, 'at', nextEvent.startsAt, `(${nextEvent.daysDiff} days from now)`);
+      setNextEvent(nextEvent);
     } else {
       console.log('❌ No upcoming events found');
       setNextEvent(null);
@@ -564,6 +610,18 @@ export function Calendar() {
       findNextEvent();
     }
   }, [footballEvents, f1Events, nflEvents, _nbaEvents, _nhlEvents, _mlbEvents, _tennisEvents, isLoading]);
+
+  // Debug: Log all events when they change
+  useEffect(() => {
+    console.log('🔍 DEBUG: All events updated');
+    console.log('⚽ Football Events:', footballEvents.map(e => ({ title: e.title, startsAt: e.startsAt })));
+    console.log('🏀 NBA Events:', _nbaEvents.map(e => ({ title: e.title, startsAt: e.startsAt })));
+    console.log('🏎️ F1 Events:', f1Events.map(e => ({ title: e.title, startsAt: e.startsAt })));
+    console.log('🏈 NFL Events:', nflEvents.map(e => ({ title: e.title, startsAt: e.startsAt })));
+    console.log('🏒 NHL Events:', _nhlEvents.map(e => ({ title: e.title, startsAt: e.startsAt })));
+    console.log('⚾ MLB Events:', _mlbEvents.map(e => ({ title: e.title, startsAt: e.startsAt })));
+    console.log('🎾 Tennis Events:', _tennisEvents.map(e => ({ title: e.title, startsAt: e.startsAt })));
+  }, [footballEvents, _nbaEvents, f1Events, nflEvents, _nhlEvents, _mlbEvents, _tennisEvents]);
 
   const handleAddTeam = async (sport: string, teamName: string, teamId?: string, leagueId?: number) => {
     if (!user) return;
