@@ -40,16 +40,7 @@ export function SportsKalendarBanner() {
   
   // Verstecke Ads für Premium-Nutzer
   if (user?.isPremium) {
-    return (
-      <div className="my-4 p-4 bg-gradient-to-r from-yellow-50 to-orange-50 dark:from-yellow-900/20 dark:to-orange-900/20 rounded-xl border border-yellow-200 dark:border-yellow-800">
-        <div className="text-center">
-          <div className="text-2xl mb-2">⭐</div>
-          <p className="text-sm font-medium text-yellow-800 dark:text-yellow-200">
-            Premium-Nutzer sehen keine Werbung
-          </p>
-        </div>
-      </div>
-    );
+    return null;
   }
   
   return (
@@ -65,16 +56,7 @@ export function SportsKalendarSquare() {
   
   // Verstecke Ads für Premium-Nutzer
   if (user?.isPremium) {
-    return (
-      <div className="my-4 p-4 bg-gradient-to-r from-yellow-50 to-orange-50 dark:from-yellow-900/20 dark:to-orange-900/20 rounded-xl border border-yellow-200 dark:border-yellow-800">
-        <div className="text-center">
-          <div className="text-2xl mb-2">⭐</div>
-          <p className="text-sm font-medium text-yellow-800 dark:text-yellow-200">
-            Premium-Nutzer sehen keine Werbung
-          </p>
-        </div>
-      </div>
-    );
+    return null;
   }
   
   return (
@@ -90,16 +72,7 @@ export function SportsKalendarLeaderboard() {
   
   // Verstecke Ads für Premium-Nutzer
   if (user?.isPremium) {
-    return (
-      <div className="my-4 p-4 bg-gradient-to-r from-yellow-50 to-orange-50 dark:from-yellow-900/20 dark:to-orange-900/20 rounded-xl border border-yellow-200 dark:border-yellow-800">
-        <div className="text-center">
-          <div className="text-2xl mb-2">⭐</div>
-          <p className="text-sm font-medium text-yellow-800 dark:text-yellow-200">
-            Premium-Nutzer sehen keine Werbung
-          </p>
-        </div>
-      </div>
-    );
+    return null;
   }
   
   return (
