@@ -114,8 +114,11 @@ authRouter.post('/register', authRateLimit, async (req, res) => {
     console.log('🔍 Request body type:', typeof req.body);
     console.log('🔍 Request body keys:', Object.keys(req.body || {}));
     
+    // Body should already be parsed by express.json() middleware
+    const body = req.body;
+    
     // Check if request body is empty or invalid
-    if (!req.body || typeof req.body !== 'object' || Object.keys(req.body).length === 0) {
+    if (!body || typeof body !== 'object' || Object.keys(body).length === 0) {
       console.log('❌ Empty or invalid request body');
       return res.status(400).json({
         error: 'Invalid request',
@@ -124,7 +127,7 @@ authRouter.post('/register', authRateLimit, async (req, res) => {
       });
     }
     
-    const parsed = registerSchema.safeParse(req.body);
+    const parsed = registerSchema.safeParse(body);
     if (!parsed.success) {
       console.log('❌ Schema validation failed:', parsed.error.flatten());
       return res.status(400).json({ 
@@ -226,27 +229,8 @@ authRouter.post('/login', authRateLimit, async (req: Request, res: Response) => 
     console.log('🔍 Request body:', req.body);
     console.log('🔍 Content-Type:', req.headers['content-type']);
     
-    let body: any = req.body;
-    if (typeof body === 'string') {
-      console.log('🔍 Body is string, attempting to parse...');
-      try {
-        body = JSON.parse(body);
-        console.log('✅ JSON parsing successful:', body);
-      } catch {
-        console.log('❌ JSON parsing failed, trying URLSearchParams...');
-        try {
-          const params = new URLSearchParams(body);
-          body = Object.fromEntries(params.entries());
-          console.log('✅ URLSearchParams parsing successful:', body);
-        } catch {
-          console.log('❌ All parsing methods failed');
-          return res.status(400).json({ 
-            error: 'Invalid request format',
-            message: 'Request body must be valid JSON' 
-          });
-        }
-      }
-    }
+    // Body should already be parsed by express.json() middleware
+    const body = req.body;
     
     console.log('🔍 Final body for validation:', body);
     const parsed = loginSchema.safeParse(body);
