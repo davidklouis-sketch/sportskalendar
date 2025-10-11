@@ -545,6 +545,9 @@ export function Calendar() {
       const hasEvents = footballEvents.length > 0 || f1Events.length > 0 || _nbaEvents.length > 0 || 
                        nflEvents.length > 0 || _nhlEvents.length > 0 || _mlbEvents.length > 0 || _tennisEvents.length > 0;
       
+      console.log('📊 Event counts - Football:', footballEvents.length, 'F1:', f1Events.length, 'NBA:', _nbaEvents.length, 'NFL:', nflEvents.length, 'NHL:', _nhlEvents.length, 'MLB:', _mlbEvents.length, 'Tennis:', _tennisEvents.length);
+      console.log('📊 Has events:', hasEvents);
+      
       if (lastTeamsRef.current !== teamsString || !hasEvents) {
         console.log('👤 Teams changed or no events loaded yet, loading events...');
         lastTeamsRef.current = teamsString;
@@ -559,6 +562,10 @@ export function Calendar() {
         loadAllEvents(teams);
       } else {
         console.log('👤 Teams unchanged and events already loaded, but still updating local teams...');
+        console.log('🔍 Current events summary:');
+        console.log('⚽ Football:', footballEvents.length > 0 ? footballEvents.map(e => e.title) : 'No events');
+        console.log('🏀 NBA:', _nbaEvents.length > 0 ? _nbaEvents.map(e => e.title) : 'No events');
+        console.log('🏎️ F1:', f1Events.length > 0 ? f1Events.map(e => e.title) : 'No events');
         // Still update local teams even if we don't reload events
       }
     } else {
@@ -641,6 +648,31 @@ export function Calendar() {
       }
     }
   }, [localTeams, footballEvents, f1Events, _nbaEvents, nflEvents, _nhlEvents, _mlbEvents, _tennisEvents, isLoading]);
+
+  // Expose force load function to global scope for debugging
+  useEffect(() => {
+    (window as any).forceLoadEvents = () => {
+      console.log('🔧 Manual force load triggered from console');
+      if (localTeams.length > 0) {
+        loadAllEvents(localTeams);
+      } else {
+        console.log('❌ No teams available to load events for');
+      }
+    };
+    
+    (window as any).debugEvents = () => {
+      console.log('🔍 Current event states:');
+      console.log('⚽ Football Events:', footballEvents);
+      console.log('🏀 NBA Events:', _nbaEvents);
+      console.log('🏎️ F1 Events:', f1Events);
+      console.log('🏈 NFL Events:', nflEvents);
+      console.log('🏒 NHL Events:', _nhlEvents);
+      console.log('⚾ MLB Events:', _mlbEvents);
+      console.log('🎾 Tennis Events:', _tennisEvents);
+      console.log('👥 Local Teams:', localTeams);
+      console.log('⏰ Next Event:', nextEvent);
+    };
+  }, [localTeams, footballEvents, f1Events, _nbaEvents, nflEvents, _nhlEvents, _mlbEvents, _tennisEvents, nextEvent]);
 
   // Debug: Log all events when they change
   useEffect(() => {
