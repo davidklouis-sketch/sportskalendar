@@ -30,6 +30,31 @@ stripeRouter.get('/debug', (req, res) => {
   });
 });
 
+// Debug endpoint to check user premium status
+stripeRouter.get('/debug/user/:email', async (req, res) => {
+  try {
+    const { email } = req.params;
+    const user = await UserRepository.findByEmail(email);
+    
+    res.json({
+      email,
+      userFound: !!user,
+      isPremium: user?.isPremium || false,
+      userData: user ? {
+        id: user.id,
+        email: user.email,
+        displayName: user.displayName,
+        isPremium: user.isPremium,
+        createdAt: user.createdAt,
+        updatedAt: user.updatedAt
+      } : null
+    });
+  } catch (error) {
+    console.error('Debug user lookup failed:', error);
+    res.status(500).json({ error: 'Failed to lookup user' });
+  }
+});
+
 // Create Stripe checkout session
 stripeRouter.post('/create-checkout-session', requireAuth, async (req, res) => {
   try {
@@ -109,15 +134,26 @@ stripeRouter.post('/webhook', async (req, res) => {
   }
 
   try {
+    console.log(`🔍 Processing Stripe webhook event: ${event.type}`);
+    
     switch (event.type) {
       case 'checkout.session.completed':
         const session = event.data.object as any;
-        const userEmail = session.metadata?.userEmail;
+        console.log(`🔍 Checkout session completed:`, {
+          id: session.id,
+          metadata: session.metadata,
+          customer_email: session.customer_email,
+          payment_status: session.payment_status
+        });
+        
+        const userEmail = session.metadata?.userEmail || session.customer_email;
         
         if (userEmail) {
-          // Upgrade user to premium
-          await UserRepository.updateByEmail(userEmail, { isPremium: true });
-          console.log(`✅ User ${userEmail} upgraded to premium via Stripe`);
+          console.log(`🔍 Attempting to upgrade user to premium: ${userEmail}`);
+          const result = await UserRepository.updateByEmail(userEmail, { isPremium: true });
+          console.log(`✅ User ${userEmail} upgraded to premium via Stripe. Result:`, result);
+        } else {
+          console.log(`❌ No user email found in session metadata or customer_email`);
         }
         break;
 
