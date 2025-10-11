@@ -1,4 +1,4 @@
-import { Router } from 'express';
+import express, { Router } from 'express';
 import { z } from 'zod';
 import { stripe, PREMIUM_AMOUNT, PREMIUM_CURRENCY, PREMIUM_PRICE_ID, isStripeConfigured } from '../config/stripe';
 import { requireAuth } from '../middleware/auth';
@@ -107,7 +107,7 @@ stripeRouter.post('/create-checkout-session', requireAuth, async (req, res) => {
 });
 
 // Handle successful payment (webhook)
-stripeRouter.post('/webhook', async (req, res) => {
+stripeRouter.post('/webhook', express.raw({type: 'application/json'}), async (req, res) => {
   // Check if Stripe is configured
   if (!isStripeConfigured() || !stripe) {
     return res.status(503).json({
@@ -127,6 +127,7 @@ stripeRouter.post('/webhook', async (req, res) => {
   let event;
 
   try {
+    // Use raw body for signature verification
     event = stripe!.webhooks.constructEvent(req.body, sig as string, endpointSecret);
   } catch (err) {
     console.error('Webhook signature verification failed:', err);
