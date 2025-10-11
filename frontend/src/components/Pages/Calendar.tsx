@@ -684,6 +684,12 @@ export function Calendar() {
     console.log('🏒 NHL Events:', _nhlEvents.map(e => ({ title: e.title, startsAt: e.startsAt })));
     console.log('⚾ MLB Events:', _mlbEvents.map(e => ({ title: e.title, startsAt: e.startsAt })));
     console.log('🎾 Tennis Events:', _tennisEvents.map(e => ({ title: e.title, startsAt: e.startsAt })));
+    
+    // Auto-trigger findNextEvent when events change
+    setTimeout(() => {
+      console.log('🔄 Auto-triggering findNextEvent after events update...');
+      findNextEvent();
+    }, 100);
   }, [footballEvents, _nbaEvents, f1Events, nflEvents, _nhlEvents, _mlbEvents, _tennisEvents]);
 
   const handleAddTeam = async (sport: string, teamName: string, teamId?: string, leagueId?: number) => {
