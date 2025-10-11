@@ -28,7 +28,7 @@ export function Footer({ onNavigate }: FooterProps) {
               Kontakt
             </button>
             <a
-              href="mailto:david.louis@protonmail.com"
+              href="mailto:sportskalendar@outlook.de"
               className="text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 transition-colors"
             >
               Support

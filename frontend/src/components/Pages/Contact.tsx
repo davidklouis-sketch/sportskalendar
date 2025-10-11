@@ -177,7 +177,7 @@ const Contact: React.FC = () => {
                   </h3>
                   <div className="text-gray-600 dark:text-gray-300 space-y-2">
                     <p><strong>SportsKalender</strong></p>
-                    <p>E-Mail: david.louis@protonmail.com</p>
+                    <p>E-Mail: sportskalendar@outlook.de</p>
                     <p>Website: https://sportskalendar.de</p>
                   </div>
                 </div>
@@ -188,7 +188,7 @@ const Contact: React.FC = () => {
                   </h3>
                   <div className="text-gray-600 dark:text-gray-300">
                     <p>David Louis</p>
-                    <p>E-Mail: david.louis@protonmail.com</p>
+                    <p>E-Mail: sportskalendar@outlook.de</p>
                   </div>
                 </div>
 
@@ -242,13 +242,13 @@ const Contact: React.FC = () => {
                   </h3>
                   <div className="space-y-3">
                     <a
-                      href="mailto:david.louis@protonmail.com"
+                      href="mailto:sportskalendar@outlook.de"
                       className="flex items-center text-blue-600 dark:text-blue-400 hover:underline"
                     >
                       <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 4.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
                       </svg>
-                      david.louis@protonmail.com
+                      sportskalendar@outlook.de
                     </a>
                     <a
                       href="/privacy"

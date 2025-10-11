@@ -19,7 +19,7 @@ const Privacy: React.FC = () => {
               </h2>
               <div className="text-gray-600 dark:text-gray-300">
                 <p><strong>SportsKalender</strong></p>
-                <p>E-Mail: david.louis@protonmail.com</p>
+                <p>E-Mail: sportskalendar@outlook.de</p>
                 <p>Website: https://sportskalendar.de</p>
               </div>
             </section>
@@ -217,8 +217,8 @@ const Privacy: React.FC = () => {
                 </ul>
                 <p>
                   <strong>Kontakt:</strong> Zur Ausübung Ihrer Rechte wenden Sie sich an: 
-                  <a href="mailto:david.louis@protonmail.com" className="text-blue-600 dark:text-blue-400 hover:underline">
-                    david.louis@protonmail.com
+                  <a href="mailto:sportskalendar@outlook.de" className="text-blue-600 dark:text-blue-400 hover:underline">
+                    sportskalendar@outlook.de
                   </a>
                 </p>
               </div>
@@ -260,7 +260,7 @@ const Privacy: React.FC = () => {
               <div className="text-gray-600 dark:text-gray-300">
                 <p>Bei Fragen zum Datenschutz kontaktieren Sie uns:</p>
                 <div className="mt-4 p-4 bg-gray-100 dark:bg-gray-700 rounded-lg">
-                  <p><strong>E-Mail:</strong> david.louis@protonmail.com</p>
+                  <p><strong>E-Mail:</strong> sportskalendar@outlook.de</p>
                   <p><strong>Website:</strong> https://sportskalendar.de</p>
                 </div>
               </div>

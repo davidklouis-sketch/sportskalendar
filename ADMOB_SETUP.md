@@ -23,7 +23,7 @@ Vollständige Anleitung zur Integration von Google AdMob/AdSense für Werbeeinna
 ### **1.1 Account anlegen:**
 1. Gehe zu: **https://adsense.google.com**
 2. Klicke auf **"Jetzt anmelden"**
-3. Verwende deine Google-Konto-E-Mail: `david.louis@protonmail.com`
+3. Verwende deine Google-Konto-E-Mail: `sportskalendar@outlook.de`
 4. **Website hinzufügen**: `https://sportskalendar.de`
 
 ### **1.2 Website verifizieren:**
