@@ -119,6 +119,10 @@ export const liveApi = {
   getF1: () => api.get('/live/f1'),
   getNFL: () => api.get('/live/nfl'),
   getSoccer: () => api.get('/live/soccer'),
+  getNBA: () => api.get('/sports/nba/events'),
+  getNHL: () => api.get('/sports/nhl/events'),
+  getMLB: () => api.get('/sports/mlb/events'),
+  getTennis: () => api.get('/sports/tennis/atp'),
 };
 
 // Highlights

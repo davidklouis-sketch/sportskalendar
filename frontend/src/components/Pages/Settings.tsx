@@ -248,7 +248,7 @@ export function Settings() {
                             <div className="flex items-center">
                               <div className="p-2 bg-indigo-100 dark:bg-indigo-900/30 rounded-lg">
                                 <span className="text-2xl">
-                                  {team.sport === 'football' ? '⚽' : team.sport === 'nfl' ? '🏈' : '🏎️'}
+                                  {team.sport === 'football' ? '⚽' : team.sport === 'nfl' ? '🏈' : team.sport === 'f1' ? '🏎️' : team.sport === 'nba' ? '🏀' : team.sport === 'nhl' ? '🏒' : team.sport === 'mlb' ? '⚾' : team.sport === 'tennis' ? '🎾' : '🏆'}
                                 </span>
                               </div>
                               <div className="ml-3">

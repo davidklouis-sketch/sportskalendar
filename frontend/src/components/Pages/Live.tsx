@@ -30,7 +30,7 @@ export function Live() {
   const { user } = useAuthStore();
   const [liveData, setLiveData] = useState<LiveData | null>(null);
   const [isLoading, setIsLoading] = useState(true);
-  const [selectedSport, setSelectedSport] = useState<'football' | 'nfl' | 'f1' | null>(null);
+  const [selectedSport, setSelectedSport] = useState<'football' | 'nfl' | 'f1' | 'nba' | 'nhl' | 'mlb' | 'tennis' | null>(null);
 
   const loadLiveData = useCallback(async () => {
     if (!selectedSport) return;
@@ -42,6 +42,14 @@ export function Live() {
         response = await liveApi.getF1();
       } else if (selectedSport === 'nfl') {
         response = await liveApi.getNFL();
+      } else if (selectedSport === 'nba') {
+        response = await liveApi.getNBA();
+      } else if (selectedSport === 'nhl') {
+        response = await liveApi.getNHL();
+      } else if (selectedSport === 'mlb') {
+        response = await liveApi.getMLB();
+      } else if (selectedSport === 'tennis') {
+        response = await liveApi.getTennis();
       } else {
         response = await liveApi.getSoccer();
       }
@@ -131,12 +139,12 @@ export function Live() {
             <label className="block text-sm font-medium text-cyan-400 mb-2">Team auswählen</label>
             <select
               value={selectedSport || ''}
-              onChange={(e) => setSelectedSport(e.target.value as 'football' | 'nfl' | 'f1')}
+              onChange={(e) => setSelectedSport(e.target.value as 'football' | 'nfl' | 'f1' | 'nba' | 'nhl' | 'mlb' | 'tennis')}
               className="input"
             >
               {user.selectedTeams.map((team, index) => (
                 <option key={index} value={team.sport}>
-                  {team.teamName} ({team.sport === 'football' ? '⚽' : team.sport === 'nfl' ? '🏈' : '🏎️'})
+                  {team.teamName} ({team.sport === 'football' ? '⚽' : team.sport === 'nfl' ? '🏈' : team.sport === 'f1' ? '🏎️' : team.sport === 'nba' ? '🏀' : team.sport === 'nhl' ? '🏒' : team.sport === 'mlb' ? '⚾' : team.sport === 'tennis' ? '🎾' : '🏆'})
                 </option>
               ))}
             </select>

@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import { useAuthStore } from '../../store/useAuthStore';
 import { calendarApi, userApi, highlightsApi } from '../../lib/api';
 import { format } from 'date-fns';
-import { FOOTBALL_LEAGUES, FOOTBALL_TEAMS, F1_DRIVERS, NFL_TEAMS } from '../../data/teams';
+import { FOOTBALL_LEAGUES, FOOTBALL_TEAMS, F1_DRIVERS, NFL_TEAMS, NBA_TEAMS, NHL_TEAMS, MLB_TEAMS } from '../../data/teams';
 import { LiveData } from '../LiveData';
 import { SportsKalendarBanner, SportsKalendarSquare } from '../Ads/AdManager';
 
@@ -30,6 +30,10 @@ export function Calendar() {
   const [footballEvents, setFootballEvents] = useState<Event[]>([]);
   const [f1Events, setF1Events] = useState<Event[]>([]);
   const [nflEvents, setNflEvents] = useState<Event[]>([]);
+  const [_nbaEvents, _setNbaEvents] = useState<Event[]>([]);
+  const [_nhlEvents, _setNhlEvents] = useState<Event[]>([]);
+  const [_mlbEvents, _setMlbEvents] = useState<Event[]>([]);
+  const [_tennisEvents, _setTennisEvents] = useState<Event[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   
   // Debug state changes
@@ -40,7 +44,7 @@ export function Calendar() {
   useEffect(() => {
     console.log('🔄 Loading state changed:', isLoading);
   }, [isLoading]);
-  const [selectedSport, setSelectedSport] = useState<'football' | 'nfl' | 'f1' | null>(null);
+  const [selectedSport, setSelectedSport] = useState<'football' | 'nfl' | 'f1' | 'nba' | 'nhl' | 'mlb' | 'tennis' | null>(null);
   const [showTeamSelector, setShowTeamSelector] = useState(false);
   // Local teams state to ensure UI updates work
   const [localTeams, setLocalTeams] = useState<Array<{ sport: string; teamName: string; teamId?: string; leagueId?: number }>>([]);
@@ -768,6 +772,97 @@ export function Calendar() {
                         {team.name}
                       </button>
                     ))}
+                  </div>
+                </div>
+
+                {/* NBA Teams */}
+                <div>
+                  <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-3 flex items-center">
+                    <span className="text-2xl mr-2">🏀</span>
+                    NBA
+                  </h3>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                    {NBA_TEAMS.map((team) => (
+                      <button
+                        key={team.id}
+                        onClick={() => handleAddTeam('nba', team.name, team.id)}
+                        disabled={localTeams.some(t => t.teamName === team.name)}
+                        className="w-full text-left px-3 py-2 text-sm rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                      >
+                        {team.name}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* NHL Teams */}
+                <div>
+                  <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-3 flex items-center">
+                    <span className="text-2xl mr-2">🏒</span>
+                    NHL
+                  </h3>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                    {NHL_TEAMS.map((team) => (
+                      <button
+                        key={team.id}
+                        onClick={() => handleAddTeam('nhl', team.name, team.id)}
+                        disabled={localTeams.some(t => t.teamName === team.name)}
+                        className="w-full text-left px-3 py-2 text-sm rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                      >
+                        {team.name}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* MLB Teams */}
+                <div>
+                  <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-3 flex items-center">
+                    <span className="text-2xl mr-2">⚾</span>
+                    MLB
+                  </h3>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                    {MLB_TEAMS.map((team) => (
+                      <button
+                        key={team.id}
+                        onClick={() => handleAddTeam('mlb', team.name, team.id)}
+                        disabled={localTeams.some(t => t.teamName === team.name)}
+                        className="w-full text-left px-3 py-2 text-sm rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                      >
+                        {team.name}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Tennis (ATP/WTA) */}
+                <div>
+                  <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-3 flex items-center">
+                    <span className="text-2xl mr-2">🎾</span>
+                    Tennis
+                  </h3>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                    <button
+                      onClick={() => handleAddTeam('tennis', 'ATP Tour', 'atp')}
+                      disabled={localTeams.some(t => t.teamName === 'ATP Tour')}
+                      className="w-full text-left px-3 py-2 text-sm rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                    >
+                      ATP Tour
+                    </button>
+                    <button
+                      onClick={() => handleAddTeam('tennis', 'WTA Tour', 'wta')}
+                      disabled={localTeams.some(t => t.teamName === 'WTA Tour')}
+                      className="w-full text-left px-3 py-2 text-sm rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                    >
+                      WTA Tour
+                    </button>
+                    <button
+                      onClick={() => handleAddTeam('tennis', 'Grand Slams', 'grandslams')}
+                      disabled={localTeams.some(t => t.teamName === 'Grand Slams')}
+                      className="w-full text-left px-3 py-2 text-sm rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                    >
+                      Grand Slams
+                    </button>
                   </div>
                 </div>
               </div>
