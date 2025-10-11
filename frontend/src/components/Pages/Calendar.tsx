@@ -46,6 +46,7 @@ export function Calendar() {
   }, [isLoading]);
   const [selectedSport, setSelectedSport] = useState<'football' | 'nfl' | 'f1' | 'nba' | 'nhl' | 'mlb' | 'tennis' | null>(null);
   const [showTeamSelector, setShowTeamSelector] = useState(false);
+  const [selectedSportTab, setSelectedSportTab] = useState<'football' | 'nfl' | 'f1' | 'nba' | 'nhl' | 'mlb' | 'tennis'>('football');
   // Local teams state to ensure UI updates work
   const [localTeams, setLocalTeams] = useState<Array<{ sport: string; teamName: string; teamId?: string; leagueId?: number }>>([]);
   // Highlights state
@@ -690,14 +691,26 @@ export function Calendar() {
 
       {/* Team Selector Modal */}
       {showTeamSelector && (
-        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4 z-50">
-          <div className="bg-white dark:bg-gray-800 rounded-3xl shadow-2xl w-full max-w-2xl max-h-[80vh] overflow-hidden">
-            <div className="bg-gradient-to-r from-indigo-600 to-purple-600 p-6 text-white">
-              <div className="flex items-center justify-between">
-                <h2 className="text-2xl font-bold">Team hinzufügen</h2>
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 z-50">
+          <div className="bg-white dark:bg-gray-900 rounded-3xl shadow-2xl w-full max-w-6xl max-h-[90vh] overflow-hidden border border-gray-200 dark:border-gray-700">
+            {/* Header */}
+            <div className="bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 p-6 text-white relative overflow-hidden">
+              <div className="absolute inset-0 bg-black/10"></div>
+              <div className="relative flex items-center justify-between">
+                <div className="flex items-center space-x-3">
+                  <div className="w-12 h-12 bg-white/20 backdrop-blur-sm rounded-2xl flex items-center justify-center">
+                    <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                    </svg>
+                  </div>
+                  <div>
+                    <h2 className="text-3xl font-bold">Team hinzufügen</h2>
+                    <p className="text-white/80 text-sm">Wähle deine Lieblings-Teams aus</p>
+                  </div>
+                </div>
                 <button
                   onClick={() => setShowTeamSelector(false)}
-                  className="text-white/80 hover:text-white transition-colors"
+                  className="text-white/80 hover:text-white transition-colors p-2 hover:bg-white/10 rounded-xl"
                 >
                   <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -705,171 +718,334 @@ export function Calendar() {
                 </button>
               </div>
             </div>
-            
-            <div className="p-6 max-h-96 overflow-y-auto">
-              <div className="space-y-6">
-                {/* Football Teams */}
-                <div>
-                  <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-3 flex items-center">
-                    <span className="text-2xl mr-2">⚽</span>
-                    Fußball
-                  </h3>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+
+            {/* Sport Tabs */}
+            <div className="border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800">
+              <div className="flex overflow-x-auto">
+                {[
+                  { id: 'football', name: 'Fußball', icon: '⚽', color: 'from-green-500 to-emerald-600' },
+                  { id: 'nfl', name: 'NFL', icon: '🏈', color: 'from-orange-500 to-red-600' },
+                  { id: 'f1', name: 'Formel 1', icon: '🏎️', color: 'from-red-500 to-pink-600' },
+                  { id: 'nba', name: 'NBA', icon: '🏀', color: 'from-orange-500 to-orange-600' },
+                  { id: 'nhl', name: 'NHL', icon: '🏒', color: 'from-blue-500 to-cyan-600' },
+                  { id: 'mlb', name: 'MLB', icon: '⚾', color: 'from-blue-600 to-indigo-600' },
+                  { id: 'tennis', name: 'Tennis', icon: '🎾', color: 'from-green-600 to-teal-600' }
+                ].map((sport) => (
+                  <button
+                    key={sport.id}
+                    onClick={() => setSelectedSportTab(sport.id as any)}
+                    className={`flex items-center space-x-2 px-6 py-4 text-sm font-medium whitespace-nowrap transition-all duration-200 border-b-2 ${
+                      selectedSportTab === sport.id
+                        ? 'border-indigo-500 text-indigo-600 dark:text-indigo-400 bg-white dark:bg-gray-900'
+                        : 'border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 hover:bg-white/50 dark:hover:bg-gray-700/50'
+                    }`}
+                  >
+                    <span className="text-lg">{sport.icon}</span>
+                    <span>{sport.name}</span>
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Content */}
+            <div className="p-6 max-h-[60vh] overflow-y-auto">
+              {selectedSportTab === 'football' && (
+                <div className="space-y-6">
+                  <div className="text-center mb-6">
+                    <div className="w-16 h-16 bg-gradient-to-r from-green-500 to-emerald-600 rounded-2xl flex items-center justify-center mx-auto mb-3">
+                      <span className="text-3xl">⚽</span>
+                    </div>
+                    <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">Fußball Teams</h3>
+                    <p className="text-gray-600 dark:text-gray-400">Wähle aus den wichtigsten Ligen</p>
+                  </div>
+                  
+                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                     {FOOTBALL_LEAGUES.map((league) => (
-                      <div key={league.id} className="mb-3">
-                        <h4 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">{league.name}</h4>
-                        <div className="space-y-1">
+                      <div key={league.id} className="bg-gray-50 dark:bg-gray-800 rounded-2xl p-4 border border-gray-200 dark:border-gray-700">
+                        <h4 className="text-lg font-semibold text-gray-900 dark:text-white mb-4 flex items-center">
+                          <div className="w-2 h-2 bg-indigo-500 rounded-full mr-3"></div>
+                          {league.name}
+                          <span className="ml-auto text-xs text-gray-500 dark:text-gray-400 bg-gray-200 dark:bg-gray-700 px-2 py-1 rounded-full">
+                            {FOOTBALL_TEAMS[league.id]?.length || 0} Teams
+                          </span>
+                        </h4>
+                        <div className="grid grid-cols-1 gap-2">
                           {FOOTBALL_TEAMS[league.id]?.map((team: any) => (
                             <button
                               key={team.id}
                               onClick={() => handleAddTeam('football', team.name, team.id, league.id)}
                               disabled={localTeams.some(t => t.teamName === team.name)}
-                              className="w-full text-left px-3 py-2 text-sm rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                              className="w-full text-left px-4 py-3 text-sm rounded-xl hover:bg-white dark:hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 border border-transparent hover:border-indigo-200 dark:hover:border-indigo-800 hover:shadow-sm"
                             >
-                              {team.name}
+                              <div className="flex items-center justify-between">
+                                <span className="font-medium text-gray-900 dark:text-white">{team.name}</span>
+                                {localTeams.some(t => t.teamName === team.name) && (
+                                  <div className="flex items-center text-green-600 dark:text-green-400">
+                                    <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                                      <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                                    </svg>
+                                  </div>
+                                )}
+                              </div>
                             </button>
                           ))}
                         </div>
                       </div>
                     ))}
-                    </div>
                   </div>
+                </div>
+              )}
 
-                {/* F1 Drivers */}
-                <div>
-                  <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-3 flex items-center">
-                    <span className="text-2xl mr-2">🏎️</span>
-                    Formel 1
-                  </h3>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                    {F1_DRIVERS.map((driver) => (
-                      <button
-                        key={driver.id}
-                        onClick={() => handleAddTeam('f1', driver.name, driver.id)}
-                        disabled={localTeams.some(t => t.teamName === driver.name)}
-                        className="w-full text-left px-3 py-2 text-sm rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-                      >
-                        {driver.name} - {driver.team}
-                      </button>
-                    ))}
-            </div>
-          </div>
-
-                {/* NFL Teams */}
-                <div>
-                  <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-3 flex items-center">
-                    <span className="text-2xl mr-2">🏈</span>
-                    NFL
-                  </h3>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+              {selectedSportTab === 'nfl' && (
+                <div className="space-y-6">
+                  <div className="text-center mb-6">
+                    <div className="w-16 h-16 bg-gradient-to-r from-orange-500 to-red-600 rounded-2xl flex items-center justify-center mx-auto mb-3">
+                      <span className="text-3xl">🏈</span>
+                    </div>
+                    <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">NFL Teams</h3>
+                    <p className="text-gray-600 dark:text-gray-400">Alle 32 NFL Teams</p>
+                  </div>
+                  
+                  <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
                     {NFL_TEAMS.map((team) => (
                       <button
                         key={team.id}
                         onClick={() => handleAddTeam('nfl', team.name, team.id)}
                         disabled={localTeams.some(t => t.teamName === team.name)}
-                        className="w-full text-left px-3 py-2 text-sm rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                        className="relative p-4 rounded-xl hover:bg-gray-100 dark:hover:bg-gray-800 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 border border-gray-200 dark:border-gray-700 hover:border-orange-300 dark:hover:border-orange-600 hover:shadow-md group"
                       >
-                        {team.name}
+                        <div className="flex flex-col items-center text-center">
+                          <div className="w-10 h-10 bg-gradient-to-r from-orange-500 to-red-600 rounded-xl flex items-center justify-center mb-2 group-hover:scale-110 transition-transform">
+                            <span className="text-lg">🏈</span>
+                          </div>
+                          <span className="text-sm font-medium text-gray-900 dark:text-white leading-tight">{team.name}</span>
+                          <span className="text-xs text-gray-500 dark:text-gray-400 mt-1">{team.division}</span>
+                        </div>
+                        {localTeams.some(t => t.teamName === team.name) && (
+                          <div className="absolute top-2 right-2 w-6 h-6 bg-green-500 rounded-full flex items-center justify-center">
+                            <svg className="w-3 h-3 text-white" fill="currentColor" viewBox="0 0 20 20">
+                              <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                            </svg>
+                          </div>
+                        )}
                       </button>
                     ))}
                   </div>
                 </div>
+              )}
 
-                {/* NBA Teams */}
-                <div>
-                  <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-3 flex items-center">
-                    <span className="text-2xl mr-2">🏀</span>
-                    NBA
-                  </h3>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+              {selectedSportTab === 'f1' && (
+                <div className="space-y-6">
+                  <div className="text-center mb-6">
+                    <div className="w-16 h-16 bg-gradient-to-r from-red-500 to-pink-600 rounded-2xl flex items-center justify-center mx-auto mb-3">
+                      <span className="text-3xl">🏎️</span>
+                    </div>
+                    <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">Formel 1 Fahrer</h3>
+                    <p className="text-gray-600 dark:text-gray-400">Alle F1 Fahrer der aktuellen Saison</p>
+                  </div>
+                  
+                  <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
+                    {F1_DRIVERS.map((driver) => (
+                      <button
+                        key={driver.id}
+                        onClick={() => handleAddTeam('f1', driver.name, driver.id)}
+                        disabled={localTeams.some(t => t.teamName === driver.name)}
+                        className="relative p-4 rounded-xl hover:bg-gray-100 dark:hover:bg-gray-800 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 border border-gray-200 dark:border-gray-700 hover:border-red-300 dark:hover:border-red-600 hover:shadow-md group"
+                      >
+                        <div className="flex flex-col items-center text-center">
+                          <div className="w-10 h-10 bg-gradient-to-r from-red-500 to-pink-600 rounded-xl flex items-center justify-center mb-2 group-hover:scale-110 transition-transform">
+                            <span className="text-lg">🏎️</span>
+                          </div>
+                          <span className="text-sm font-medium text-gray-900 dark:text-white leading-tight">{driver.name}</span>
+                          <span className="text-xs text-gray-500 dark:text-gray-400 mt-1">{driver.team}</span>
+                        </div>
+                        {localTeams.some(t => t.teamName === driver.name) && (
+                          <div className="absolute top-2 right-2 w-6 h-6 bg-green-500 rounded-full flex items-center justify-center">
+                            <svg className="w-3 h-3 text-white" fill="currentColor" viewBox="0 0 20 20">
+                              <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                            </svg>
+                          </div>
+                        )}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {selectedSportTab === 'nba' && (
+                <div className="space-y-6">
+                  <div className="text-center mb-6">
+                    <div className="w-16 h-16 bg-gradient-to-r from-orange-500 to-orange-600 rounded-2xl flex items-center justify-center mx-auto mb-3">
+                      <span className="text-3xl">🏀</span>
+                    </div>
+                    <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">NBA Teams</h3>
+                    <p className="text-gray-600 dark:text-gray-400">Alle 30 NBA Teams</p>
+                  </div>
+                  
+                  <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
                     {NBA_TEAMS.map((team) => (
                       <button
                         key={team.id}
                         onClick={() => handleAddTeam('nba', team.name, team.id)}
                         disabled={localTeams.some(t => t.teamName === team.name)}
-                        className="w-full text-left px-3 py-2 text-sm rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                        className="relative p-4 rounded-xl hover:bg-gray-100 dark:hover:bg-gray-800 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 border border-gray-200 dark:border-gray-700 hover:border-orange-300 dark:hover:border-orange-600 hover:shadow-md group"
                       >
-                        {team.name}
+                        <div className="flex flex-col items-center text-center">
+                          <div className="w-10 h-10 bg-gradient-to-r from-orange-500 to-orange-600 rounded-xl flex items-center justify-center mb-2 group-hover:scale-110 transition-transform">
+                            <span className="text-lg">🏀</span>
+                          </div>
+                          <span className="text-sm font-medium text-gray-900 dark:text-white leading-tight">{team.name}</span>
+                          <span className="text-xs text-gray-500 dark:text-gray-400 mt-1">{team.division}</span>
+                        </div>
+                        {localTeams.some(t => t.teamName === team.name) && (
+                          <div className="absolute top-2 right-2 w-6 h-6 bg-green-500 rounded-full flex items-center justify-center">
+                            <svg className="w-3 h-3 text-white" fill="currentColor" viewBox="0 0 20 20">
+                              <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                            </svg>
+                          </div>
+                        )}
                       </button>
                     ))}
                   </div>
                 </div>
+              )}
 
-                {/* NHL Teams */}
-                <div>
-                  <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-3 flex items-center">
-                    <span className="text-2xl mr-2">🏒</span>
-                    NHL
-                  </h3>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+              {selectedSportTab === 'nhl' && (
+                <div className="space-y-6">
+                  <div className="text-center mb-6">
+                    <div className="w-16 h-16 bg-gradient-to-r from-blue-500 to-cyan-600 rounded-2xl flex items-center justify-center mx-auto mb-3">
+                      <span className="text-3xl">🏒</span>
+                    </div>
+                    <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">NHL Teams</h3>
+                    <p className="text-gray-600 dark:text-gray-400">Alle 32 NHL Teams</p>
+                  </div>
+                  
+                  <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
                     {NHL_TEAMS.map((team) => (
                       <button
                         key={team.id}
                         onClick={() => handleAddTeam('nhl', team.name, team.id)}
                         disabled={localTeams.some(t => t.teamName === team.name)}
-                        className="w-full text-left px-3 py-2 text-sm rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                        className="relative p-4 rounded-xl hover:bg-gray-100 dark:hover:bg-gray-800 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 border border-gray-200 dark:border-gray-700 hover:border-blue-300 dark:hover:border-blue-600 hover:shadow-md group"
                       >
-                        {team.name}
+                        <div className="flex flex-col items-center text-center">
+                          <div className="w-10 h-10 bg-gradient-to-r from-blue-500 to-cyan-600 rounded-xl flex items-center justify-center mb-2 group-hover:scale-110 transition-transform">
+                            <span className="text-lg">🏒</span>
+                          </div>
+                          <span className="text-sm font-medium text-gray-900 dark:text-white leading-tight">{team.name}</span>
+                          <span className="text-xs text-gray-500 dark:text-gray-400 mt-1">{team.division}</span>
+                        </div>
+                        {localTeams.some(t => t.teamName === team.name) && (
+                          <div className="absolute top-2 right-2 w-6 h-6 bg-green-500 rounded-full flex items-center justify-center">
+                            <svg className="w-3 h-3 text-white" fill="currentColor" viewBox="0 0 20 20">
+                              <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                            </svg>
+                          </div>
+                        )}
                       </button>
                     ))}
                   </div>
                 </div>
+              )}
 
-                {/* MLB Teams */}
-                <div>
-                  <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-3 flex items-center">
-                    <span className="text-2xl mr-2">⚾</span>
-                    MLB
-                  </h3>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+              {selectedSportTab === 'mlb' && (
+                <div className="space-y-6">
+                  <div className="text-center mb-6">
+                    <div className="w-16 h-16 bg-gradient-to-r from-blue-600 to-indigo-600 rounded-2xl flex items-center justify-center mx-auto mb-3">
+                      <span className="text-3xl">⚾</span>
+                    </div>
+                    <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">MLB Teams</h3>
+                    <p className="text-gray-600 dark:text-gray-400">Alle 30 MLB Teams</p>
+                  </div>
+                  
+                  <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
                     {MLB_TEAMS.map((team) => (
                       <button
                         key={team.id}
                         onClick={() => handleAddTeam('mlb', team.name, team.id)}
                         disabled={localTeams.some(t => t.teamName === team.name)}
-                        className="w-full text-left px-3 py-2 text-sm rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                        className="relative p-4 rounded-xl hover:bg-gray-100 dark:hover:bg-gray-800 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 border border-gray-200 dark:border-gray-700 hover:border-blue-300 dark:hover:border-blue-600 hover:shadow-md group"
                       >
-                        {team.name}
+                        <div className="flex flex-col items-center text-center">
+                          <div className="w-10 h-10 bg-gradient-to-r from-blue-600 to-indigo-600 rounded-xl flex items-center justify-center mb-2 group-hover:scale-110 transition-transform">
+                            <span className="text-lg">⚾</span>
+                          </div>
+                          <span className="text-sm font-medium text-gray-900 dark:text-white leading-tight">{team.name}</span>
+                          <span className="text-xs text-gray-500 dark:text-gray-400 mt-1">{team.division}</span>
+                        </div>
+                        {localTeams.some(t => t.teamName === team.name) && (
+                          <div className="absolute top-2 right-2 w-6 h-6 bg-green-500 rounded-full flex items-center justify-center">
+                            <svg className="w-3 h-3 text-white" fill="currentColor" viewBox="0 0 20 20">
+                              <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                            </svg>
+                          </div>
+                        )}
                       </button>
                     ))}
                   </div>
                 </div>
+              )}
 
-                {/* Tennis (ATP/WTA) */}
-                <div>
-                  <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-3 flex items-center">
-                    <span className="text-2xl mr-2">🎾</span>
-                    Tennis
-                  </h3>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                    <button
-                      onClick={() => handleAddTeam('tennis', 'ATP Tour', 'atp')}
-                      disabled={localTeams.some(t => t.teamName === 'ATP Tour')}
-                      className="w-full text-left px-3 py-2 text-sm rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-                    >
-                      ATP Tour
-                    </button>
-                    <button
-                      onClick={() => handleAddTeam('tennis', 'WTA Tour', 'wta')}
-                      disabled={localTeams.some(t => t.teamName === 'WTA Tour')}
-                      className="w-full text-left px-3 py-2 text-sm rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-                    >
-                      WTA Tour
-                    </button>
-                    <button
-                      onClick={() => handleAddTeam('tennis', 'Grand Slams', 'grandslams')}
-                      disabled={localTeams.some(t => t.teamName === 'Grand Slams')}
-                      className="w-full text-left px-3 py-2 text-sm rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-                    >
-                      Grand Slams
-                    </button>
+              {selectedSportTab === 'tennis' && (
+                <div className="space-y-6">
+                  <div className="text-center mb-6">
+                    <div className="w-16 h-16 bg-gradient-to-r from-green-600 to-teal-600 rounded-2xl flex items-center justify-center mx-auto mb-3">
+                      <span className="text-3xl">🎾</span>
+                    </div>
+                    <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">Tennis</h3>
+                    <p className="text-gray-600 dark:text-gray-400">ATP, WTA und Grand Slams</p>
+                  </div>
+                  
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    {[
+                      { id: 'atp', name: 'ATP Tour', description: 'Männliche Profis', icon: '🎾' },
+                      { id: 'wta', name: 'WTA Tour', description: 'Weibliche Profis', icon: '🎾' },
+                      { id: 'grandslams', name: 'Grand Slams', description: 'Australian Open, French Open, Wimbledon, US Open', icon: '🏆' }
+                    ].map((tour) => (
+                      <button
+                        key={tour.id}
+                        onClick={() => handleAddTeam('tennis', tour.name, tour.id)}
+                        disabled={localTeams.some(t => t.teamName === tour.name)}
+                        className="relative p-6 rounded-2xl hover:bg-gray-100 dark:hover:bg-gray-800 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 border border-gray-200 dark:border-gray-700 hover:border-green-300 dark:hover:border-green-600 hover:shadow-lg group"
+                      >
+                        <div className="flex flex-col items-center text-center">
+                          <div className="w-16 h-16 bg-gradient-to-r from-green-600 to-teal-600 rounded-2xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+                            <span className="text-2xl">{tour.icon}</span>
+                          </div>
+                          <h4 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">{tour.name}</h4>
+                          <p className="text-sm text-gray-600 dark:text-gray-400">{tour.description}</p>
+                        </div>
+                        {localTeams.some(t => t.teamName === tour.name) && (
+                          <div className="absolute top-4 right-4 w-8 h-8 bg-green-500 rounded-full flex items-center justify-center">
+                            <svg className="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 20 20">
+                              <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                            </svg>
+                          </div>
+                        )}
+                      </button>
+                    ))}
                   </div>
                 </div>
+              )}
+            </div>
+
+            {/* Footer */}
+            <div className="border-t border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 p-6">
+              <div className="flex items-center justify-between">
+                <div className="text-sm text-gray-600 dark:text-gray-400">
+                  {localTeams.length} Team{localTeams.length !== 1 ? 's' : ''} ausgewählt
+                </div>
+                <button
+                  onClick={() => setShowTeamSelector(false)}
+                  className="px-6 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl font-medium transition-colors"
+                >
+                  Fertig
+                </button>
               </div>
             </div>
           </div>
-          </div>
-        )}
+        </div>
+      )}
     </div>
   );
 }
