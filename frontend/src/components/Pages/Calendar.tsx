@@ -193,7 +193,7 @@ export function Calendar() {
         try {
           console.log('🏀 Loading NBA events...');
           const response = await liveApi.getNBA();
-          let events = (response.data as Event[]) || [];
+          let events = (response.data.events as Event[]) || [];
           
           // Filter events for selected teams
           const teamNames = nbaTeams.map(t => t.teamName.toLowerCase());
@@ -216,7 +216,7 @@ export function Calendar() {
         try {
           console.log('🏒 Loading NHL events...');
           const response = await liveApi.getNHL();
-          let events = (response.data as Event[]) || [];
+          let events = (response.data.events as Event[]) || [];
           
           // Filter events for selected teams
           const teamNames = nhlTeams.map(t => t.teamName.toLowerCase());
@@ -239,7 +239,7 @@ export function Calendar() {
         try {
           console.log('⚾ Loading MLB events...');
           const response = await liveApi.getMLB();
-          let events = (response.data as Event[]) || [];
+          let events = (response.data.events as Event[]) || [];
           
           // Filter events for selected teams
           const teamNames = mlbTeams.map(t => t.teamName.toLowerCase());
@@ -262,7 +262,7 @@ export function Calendar() {
         try {
           console.log('🎾 Loading Tennis events...');
           const response = await liveApi.getTennis();
-          let events = (response.data as Event[]) || [];
+          let events = (response.data.events as Event[]) || [];
           
           // Filter events for selected tours
           const tourNames = tennisTeams.map(t => t.teamName.toLowerCase());

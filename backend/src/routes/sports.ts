@@ -40,6 +40,9 @@ sportsRouter.get('/nba/events', async (req: Request, res: Response) => {
 
     const transformedEvents = events.map(event => ({
       id: event.idEvent,
+      title: `${event.strHomeTeam} vs ${event.strAwayTeam}`,
+      sport: 'nba',
+      startsAt: `${event.dateEvent} ${event.strTime || '00:00:00'}`,
       name: event.strEvent,
       homeTeam: event.strHomeTeam,
       awayTeam: event.strAwayTeam,
@@ -134,6 +137,9 @@ sportsRouter.get('/nhl/events', async (req: Request, res: Response) => {
 
     const transformedEvents = events.map(event => ({
       id: event.idEvent,
+      title: `${event.strHomeTeam} vs ${event.strAwayTeam}`,
+      sport: 'nhl',
+      startsAt: `${event.dateEvent} ${event.strTime || '00:00:00'}`,
       name: event.strEvent,
       homeTeam: event.strHomeTeam,
       awayTeam: event.strAwayTeam,
@@ -193,6 +199,9 @@ sportsRouter.get('/mlb/events', async (req: Request, res: Response) => {
 
     const transformedEvents = events.map(event => ({
       id: event.idEvent,
+      title: `${event.strHomeTeam} vs ${event.strAwayTeam}`,
+      sport: 'mlb',
+      startsAt: `${event.dateEvent} ${event.strTime || '00:00:00'}`,
       name: event.strEvent,
       homeTeam: event.strHomeTeam,
       awayTeam: event.strAwayTeam,
@@ -224,6 +233,9 @@ sportsRouter.get('/tennis/atp', async (req: Request, res: Response) => {
 
     const transformedEvents = events.map(event => ({
       id: event.idEvent,
+      title: `${event.strHomeTeam} vs ${event.strAwayTeam}`,
+      sport: 'tennis',
+      startsAt: `${event.dateEvent} ${event.strTime || '00:00:00'}`,
       name: event.strEvent,
       homeTeam: event.strHomeTeam,
       awayTeam: event.strAwayTeam,
