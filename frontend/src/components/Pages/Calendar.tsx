@@ -280,7 +280,7 @@ export function Calendar() {
         // Auto-select first sport if not selected
         if (!selectedSport) {
           console.log('👤 Auto-selecting first sport:', teams[0].sport);
-          setSelectedSport(teams[0].sport as 'football' | 'nfl' | 'f1');
+          setSelectedSport(teams[0].sport as 'football' | 'nfl' | 'f1' | 'nba' | 'nhl' | 'mlb' | 'tennis');
         }
         // Load events for teams
         loadAllEvents(teams);
@@ -309,7 +309,7 @@ export function Calendar() {
     if (!user) return;
 
     try {
-      const newTeam = { sport: sport as 'football' | 'f1' | 'nfl', teamName, teamId, leagueId };
+      const newTeam = { sport: sport as 'football' | 'f1' | 'nfl' | 'nba' | 'nhl' | 'mlb' | 'tennis', teamName, teamId, leagueId };
       const updatedTeams = [...(user.selectedTeams || []), newTeam];
       
       await userApi.updateTeams(updatedTeams);
@@ -347,6 +347,10 @@ export function Calendar() {
       case 'football': return '⚽';
       case 'nfl': return '🏈';
       case 'f1': return '🏎️';
+      case 'nba': return '🏀';
+      case 'nhl': return '🏒';
+      case 'mlb': return '⚾';
+      case 'tennis': return '🎾';
       default: return '🏆';
     }
   };
@@ -356,6 +360,10 @@ export function Calendar() {
       case 'football': return 'from-emerald-500 to-green-600';
       case 'nfl': return 'from-orange-500 to-red-600';
       case 'f1': return 'from-red-500 to-pink-600';
+      case 'nba': return 'from-orange-500 to-orange-600';
+      case 'nhl': return 'from-blue-500 to-cyan-600';
+      case 'mlb': return 'from-blue-600 to-indigo-600';
+      case 'tennis': return 'from-green-600 to-teal-600';
       default: return 'from-blue-500 to-indigo-600';
     }
   };

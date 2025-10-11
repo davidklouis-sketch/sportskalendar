@@ -18,7 +18,7 @@ export function Highlights() {
   const { user } = useAuthStore();
   const [highlights, setHighlights] = useState<Highlight[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [selectedSport, setSelectedSport] = useState<'football' | 'nfl' | 'f1' | null>(null);
+  const [selectedSport, setSelectedSport] = useState<'football' | 'nfl' | 'f1' | 'nba' | 'nhl' | 'mlb' | 'tennis' | null>(null);
 
   useEffect(() => {
     // Set initial sport from user's selected teams

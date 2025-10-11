@@ -2,7 +2,7 @@ import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 
 export interface SelectedTeam {
-  sport: 'football' | 'nfl' | 'f1';
+  sport: 'football' | 'nfl' | 'f1' | 'nba' | 'nhl' | 'mlb' | 'tennis';
   teamId?: string;
   teamName: string;
   leagueId?: number;
