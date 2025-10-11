@@ -5,7 +5,6 @@ import { format } from 'date-fns';
 import { FOOTBALL_LEAGUES, FOOTBALL_TEAMS, F1_DRIVERS, NFL_TEAMS } from '../../data/teams';
 import { LiveData } from '../LiveData';
 import { SportsKalendarBanner, SportsKalendarSquare } from '../Ads/AdManager';
-import { TeamLogo } from '../TeamLogo';
 
 interface Event {
   id: string;
