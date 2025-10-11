@@ -2,6 +2,9 @@ import { useState } from 'react';
 import { useThemeStore } from '../../store/useThemeStore';
 import { useAuthStore } from '../../store/useAuthStore';
 import { authApi } from '../../lib/api';
+import { LanguageSwitcher } from '../LanguageSwitcher';
+import { t } from '../../lib/i18n';
+import { useLanguage } from '../../hooks/useLanguage';
 
 interface HeaderProps {
   currentPage: 'calendar' | 'live' | 'highlights' | 'premium' | 'admin' | 'settings' | 'privacy' | 'contact';
@@ -14,6 +17,7 @@ export function Header({ currentPage, onNavigate, onShowLogin, onShowRegister }:
   const { isDark, toggleTheme } = useThemeStore();
   const { user, logout, isAuthenticated } = useAuthStore();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  useLanguage(); // This will trigger re-render when language changes
 
   const handleLogout = async () => {
     try {
@@ -26,10 +30,10 @@ export function Header({ currentPage, onNavigate, onShowLogin, onShowRegister }:
 
   // Navigation items - Live und Highlights nur für angemeldete Benutzer
   const navigationItems = [
-    { key: 'calendar', label: 'Kalender', icon: '📅', requiresAuth: false },
-    { key: 'live', label: 'Live', icon: '🔴', requiresAuth: true },
-    { key: 'highlights', label: 'Highlights', icon: '🎬', requiresAuth: true },
-    { key: 'premium', label: 'Premium', icon: '⭐', requiresAuth: false, hideForPremium: true }
+    { key: 'calendar', label: t('calendar'), icon: '📅', requiresAuth: false },
+    { key: 'live', label: t('live'), icon: '🔴', requiresAuth: true },
+    { key: 'highlights', label: t('highlights'), icon: '🎬', requiresAuth: true },
+    { key: 'premium', label: t('premium'), icon: '⭐', requiresAuth: false, hideForPremium: true }
   ];
 
   // Filter navigation items based on authentication status and premium status
@@ -121,6 +125,9 @@ export function Header({ currentPage, onNavigate, onShowLogin, onShowRegister }:
 
           {/* Right Section */}
           <div className="flex items-center gap-3">
+            
+            {/* Language Switcher */}
+            <LanguageSwitcher />
             
             {/* Theme Toggle */}
             <button
@@ -225,7 +232,7 @@ export function Header({ currentPage, onNavigate, onShowLogin, onShowRegister }:
                               }`}
                             >
                               <span className="text-lg">{getPageIcon('admin')}</span>
-                              <span>Admin Panel</span>
+                              <span>{t('admin')}</span>
                             </button>
                           )}
                           
@@ -241,7 +248,7 @@ export function Header({ currentPage, onNavigate, onShowLogin, onShowRegister }:
                               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
                               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
                             </svg>
-                            <span>Einstellungen</span>
+                            <span>{t('settings')}</span>
                           </button>
                           
                           <div className="border-t border-gray-200 dark:border-gray-700 my-3"></div>
@@ -253,7 +260,7 @@ export function Header({ currentPage, onNavigate, onShowLogin, onShowRegister }:
                             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
                             </svg>
-                            <span>Abmelden</span>
+                            <span>{t('logout')}</span>
                           </button>
                         </div>
                       </div>
@@ -268,13 +275,13 @@ export function Header({ currentPage, onNavigate, onShowLogin, onShowRegister }:
                   onClick={onShowLogin}
                   className="btn btn-secondary"
                 >
-                  Anmelden
+{t('login')}
                 </button>
                 <button
                   onClick={onShowRegister}
                   className="btn btn-primary"
                 >
-                  Registrieren
+{t('register')}
                 </button>
               </>
             )}
@@ -362,7 +369,7 @@ export function Header({ currentPage, onNavigate, onShowLogin, onShowRegister }:
                           }`}
                         >
                           <span className="mr-3">{getPageIcon('admin')}</span>
-                          Admin
+{t('admin')}
                         </button>
                       )}
                       
@@ -378,7 +385,7 @@ export function Header({ currentPage, onNavigate, onShowLogin, onShowRegister }:
                         }`}
                       >
                         <span className="mr-3">{getPageIcon('settings')}</span>
-                        Einstellungen
+{t('settings')}
                       </button>
                       
                       <button
@@ -389,7 +396,33 @@ export function Header({ currentPage, onNavigate, onShowLogin, onShowRegister }:
                         className="w-full flex items-center px-4 py-3 rounded-2xl font-medium bg-gradient-to-r from-red-500 to-pink-600 text-white hover:from-red-600 hover:to-pink-700 transition-all duration-300"
                       >
                         <span className="mr-3">🚪</span>
-                        Abmelden
+{t('logout')}
+                      </button>
+                    </div>
+                  </div>
+                )}
+
+                {/* Auth Buttons for non-authenticated users */}
+                {!isAuthenticated && (
+                  <div className="border-t border-gray-200 dark:border-gray-700 pt-4 mt-4">
+                    <div className="space-y-2">
+                      <button
+                        onClick={() => {
+                          onShowLogin?.();
+                          setIsMobileMenuOpen(false);
+                        }}
+                        className="w-full flex items-center justify-center px-4 py-3 rounded-2xl font-medium bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600 transition-all duration-300"
+                      >
+                        {t('login')}
+                      </button>
+                      <button
+                        onClick={() => {
+                          onShowRegister?.();
+                          setIsMobileMenuOpen(false);
+                        }}
+                        className="w-full flex items-center justify-center px-4 py-3 rounded-2xl font-medium bg-gradient-to-r from-indigo-600 to-purple-600 text-white hover:from-indigo-700 hover:to-purple-700 transition-all duration-300"
+                      >
+                        {t('register')}
                       </button>
                     </div>
                   </div>

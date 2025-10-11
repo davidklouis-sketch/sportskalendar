@@ -5,6 +5,8 @@ import { format } from 'date-fns';
 import { FOOTBALL_LEAGUES, FOOTBALL_TEAMS, F1_DRIVERS, NFL_TEAMS, NBA_TEAMS, NHL_TEAMS, MLB_TEAMS } from '../../data/teams';
 import { LiveData } from '../LiveData';
 import { SportsKalendarBanner, SportsKalendarSquare } from '../Ads/AdManager';
+import { t, getCurrentLanguage } from '../../lib/i18n';
+import { useLanguage } from '../../hooks/useLanguage';
 
 interface Event {
   id: string;
@@ -27,6 +29,7 @@ interface Highlight {
 
 export function Calendar() {
   const { user, setUser } = useAuthStore();
+  useLanguage(); // Trigger re-render on language change
   const [footballEvents, setFootballEvents] = useState<Event[]>([]);
   const [f1Events, setF1Events] = useState<Event[]>([]);
   const [nflEvents, setNflEvents] = useState<Event[]>([]);
@@ -483,6 +486,7 @@ export function Calendar() {
     }
   };
 
+
   return (
     <div className="min-h-screen hero-gradient">
       {/* Hero Section */}
@@ -502,10 +506,13 @@ export function Calendar() {
               </div>
             </div>
             <h1 className="text-5xl font-bold heading-sport mb-6">
-              DEIN SPORTKALENDAR
+              {getCurrentLanguage() === 'de' ? 'DEIN SPORTKALENDAR' : 'YOUR SPORTS CALENDAR'}
             </h1>
             <p className="text-xl text-cyan-100 max-w-2xl mx-auto leading-relaxed">
-              Verwalte alle Spiele deiner Lieblingsteams, verfolge Live-Events und entdecke die besten Highlights
+              {getCurrentLanguage() === 'de' 
+                ? 'Verwalte alle Spiele deiner Lieblingsteams, verfolge Live-Events und entdecke die besten Highlights'
+                : 'Manage all games of your favorite teams, track live events and discover the best highlights'
+              }
             </p>
           </div>
         </div>
@@ -524,13 +531,13 @@ export function Calendar() {
                 <div className="p-6">
                   <div className="flex items-center mb-4">
                     <div className="w-3 h-3 bg-red-500 rounded-full animate-pulse mr-3"></div>
-                    <h2 className="text-xl font-bold text-gray-900 dark:text-white">Live Events</h2>
+                    <h2 className="text-xl font-bold text-gray-900 dark:text-white">{t('live')} Events</h2>
                   </div>
                   <div className="space-y-4">
                     <LiveData />
                   </div>
                   <p className="text-xs text-gray-500 dark:text-gray-400 mt-4 text-center">
-                    Automatische Aktualisierung alle 30 Sekunden
+{t('automaticUpdate')}
                   </p>
                 </div>
               </div>
@@ -553,7 +560,7 @@ export function Calendar() {
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
                         </svg>
                       </div>
-                      <h2 className="text-xl font-bold text-gray-900 dark:text-white">Meine Teams</h2>
+                      <h2 className="text-xl font-bold text-gray-900 dark:text-white">{t('myTeams')}</h2>
                     </div>
             <button
                       onClick={exportCalendar}
@@ -572,12 +579,12 @@ export function Calendar() {
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
                         </svg>
                       </div>
-                      <p className="text-gray-500 dark:text-gray-400 mb-4">Noch keine Teams hinzugefügt</p>
+                      <p className="text-gray-500 dark:text-gray-400 mb-4">{t('noTeamsAdded')}</p>
                       <button
                         onClick={() => setShowTeamSelector(true)}
                         className="bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white font-semibold py-3 px-6 rounded-2xl transition-all duration-200 transform hover:scale-105 shadow-lg"
                       >
-                        + Team hinzufügen
+                        + {t('addTeam')}
                       </button>
                     </div>
                   ) : (
@@ -608,7 +615,7 @@ export function Calendar() {
             onClick={() => setShowTeamSelector(true)}
                         className="w-full bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white font-semibold py-3 px-6 rounded-2xl transition-all duration-200 transform hover:scale-105 shadow-lg"
           >
-            + Team hinzufügen
+            + {t('addTeam')}
           </button>
                     </div>
                   )}
@@ -628,13 +635,13 @@ export function Calendar() {
                   if (!hasTeams) return null;
                   
                   const sportNames: Record<string, string> = {
-                    'football': 'Fußball',
-                    'f1': 'Formel 1',
-                    'nfl': 'NFL',
-                    'nba': 'NBA',
-                    'nhl': 'NHL',
-                    'mlb': 'MLB',
-                    'tennis': 'Tennis'
+                    'football': t('football'),
+                    'f1': t('formula1'),
+                    'nfl': t('nfl'),
+                    'nba': t('nba'),
+                    'nhl': t('nhl'),
+                    'mlb': t('mlb'),
+                    'tennis': t('tennis')
                   };
                   
                   return (
@@ -672,13 +679,13 @@ export function Calendar() {
                         <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
                           {(() => {
                             const sportNames: Record<string, string> = {
-                              'football': 'Fußball Events',
-                              'f1': 'Formel 1 Events',
-                              'nfl': 'NFL Events',
-                              'nba': 'NBA Events',
-                              'nhl': 'NHL Events',
-                              'mlb': 'MLB Events',
-                              'tennis': 'Tennis Events'
+                              'football': `${t('football')} Events`,
+                              'f1': `${t('formula1')} Events`,
+                              'nfl': `${t('nfl')} Events`,
+                              'nba': `${t('nba')} Events`,
+                              'nhl': `${t('nhl')} Events`,
+                              'mlb': `${t('mlb')} Events`,
+                              'tennis': `${t('tennis')} Events`
                             };
                             return sportNames[selectedSport] || `${selectedSport.toUpperCase()} Events`;
                           })()}
@@ -692,7 +699,7 @@ export function Calendar() {
                                          selectedSport === 'nhl' ? _nhlEvents :
                                          selectedSport === 'mlb' ? _mlbEvents :
                                          selectedSport === 'tennis' ? _tennisEvents : [];
-                            return `${events.length} kommende Spiele`;
+                            return `${events.length} ${t('upcomingGames')}`;
                           })()}
                         </p>
                       </div>
@@ -702,7 +709,7 @@ export function Calendar() {
                       {isLoading ? (
                         <div className="text-center py-12">
                           <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-emerald-600"></div>
-                          <p className="mt-4 text-gray-500 dark:text-gray-400">Lade Events...</p>
+                          <p className="mt-4 text-gray-500 dark:text-gray-400">{t('loadingEvents')}</p>
             </div>
                       ) : (() => {
                         const events = selectedSport === 'football' ? footballEvents : 
@@ -721,7 +728,7 @@ export function Calendar() {
                                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
                                 </svg>
           </div>
-                              <p className="text-gray-500 dark:text-gray-400">Keine Events verfügbar</p>
+                              <p className="text-gray-500 dark:text-gray-400">{t('noEventsAvailable')}</p>
       </div>
                           );
                         }
@@ -766,15 +773,15 @@ export function Calendar() {
                         </svg>
                       </div>
                       <div>
-                        <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Highlights & News</h2>
-                        <p className="text-gray-600 dark:text-gray-400">Aktuelle Highlights für deine Teams</p>
+                        <h2 className="text-2xl font-bold text-gray-900 dark:text-white">{t('highlightsNews')}</h2>
+                        <p className="text-gray-600 dark:text-gray-400">{t('currentHighlights')}</p>
                       </div>
                     </div>
                     
                     {isLoadingHighlights ? (
                       <div className="text-center py-12">
                         <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-purple-600"></div>
-                        <p className="mt-4 text-gray-500 dark:text-gray-400">Lade Highlights...</p>
+                        <p className="mt-4 text-gray-500 dark:text-gray-400">{t('loading')}</p>
                       </div>
                     ) : highlights.length === 0 ? (
                       <div className="text-center py-12">
@@ -783,7 +790,7 @@ export function Calendar() {
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
                           </svg>
                         </div>
-                        <p className="text-gray-500 dark:text-gray-400">Keine Highlights verfügbar</p>
+                        <p className="text-gray-500 dark:text-gray-400">{t('noEventsAvailable')}</p>
             </div>
                     ) : (
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
