@@ -538,29 +538,42 @@ export function Calendar() {
     console.log('👤 New teams string:', teamsString);
     
     if (teams.length > 0) {
-      // Only load if teams actually changed
-      if (lastTeamsRef.current !== teamsString) {
-        console.log('👤 Teams actually changed, loading events...');
+      // Always update local teams state
+      setLocalTeams(teams);
+      
+      // Only load if teams actually changed OR if we don't have events yet
+      const hasEvents = footballEvents.length > 0 || f1Events.length > 0 || _nbaEvents.length > 0 || 
+                       nflEvents.length > 0 || _nhlEvents.length > 0 || _mlbEvents.length > 0 || _tennisEvents.length > 0;
+      
+      if (lastTeamsRef.current !== teamsString || !hasEvents) {
+        console.log('👤 Teams changed or no events loaded yet, loading events...');
         lastTeamsRef.current = teamsString;
-        setLocalTeams(teams);
+        
         // Auto-select first sport if not selected
         if (!selectedSport) {
           console.log('👤 Auto-selecting first sport:', teams[0].sport);
           setSelectedSport(teams[0].sport as 'football' | 'nfl' | 'f1' | 'nba' | 'nhl' | 'mlb' | 'tennis');
         }
+        
         // Load events for teams
         loadAllEvents(teams);
       } else {
-        console.log('👤 Teams unchanged, skipping load...');
+        console.log('👤 Teams unchanged and events already loaded, but still updating local teams...');
+        // Still update local teams even if we don't reload events
       }
     } else {
       console.log('👤 No teams, stopping loading...');
       lastTeamsRef.current = '';
+      setLocalTeams([]);
       // No teams = stop loading immediately
       setIsLoading(false);
       setFootballEvents([]);
       setF1Events([]);
       setNflEvents([]);
+      _setNbaEvents([]);
+      _setNhlEvents([]);
+      _setMlbEvents([]);
+      _setTennisEvents([]);
     }
   }, [user?.selectedTeams]);
 
@@ -610,6 +623,24 @@ export function Calendar() {
       findNextEvent();
     }
   }, [footballEvents, f1Events, nflEvents, _nbaEvents, _nhlEvents, _mlbEvents, _tennisEvents, isLoading]);
+
+  // Force load events if we have teams but no events after 5 seconds
+  useEffect(() => {
+    if (localTeams.length > 0) {
+      const hasEvents = footballEvents.length > 0 || f1Events.length > 0 || _nbaEvents.length > 0 || 
+                       nflEvents.length > 0 || _nhlEvents.length > 0 || _mlbEvents.length > 0 || _tennisEvents.length > 0;
+      
+      if (!hasEvents && !isLoading) {
+        console.log('🔄 No events loaded after teams set, forcing load...');
+        const timer = setTimeout(() => {
+          console.log('⏰ Forcing event load after timeout...');
+          loadAllEvents(localTeams);
+        }, 2000); // Wait 2 seconds then force load
+        
+        return () => clearTimeout(timer);
+      }
+    }
+  }, [localTeams, footballEvents, f1Events, _nbaEvents, nflEvents, _nhlEvents, _mlbEvents, _tennisEvents, isLoading]);
 
   // Debug: Log all events when they change
   useEffect(() => {
