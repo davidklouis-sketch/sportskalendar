@@ -184,6 +184,20 @@ userRouter.post('/teams', async (req, res) => {
     
     await updateUser(user.email, { selectedTeams: teamsData });
     
+    // Clear calendar sync cache when teams are updated
+    console.log(`[User Update] Teams updated for user ${user.email}, clearing calendar sync cache`);
+    try {
+      // Clear any cached calendar data for this user
+      const { CalendarSyncService } = await import('../services/calendar-sync.service');
+      const calendarSyncService = new CalendarSyncService();
+      // Clear cache for this specific user
+      calendarSyncService.clearUserCache(user.id);
+      console.log(`[User Update] Calendar sync cache cleared for user ${user.email}`);
+    } catch (cacheError) {
+      console.error(`[User Update] Failed to clear calendar sync cache:`, cacheError);
+      // Don't fail the request if cache clearing fails
+    }
+    
     res.json({ 
       ok: true, 
       selectedTeams: teamsData 

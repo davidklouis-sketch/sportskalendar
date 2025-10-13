@@ -31,16 +31,31 @@ export interface CalendarSyncSettings {
 
 export class CalendarSyncService {
   private theSportsDBService = new TheSportsDBService();
+  private userCache: Map<string, { data: any; timestamp: number }> = new Map();
+  private readonly CACHE_TTL = 5 * 60 * 1000; // 5 minutes cache
+  
+  // Clear cache for specific user when teams change
+  clearUserCache(userId: string): void {
+    console.log(`[Calendar Sync] Clearing cache for user ${userId}`);
+    this.userCache.delete(userId);
+  }
+  
+  // Clear all caches (for global invalidation)
+  clearAllCaches(): void {
+    console.log(`[Calendar Sync] Clearing all user caches`);
+    this.userCache.clear();
+  }
 
   async generateCalendarExport(userId: string, format: string = 'ics'): Promise<string> {
     try {
-      // Get real user data from database
+      // Always get fresh user data from database - never use cache for team changes
       const { UserRepository } = await import('../database/repositories/userRepository');
       const user = await UserRepository.findById(userId);
       if (!user) {
         throw new Error('User not found');
       }
 
+      console.log(`[Calendar Sync] Generating export for user ${userId} with ${user.selectedTeams?.length || 0} teams`);
       // Get events for user's selected teams
       const events = await this.getCalendarEvents(userId);
       
@@ -134,14 +149,14 @@ export class CalendarSyncService {
 
   async getCalendarEvents(userId: string, startDate?: string, endDate?: string, sport?: string): Promise<CalendarEvent[]> {
     try {
-      // Get real user data from database
+      // Always get fresh user data from database - never use cache for team changes
       const { UserRepository } = await import('../database/repositories/userRepository');
       const user = await UserRepository.findById(userId);
       if (!user || !user.selectedTeams || user.selectedTeams.length === 0) {
         console.log(`[Calendar Sync] User ${userId} has no selected teams`);
         return [];
       }
-      console.log(`[Calendar Sync] User has ${user.selectedTeams.length} selected teams`);
+      console.log(`[Calendar Sync] Fresh user data loaded - ${user.selectedTeams.length} selected teams:`, user.selectedTeams.map((t: any) => `${t.sport}:${t.teamName}`));
 
       const events: CalendarEvent[] = [];
       const start = startDate ? new Date(startDate) : new Date();
