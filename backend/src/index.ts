@@ -90,18 +90,25 @@ console.log('🔒 CORS allowed origins:', configuredOrigins);
 const corsOptions = {
   origin: (origin: string | undefined, callback: (err: Error | null, allow?: boolean) => void) => {
     // Requests ohne Origin erlauben (Mobile Apps, curl, Postman)
-    if (!origin) return callback(null, true);
+    if (!origin) {
+      console.log('🔒 CORS: Request without origin - allowing');
+      return callback(null, true);
+    }
+    
+    console.log(`🔒 CORS: Checking origin: ${origin}`);
     
     if (configuredOrigins.indexOf(origin) !== -1) {
+      console.log(`✅ CORS: Origin ${origin} allowed`);
       callback(null, true);
     } else {
       console.warn(`⚠️ CORS blocked origin: ${origin}`);
+      console.warn(`📋 Allowed origins:`, configuredOrigins);
       callback(new Error('Not allowed by CORS'));
     }
   },
   credentials: true, // Wichtig für httpOnly Cookies
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'PATCH'],
-  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'X-CSRF-Token', 'Accept'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'X-CSRF-Token', 'Accept', 'Origin', 'Referer', 'User-Agent'],
   exposedHeaders: ['Set-Cookie'],
   preflightContinue: false,
   optionsSuccessStatus: 204
@@ -252,8 +259,40 @@ if (!validateJwtSecret()) {
  * 
  * Für Docker Health Checks und Monitoring.
  */
-app.get('/api/health', (_req, res) => {
-  res.json({ ok: true });
+app.get('/api/health', (req, res) => {
+  res.status(200).json({ 
+    status: 'OK', 
+    timestamp: new Date().toISOString(),
+    uptime: process.uptime(),
+    environment: process.env.NODE_ENV || 'development',
+    corsOrigins: configuredOrigins,
+    routes: [
+      '/api/auth',
+      '/api/user',
+      '/api/scores',
+      '/api/highlights',
+      '/api/calendar',
+      '/api/live',
+      '/api/sports',
+      '/api/stripe',
+      '/api/calendar-sync'
+    ]
+  });
+});
+
+/**
+ * CORS DEBUG ENDPOINT
+ * 
+ * Für Debugging von CORS-Problemen.
+ */
+app.get('/api/cors-debug', (req, res) => {
+  res.status(200).json({
+    origin: req.headers.origin,
+    userAgent: req.headers['user-agent'],
+    referer: req.headers.referer,
+    allowedOrigins: configuredOrigins,
+    timestamp: new Date().toISOString()
+  });
 });
 
 /**
