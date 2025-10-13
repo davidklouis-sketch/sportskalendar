@@ -1,49 +1,98 @@
+/**
+ * THESPORTSDB API SERVICE
+ * 
+ * Service für Integration mit TheSportsDB API (https://www.thesportsdb.com/).
+ * Bietet Zugriff auf Sport-Daten für NBA, NHL, MLB, Tennis (ATP/WTA) und mehr.
+ * 
+ * Features:
+ * - Team-Daten abrufen
+ * - Event-Daten abrufen (Spiele, Matches)
+ * - Saison-basierte Abfragen
+ * - Team-spezifische nächste/letzte Events
+ * - Datum-basierte Event-Suche
+ * - Sport-spezifische Helper-Methoden
+ * 
+ * API Key:
+ * - Test Key: '3' (kostenlos, limitiert)
+ * - Production Key: Über THESPORTSDB_API_KEY Environment Variable
+ * 
+ * API Dokumentation: https://www.thesportsdb.com/api.php
+ * 
+ * Unterstützte Sportarten:
+ * - NBA (Basketball)
+ * - NHL (Eishockey)
+ * - MLB (Baseball)
+ * - ATP/WTA (Tennis)
+ * - Weitere Sportarten können über LEAGUE_IDS hinzugefügt werden
+ */
+
 import axios from 'axios';
 
+// API Key aus Environment Variable oder Test Key '3'
 const THESPORTSDB_API_KEY = process.env.THESPORTSDB_API_KEY || '3';
 const BASE_URL = 'https://www.thesportsdb.com/api/v1/json';
 
-// League IDs from TheSportsDB
+/**
+ * LEAGUE IDS
+ * 
+ * Offizielle League IDs von TheSportsDB.
+ * Diese IDs werden für API-Calls verwendet.
+ */
 export const LEAGUE_IDS = {
-  NBA: '4387',
-  NHL: '4380',
-  MLB: '4424',
-  ATP: '4420', // Tennis ATP Tour
-  WTA: '4421', // Tennis WTA Tour
-  // Add more as needed
+  NBA: '4387',      // National Basketball Association
+  NHL: '4380',      // National Hockey League
+  MLB: '4424',      // Major League Baseball
+  ATP: '4420',      // Tennis ATP Tour (Herren)
+  WTA: '4421',      // Tennis WTA Tour (Damen)
+  // Weitere Ligen können hier hinzugefügt werden
 };
 
+/**
+ * TheSportsDB Team Interface
+ * 
+ * Repräsentiert ein Team von TheSportsDB API.
+ */
 export interface TheSportsDBTeam {
-  idTeam: string;
-  strTeam: string;
-  strTeamShort?: string;
-  strAlternate?: string;
-  strLeague: string;
-  strStadium?: string;
-  strDescriptionEN?: string;
-  strTeamBadge?: string;
-  strTeamLogo?: string;
+  idTeam: string;               // Eindeutige Team-ID
+  strTeam: string;              // Team-Name
+  strTeamShort?: string;        // Kurz-Name (z.B. "LAL" für Lakers)
+  strAlternate?: string;        // Alternativer Name
+  strLeague: string;            // Liga-Name
+  strStadium?: string;          // Stadion-Name
+  strDescriptionEN?: string;    // Team-Beschreibung (Englisch)
+  strTeamBadge?: string;        // Team-Logo URL
+  strTeamLogo?: string;         // Team-Logo URL (Alternative)
 }
 
+/**
+ * TheSportsDB Event Interface
+ * 
+ * Repräsentiert ein Event (Spiel, Match) von TheSportsDB API.
+ */
 export interface TheSportsDBEvent {
-  idEvent: string;
-  strEvent: string;
-  strEventAlternate?: string;
-  strHomeTeam: string;
-  strAwayTeam: string;
-  idHomeTeam: string;
-  idAwayTeam: string;
-  intHomeScore?: string;
-  intAwayScore?: string;
-  strStatus?: string;
-  dateEvent: string;
-  strTime?: string;
-  strTimestamp?: string;
-  strVenue?: string;
-  strLeague: string;
-  strSeason: string;
+  idEvent: string;              // Eindeutige Event-ID
+  strEvent: string;             // Event-Name (z.B. "Lakers vs Celtics")
+  strEventAlternate?: string;   // Alternativer Event-Name
+  strHomeTeam: string;          // Heim-Team Name
+  strAwayTeam: string;          // Auswärts-Team Name
+  idHomeTeam: string;           // Heim-Team ID
+  idAwayTeam: string;           // Auswärts-Team ID
+  intHomeScore?: string;        // Heim-Team Score
+  intAwayScore?: string;        // Auswärts-Team Score
+  strStatus?: string;           // Event-Status (z.B. "Not Started", "In Progress", "Finished")
+  dateEvent: string;            // Event-Datum (YYYY-MM-DD)
+  strTime?: string;             // Event-Zeit (HH:MM:SS)
+  strTimestamp?: string;        // Unix Timestamp
+  strVenue?: string;            // Veranstaltungsort
+  strLeague: string;            // Liga-Name
+  strSeason: string;            // Saison (z.B. "2024-2025")
 }
 
+/**
+ * TheSportsDB Service Class
+ * 
+ * Singleton Service für TheSportsDB API Calls.
+ */
 export class TheSportsDBService {
   private apiKey: string;
   private baseUrl: string;
@@ -56,6 +105,11 @@ export class TheSportsDBService {
 
   /**
    * Get all teams in a league
+   * 
+   * @param leagueId - League ID (siehe LEAGUE_IDS)
+   * @returns Array von Teams
+   * 
+   * API Endpoint: lookup_all_teams.php?id={leagueId}
    */
   async getTeamsByLeague(leagueId: string): Promise<TheSportsDBTeam[]> {
     try {
@@ -71,6 +125,11 @@ export class TheSportsDBService {
 
   /**
    * Search teams by league name
+   * 
+   * @param leagueName - Liga-Name (z.B. "NBA", "NHL")
+   * @returns Array von Teams
+   * 
+   * API Endpoint: search_all_teams.php?l={leagueName}
    */
   async searchTeamsByLeagueName(leagueName: string): Promise<TheSportsDBTeam[]> {
     try {
@@ -86,6 +145,12 @@ export class TheSportsDBService {
 
   /**
    * Get events for a season
+   * 
+   * @param leagueId - League ID (siehe LEAGUE_IDS)
+   * @param season - Saison (z.B. "2024-2025" für NBA/NHL, "2024" für MLB/Tennis)
+   * @returns Array von Events
+   * 
+   * API Endpoint: eventsseason.php?id={leagueId}&s={season}
    */
   async getEventsBySeason(leagueId: string, season: string): Promise<TheSportsDBEvent[]> {
     try {
@@ -101,6 +166,11 @@ export class TheSportsDBService {
 
   /**
    * Get next 5 events for a team
+   * 
+   * @param teamId - Team ID
+   * @returns Array von nächsten 5 Events
+   * 
+   * API Endpoint: eventsnext.php?id={teamId}
    */
   async getNextEventsByTeam(teamId: string): Promise<TheSportsDBEvent[]> {
     try {
@@ -116,6 +186,11 @@ export class TheSportsDBService {
 
   /**
    * Get last 5 events for a team
+   * 
+   * @param teamId - Team ID
+   * @returns Array von letzten 5 Events
+   * 
+   * API Endpoint: eventslast.php?id={teamId}
    */
   async getLastEventsByTeam(teamId: string): Promise<TheSportsDBEvent[]> {
     try {
@@ -131,6 +206,13 @@ export class TheSportsDBService {
 
   /**
    * Get events on a specific date
+   * 
+   * @param date - Datum (YYYY-MM-DD)
+   * @param sport - Optional: Sport-Name (z.B. "Basketball")
+   * @param leagueName - Optional: Liga-Name (z.B. "NBA")
+   * @returns Array von Events an diesem Datum
+   * 
+   * API Endpoint: eventsday.php?d={date}&s={sport}&l={leagueName}
    */
   async getEventsByDate(date: string, sport?: string, leagueName?: string): Promise<TheSportsDBEvent[]> {
     try {
@@ -152,6 +234,11 @@ export class TheSportsDBService {
 
   /**
    * Search for events by name
+   * 
+   * @param query - Suchbegriff (z.B. "Lakers Celtics")
+   * @returns Array von Events
+   * 
+   * API Endpoint: searchevents.php?e={query}
    */
   async searchEvents(query: string): Promise<TheSportsDBEvent[]> {
     try {
@@ -167,6 +254,11 @@ export class TheSportsDBService {
 
   /**
    * Get team details by ID
+   * 
+   * @param teamId - Team ID
+   * @returns Team-Details oder null
+   * 
+   * API Endpoint: lookupteam.php?id={teamId}
    */
   async getTeamById(teamId: string): Promise<TheSportsDBTeam | null> {
     try {
@@ -183,6 +275,11 @@ export class TheSportsDBService {
 
   /**
    * Get event details by ID
+   * 
+   * @param eventId - Event ID
+   * @returns Event-Details oder null
+   * 
+   * API Endpoint: lookupevent.php?id={eventId}
    */
   async getEventById(eventId: string): Promise<TheSportsDBEvent | null> {
     try {
@@ -197,10 +294,19 @@ export class TheSportsDBService {
     }
   }
 
-  // Sport-specific helper methods
+  /**
+   * ========================================
+   * SPORT-SPECIFIC HELPER METHODS
+   * ========================================
+   * 
+   * Diese Methoden sind Wrapper für die generischen Methoden oben
+   * und verwenden die vordefinierten LEAGUE_IDS.
+   */
 
   /**
    * Get NBA teams
+   * 
+   * @returns Array von NBA Teams
    */
   async getNBATeams(): Promise<TheSportsDBTeam[]> {
     return this.getTeamsByLeague(LEAGUE_IDS.NBA);
@@ -208,6 +314,8 @@ export class TheSportsDBService {
 
   /**
    * Get NHL teams
+   * 
+   * @returns Array von NHL Teams
    */
   async getNHLTeams(): Promise<TheSportsDBTeam[]> {
     return this.getTeamsByLeague(LEAGUE_IDS.NHL);
@@ -215,6 +323,8 @@ export class TheSportsDBService {
 
   /**
    * Get MLB teams
+   * 
+   * @returns Array von MLB Teams
    */
   async getMLBTeams(): Promise<TheSportsDBTeam[]> {
     return this.getTeamsByLeague(LEAGUE_IDS.MLB);
@@ -222,6 +332,9 @@ export class TheSportsDBService {
 
   /**
    * Get NBA events for current season
+   * 
+   * @param season - Saison (default: "2024-2025")
+   * @returns Array von NBA Events
    */
   async getNBAEvents(season: string = '2024-2025'): Promise<TheSportsDBEvent[]> {
     return this.getEventsBySeason(LEAGUE_IDS.NBA, season);
@@ -229,6 +342,9 @@ export class TheSportsDBService {
 
   /**
    * Get NHL events for current season
+   * 
+   * @param season - Saison (default: "2024-2025")
+   * @returns Array von NHL Events
    */
   async getNHLEvents(season: string = '2024-2025'): Promise<TheSportsDBEvent[]> {
     return this.getEventsBySeason(LEAGUE_IDS.NHL, season);
@@ -236,6 +352,9 @@ export class TheSportsDBService {
 
   /**
    * Get MLB events for current season
+   * 
+   * @param season - Saison (default: "2024")
+   * @returns Array von MLB Events
    */
   async getMLBEvents(season: string = '2024'): Promise<TheSportsDBEvent[]> {
     return this.getEventsBySeason(LEAGUE_IDS.MLB, season);
@@ -243,6 +362,9 @@ export class TheSportsDBService {
 
   /**
    * Get Tennis ATP events
+   * 
+   * @param season - Saison (default: "2024")
+   * @returns Array von ATP Tennis Events
    */
   async getATPEvents(season: string = '2024'): Promise<TheSportsDBEvent[]> {
     return this.getEventsBySeason(LEAGUE_IDS.ATP, season);
@@ -250,12 +372,23 @@ export class TheSportsDBService {
 
   /**
    * Get Tennis WTA events
+   * 
+   * @param season - Saison (default: "2024")
+   * @returns Array von WTA Tennis Events
    */
   async getWTAEvents(season: string = '2024'): Promise<TheSportsDBEvent[]> {
     return this.getEventsBySeason(LEAGUE_IDS.WTA, season);
   }
 }
 
-// Singleton instance
+/**
+ * SINGLETON INSTANCE
+ * 
+ * Exportiert eine Singleton-Instanz des TheSportsDBService.
+ * Diese Instanz sollte in der gesamten App verwendet werden.
+ * 
+ * Usage:
+ * import { theSportsDBService } from './services/thesportsdb.service';
+ * const teams = await theSportsDBService.getNBATeams();
+ */
 export const theSportsDBService = new TheSportsDBService();
-

@@ -1,14 +1,34 @@
+/**
+ * SPORTSKALENDAR - MAIN APP COMPONENT
+ * 
+ * Hauptkomponente der Sportskalendar-Anwendung.
+ * Verwaltet Routing, Authentifizierung, Theme und globale App-Zustände.
+ * 
+ * Features:
+ * - Single Page Application (SPA) mit client-side routing
+ * - Authentifizierung mit JWT und Refresh Tokens
+ * - Dark/Light Theme Support mit System-Präferenz
+ * - SEO-optimiert mit dynamischen Meta-Tags
+ * - Ad-Management für Premium/Standard Nutzer
+ * - Responsive Design mit Tailwind CSS
+ */
+
 import { useEffect, useState } from 'react';
 import { useAuthStore } from './store/useAuthStore';
 import { useThemeStore } from './store/useThemeStore';
 import { userApi } from './lib/api';
+
+// Authentication Components
 import { AuthModal } from './components/Auth/AuthModal';
+
+// Layout Components
 import { Header } from './components/Layout/Header';
 import { Footer } from './components/Layout/Footer';
 import { CookieBanner } from './components/Layout/CookieBanner';
+
+// Page Components
 import { Calendar } from './components/Pages/Calendar';
 import { Live } from './components/Pages/Live';
-import { PageSEO } from './components/SEO/PageSEO';
 import { Highlights } from './components/Pages/Highlights';
 import { Premium } from './components/Pages/Premium';
 import { Admin } from './components/Pages/Admin';
@@ -16,20 +36,36 @@ import { Settings } from './components/Pages/Settings';
 import { LandingPage } from './components/Pages/LandingPage';
 import Privacy from './components/Pages/Privacy';
 import Contact from './components/Pages/Contact';
+
+// SEO & Ads
+import { PageSEO } from './components/SEO/PageSEO';
 import { AdManager, useAdTrigger, SportsKalendarInterstitial } from './components/Ads/AdManager';
 
-type AuthView = 'login' | 'register' | null;
-type Page = 'calendar' | 'live' | 'highlights' | 'premium' | 'admin' | 'settings' | 'privacy' | 'contact';
+// Type Definitions
+type AuthView = 'login' | 'register' | null; // Auth Modal Ansicht (Login, Register oder geschlossen)
+type Page = 'calendar' | 'live' | 'highlights' | 'premium' | 'admin' | 'settings' | 'privacy' | 'contact'; // Verfügbare Seiten
 
 function App() {
-  const { user, isAuthenticated, setUser, setLoading } = useAuthStore();
-  const { setTheme } = useThemeStore();
-  const [authView, setAuthView] = useState<AuthView | null>(null);
-  const [currentPage, setCurrentPage] = useState<Page>('calendar');
-  const [isInitializing, setIsInitializing] = useState(false);
-  const { interstitialTrigger } = useAdTrigger();
+  // Global State Management
+  const { user, isAuthenticated, setUser, setLoading } = useAuthStore(); // Authentifizierungs-State aus Zustand Store
+  const { setTheme } = useThemeStore(); // Theme (Dark/Light Mode) aus Zustand Store
+  
+  // Local Component State
+  const [authView, setAuthView] = useState<AuthView | null>(null); // Aktuell angezeigte Auth-Ansicht
+  const [currentPage, setCurrentPage] = useState<Page>('calendar'); // Aktuell angezeigte Seite (Client-side Routing)
+  const [isInitializing, setIsInitializing] = useState(false); // Loading State während Initialisierung
+  const { interstitialTrigger } = useAdTrigger(); // Hook für Interstitial Ads (Vollbild-Werbung)
 
-  // Initialize theme on mount
+  /**
+   * EFFECT: Theme Initialisierung
+   * 
+   * Lädt das gespeicherte Theme aus localStorage oder verwendet System-Präferenz.
+   * Wird nur einmal beim Mount ausgeführt.
+   * 
+   * Priorität:
+   * 1. Gespeichertes Theme aus localStorage
+   * 2. System-Präferenz (prefers-color-scheme)
+   */
   useEffect(() => {
     const savedTheme = localStorage.getItem('theme-storage');
     if (savedTheme) {
@@ -37,29 +73,41 @@ function App() {
         const { state } = JSON.parse(savedTheme);
         setTheme(state.isDark);
       } catch {
-        // Fallback to system preference
+        // Fallback zu System-Präferenz bei Parse-Fehler
         const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
         setTheme(prefersDark);
       }
     } else {
-      // Use system preference
+      // Kein gespeichertes Theme -> System-Präferenz verwenden
       const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
       setTheme(prefersDark);
     }
   }, [setTheme]);
 
-  // Check authentication on mount - but don't block the app
+  /**
+   * EFFECT: Authentifizierungs-Check beim App-Start
+   * 
+   * Überprüft beim Mount, ob der User noch authentifiziert ist und lädt aktuelle Profildaten.
+   * Blockiert die App NICHT - läuft im Hintergrund.
+   * 
+   * Flow:
+   * 1. Wenn User im Store vorhanden -> Profil vom Backend laden
+   * 2. Bei Fehler -> User ausloggen (Token ungültig)
+   * 3. Loading State beenden
+   * 
+   * Wichtig: Verwendet Refresh Token automatisch über Axios Interceptor
+   */
   useEffect(() => {
     const checkAuth = async () => {
       if (isAuthenticated && user) {
         try {
-          // Refresh user profile to get latest data
+          // Aktuelles Profil vom Backend laden (inkl. isPremium, selectedTeams)
           const { data } = await userApi.getProfile();
           setUser(data.user);
         } catch (error) {
           console.error('Failed to load user profile:', error);
-          // If profile fails to load, user is not actually authenticated
-          // Clear the auth state but don't block the app
+          // Profil konnte nicht geladen werden -> User ist nicht mehr authentifiziert
+          // Auth State clearen, aber App nicht blockieren
           setUser(null);
         }
       }
@@ -71,8 +119,14 @@ function App() {
   }, [isAuthenticated, setLoading, setUser, user]);
 
 
+  /**
+   * RENDER: Loading Screen
+   * 
+   * Zeigt einen Spinner während der App-Initialisierung.
+   * Wird nur beim ersten Laden angezeigt.
+   */
   if (isInitializing) {
-  return (
+    return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
           <div className="inline-block animate-spin rounded-full h-16 w-16 border-b-2 border-primary-600"></div>
@@ -82,7 +136,12 @@ function App() {
     );
   }
 
-  // Show auth modal if user wants to authenticate
+  /**
+   * RENDER: Auth Modal View
+   * 
+   * Zeigt die Landing Page mit Login/Register Modal.
+   * Wird angezeigt wenn User auf "Anmelden" oder "Registrieren" klickt.
+   */
   if (authView === 'login' || authView === 'register') {
     return (
       <>
@@ -102,12 +161,29 @@ function App() {
     );
   }
 
+  /**
+   * RENDER: Main App Layout
+   * 
+   * Hauptlayout der Anwendung mit:
+   * - AdManager für Werbeverwaltung (Premium-Nutzer sehen keine Ads)
+   * - Header mit Navigation
+   * - Main Content Area mit Client-Side Routing
+   * - Footer mit Links
+   * - Cookie Banner (DSGVO)
+   * - Interstitial Ads für Standard-Nutzer
+   * 
+   * Routing Logic:
+   * - Authentifizierte Seiten (Calendar, Live, Highlights, Settings): Zeigen Landing Page für nicht-eingeloggte User
+   * - Admin: Nur für User mit role='admin'
+   * - Premium, Privacy, Contact: Für alle zugänglich
+   */
   return (
     <AdManager>
       <div className="min-h-screen flex flex-col">
-        {/* SEO Head for current page */}
+        {/* Dynamische SEO Meta-Tags für aktuelle Seite */}
         <PageSEO page={currentPage} user={user} />
         
+        {/* Header mit Navigation und Auth-Buttons */}
         <Header 
           currentPage={currentPage} 
           onNavigate={setCurrentPage}
@@ -115,11 +191,21 @@ function App() {
           onShowRegister={() => setAuthView('register')}
         />
         
+        {/* Main Content Area - Client-Side Routing */}
         <main className="flex-1">
+          {/* Calendar Page - Auth Required */}
           {currentPage === 'calendar' && (user ? <Calendar /> : <LandingPage onShowLogin={() => setAuthView('login')} onShowRegister={() => setAuthView('register')} />)}
+          
+          {/* Live Page - Auth Required */}
           {currentPage === 'live' && (user ? <Live /> : <LandingPage onShowLogin={() => setAuthView('login')} onShowRegister={() => setAuthView('register')} />)}
+          
+          {/* Highlights Page - Auth Required */}
           {currentPage === 'highlights' && (user ? <Highlights /> : <LandingPage onShowLogin={() => setAuthView('login')} onShowRegister={() => setAuthView('register')} />)}
+          
+          {/* Premium Page - Public */}
           {currentPage === 'premium' && <Premium onNavigate={setCurrentPage} />}
+          
+          {/* Admin Page - Admin Role Required */}
           {currentPage === 'admin' && user?.role === 'admin' ? (
             <Admin />
           ) : currentPage === 'admin' ? (
@@ -128,14 +214,16 @@ function App() {
               <p className="text-gray-600 dark:text-gray-400 mb-6">
                 Nur Administratoren können auf diese Seite zugreifen.
               </p>
-          <button 
+              <button 
                 onClick={() => setCurrentPage('calendar')}
                 className="btn btn-primary"
               >
                 Zurück zum Kalender
-          </button>
-        </div>
+              </button>
+            </div>
           ) : null}
+          
+          {/* Settings Page - Auth Required */}
           {currentPage === 'settings' && user ? <Settings /> : currentPage === 'settings' ? (
             <div className="card p-12 text-center">
               <h2 className="text-2xl font-bold mb-4">🔒 Anmeldung erforderlich</h2>
@@ -158,14 +246,21 @@ function App() {
               </div>
             </div>
           ) : null}
+          
+          {/* Privacy Page - Public */}
           {currentPage === 'privacy' && <Privacy />}
+          
+          {/* Contact Page - Public */}
           {currentPage === 'contact' && <Contact />}
         </main>
 
+        {/* Footer mit Links zu Privacy, Contact, etc. */}
         <Footer onNavigate={setCurrentPage} />
+        
+        {/* Cookie Banner für DSGVO-Compliance */}
         <CookieBanner onNavigate={setCurrentPage} />
         
-        {/* Interstitial Ad */}
+        {/* Interstitial Ad (Vollbild-Werbung) - Nur für Standard-Nutzer */}
         <SportsKalendarInterstitial trigger={interstitialTrigger} />
       </div>
     </AdManager>

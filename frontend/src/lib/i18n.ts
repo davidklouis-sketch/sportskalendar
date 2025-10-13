@@ -1,4 +1,21 @@
-// Internationalization (i18n) system for Sportskalendar
+/**
+ * INTERNATIONALIZATION (i18n) SYSTEM
+ * 
+ * Zweisprachiges System für Deutsch und Englisch.
+ * Verwendet localStorage für Sprachpersistierung und Custom Events für Reaktivität.
+ * 
+ * Features:
+ * - Deutsch (de) und Englisch (en) Unterstützung
+ * - localStorage Persistierung
+ * - Custom Event System für React Re-Renders
+ * - Type-Safe mit TypeScript
+ * 
+ * Usage:
+ * - t('key') - Übersetzung abrufen
+ * - setLanguage('de' | 'en') - Sprache wechseln
+ * - getCurrentLanguage() - Aktuelle Sprache abrufen
+ * - useLanguage() Hook - React Component Re-Render bei Sprachwechsel
+ */
 
 export type Language = 'de' | 'en';
 
@@ -232,40 +249,75 @@ export const translations: Record<Language, Translations> = {
   },
 };
 
-// Language detection and storage
+/**
+ * Language Storage Helper
+ * 
+ * Lädt die gespeicherte Sprache aus localStorage.
+ * Default: 'de' (Deutsch)
+ */
 const getStoredLanguage = (): Language => {
-  if (typeof window === 'undefined') return 'de';
+  if (typeof window === 'undefined') return 'de'; // SSR fallback
   const stored = localStorage.getItem('sportskalendar-language');
   return (stored as Language) || 'de';
 };
 
+/**
+ * Language Storage Helper
+ * 
+ * Speichert die gewählte Sprache in localStorage.
+ */
 const setStoredLanguage = (language: Language): void => {
-  if (typeof window === 'undefined') return;
+  if (typeof window === 'undefined') return; // SSR fallback
   localStorage.setItem('sportskalendar-language', language);
 };
 
-// Current language state
+// Current language state (Module-Level Variable)
 let currentLanguage: Language = getStoredLanguage();
 
-// Translation function
+/**
+ * Translation Function
+ * 
+ * Gibt die Übersetzung für einen Key in der aktuellen Sprache zurück.
+ * 
+ * @param key - Translation Key aus Translations Interface
+ * @returns Übersetzter String
+ * 
+ * Example: t('calendar') -> 'Kalender' (de) oder 'Calendar' (en)
+ */
 export const t = (key: keyof Translations): string => {
   return translations[currentLanguage][key];
 };
 
-// Language management
+/**
+ * Set Language Function
+ * 
+ * Wechselt die Sprache und triggert ein Custom Event für React Re-Renders.
+ * Speichert die Sprache in localStorage.
+ * 
+ * @param language - 'de' oder 'en'
+ * 
+ * Wichtig: Komponenten müssen useLanguage() Hook verwenden, um auf Sprachwechsel zu reagieren.
+ */
 export const setLanguage = (language: Language): void => {
   currentLanguage = language;
   setStoredLanguage(language);
   
-  // Trigger language change event
+  // Custom Event dispatchen für React Components mit useLanguage() Hook
   window.dispatchEvent(new CustomEvent('languageChanged', { detail: { language } }));
 };
 
+/**
+ * Get Current Language Function
+ * 
+ * Gibt die aktuell gewählte Sprache zurück.
+ * 
+ * @returns 'de' oder 'en'
+ */
 export const getCurrentLanguage = (): Language => {
   return currentLanguage;
 };
 
-// Initialize language on load
+// Initialize language on load (Browser only)
 if (typeof window !== 'undefined') {
   currentLanguage = getStoredLanguage();
 }
