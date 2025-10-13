@@ -30,6 +30,21 @@ highlightsRouter.get('/', async (req, res) => {
       if (external && external.length > 0) {
         console.log(`[Highlights API] Got ${external.length} external highlights for ${sport}`);
         let items = external;
+        
+        // Filter by team if provided
+        if (team && items.length > 0) {
+          console.log(`[Highlights API] Filtering by team: ${team}`);
+          const teamVariations = getTeamVariations(team);
+          console.log(`[Highlights API] Team variations:`, teamVariations);
+          
+          const beforeFilter = items.length;
+          items = items.filter((highlight: HighlightItem) => {
+            const searchText = (highlight.title + ' ' + (highlight.description || '')).toLowerCase();
+            return teamVariations.some(variation => searchText.includes(variation.toLowerCase()));
+          });
+          console.log(`[Highlights API] Team filtering: ${beforeFilter} -> ${items.length} highlights`);
+        }
+        
         if (query) items = items.filter(h => (h.title + ' ' + (h.description || '')).toLowerCase().includes(query.toLowerCase()));
         items.sort((a, b) => (b.createdAt || '').localeCompare(a.createdAt || ''));
         return res.json({ items });
