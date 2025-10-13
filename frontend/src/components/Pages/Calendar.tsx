@@ -533,17 +533,19 @@ export function Calendar() {
         : currentTeam;
       console.log('[Calendar Highlights] fallbackTeam:', fallbackTeam);
       
-      // Add timeout to prevent hanging
-      const timeoutPromise = new Promise<never>((_, reject) => {
-        setTimeout(() => reject(new Error('Request timeout')), 15000); // 15 second timeout
-      });
-      
       console.log('[Calendar Highlights] Calling API with sport:', sportMapping[selectedSport], 'team:', fallbackTeam?.teamName);
-      const fetchPromise = highlightsApi.getHighlights(sportMapping[selectedSport], fallbackTeam?.teamName);
-      const response = await Promise.race([fetchPromise, timeoutPromise]);
       
-      let allHighlights = response.data.items || [];
-      console.log('[Calendar Highlights] API response items:', allHighlights.length);
+      let allHighlights: Highlight[] = [];
+      try {
+        const response = await highlightsApi.getHighlights(sportMapping[selectedSport], fallbackTeam?.teamName);
+        console.log('[Calendar Highlights] API response received:', response.data);
+        
+        allHighlights = response.data.items || [];
+        console.log('[Calendar Highlights] API response items:', allHighlights.length);
+      } catch (apiError) {
+        console.error('[Calendar Highlights] API call failed:', apiError);
+        throw apiError;
+      }
       
       // Additional frontend filtering if needed (backend should handle most filtering now)
       if (fallbackTeam?.teamName && allHighlights.length > 0) {
