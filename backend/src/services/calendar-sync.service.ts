@@ -193,28 +193,16 @@ export class CalendarSyncService {
       } else if (team.sport === 'nba') {
         console.log(`[Calendar Sync] Fetching NBA events`);
         // Use the same season logic as the app
-        const currentYear = new Date().getFullYear();
-        const currentMonth = new Date().getMonth() + 1; // 1-12
-        
-        let season = '';
-        if (currentMonth >= 10) {
-          // October onwards - current season (NBA starts in October)
-          season = `${currentYear}-${(currentYear + 1).toString().slice(-2)}`;
-        } else if (currentMonth >= 6) {
-          // June-September - previous season still active (finals)
-          season = `${currentYear - 1}-${currentYear.toString().slice(-2)}`;
-        } else {
-          // January-May - previous season
-          season = `${currentYear - 1}-${currentYear.toString().slice(-2)}`;
-        }
+        // NBA season 2025-26 is currently active (October 2025 - June 2026)
+        const season = '2025-2026'; // Current season since we're in October 2025
         
         console.log(`[Calendar Sync] Using NBA season: ${season} (same as app)`);
         let nbaEvents = await this.theSportsDBService.getNBAEvents(season);
         console.log(`[Calendar Sync] Raw NBA events for ${season}: ${nbaEvents.length}`);
         
         // If no events found for current season, try previous season as fallback
-        if (nbaEvents.length === 0 && currentMonth >= 10) {
-          const prevSeason = `${currentYear - 1}-${currentYear.toString().slice(-2)}`;
+        if (nbaEvents.length === 0) {
+          const prevSeason = '2024-2025'; // Previous season
           console.log(`[Calendar Sync] No events for ${season}, trying previous season: ${prevSeason}`);
           nbaEvents = await this.theSportsDBService.getNBAEvents(prevSeason);
           console.log(`[Calendar Sync] Raw NBA events for ${prevSeason}: ${nbaEvents.length}`);
