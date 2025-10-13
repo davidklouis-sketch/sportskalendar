@@ -449,21 +449,24 @@ sportsRouter.get('/football/events', async (req: Request, res: Response) => {
   try {
     // Auto-detect current football season (starts in August, ends in May)
     const now = new Date();
-    const currentYear = now.getFullYear();
-    const currentMonth = now.getMonth() + 1; // 1-12
+    const currentYear = now.getFullYear(); // 2025
+    const currentMonth = now.getMonth() + 1; // 10 (October)
     
     // Football season starts in August (month 8) and ends in May (month 5)
     let season: string;
     if (currentMonth >= 8) {
       // August-December: current year to next year
-      season = `${currentYear}-${currentYear + 1}`;
+      season = `${currentYear}-${currentYear + 1}`; // 2025-2026
     } else if (currentMonth <= 5) {
       // January-May: previous year to current year
-      season = `${currentYear - 1}-${currentYear}`;
+      season = `${currentYear - 1}-${currentYear}`; // 2024-2025
     } else {
       // June-July: previous year to current year (off-season)
-      season = `${currentYear - 1}-${currentYear}`;
+      season = `${currentYear - 1}-${currentYear}`; // 2024-2025
     }
+    
+    // Debug logging
+    console.log(`Football season detection: currentMonth=${currentMonth}, currentYear=${currentYear}, detected season=${season}`);
     
     // Allow override via query parameter
     const requestedSeason = req.query.season as string;

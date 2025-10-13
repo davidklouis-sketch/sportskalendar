@@ -471,7 +471,7 @@ export class TheSportsDBService {
 
   /**
    * Get Football events for multiple leagues
-   * Combines events from multiple football leagues
+   * Combines events from multiple football leagues with fallback APIs
    * 
    * @param leagueIds - Array of league IDs
    * @param season - Saison (default: "2024-2025")
@@ -480,15 +480,134 @@ export class TheSportsDBService {
   async getFootballEventsMultipleLeagues(leagueIds: string[], season: string = '2024-2025'): Promise<TheSportsDBEvent[]> {
     const allEvents: TheSportsDBEvent[] = [];
     
+    // First try TheSportsDB
     for (const leagueId of leagueIds) {
       try {
         const events = await this.getEventsBySeason(leagueId, season);
         allEvents.push(...events);
       } catch (error) {
-        console.error(`Failed to fetch events for league ${leagueId}:`, error);
+        console.error(`Failed to fetch events for league ${leagueId} from TheSportsDB:`, error);
       }
     }
     
+    // If no events found, try alternative APIs
+    if (allEvents.length === 0) {
+      console.log('No events from TheSportsDB, trying alternative APIs...');
+      
+      // Try OpenLigaDB for Bundesliga
+      if (leagueIds.includes(LEAGUE_IDS.BUNDESLIGA)) {
+        try {
+          const openLigaDBEvents = await this.fetchOpenLigaDBEvents();
+          allEvents.push(...openLigaDBEvents);
+          console.log(`OpenLigaDB returned ${openLigaDBEvents.length} events`);
+        } catch (error) {
+          console.error('Failed to fetch from OpenLigaDB:', error);
+        }
+      }
+      
+      // Try football-data.org if API key is available
+      const footballDataKey = process.env.FOOTBALL_DATA_KEY;
+      if (footballDataKey && footballDataKey !== 'your_football_data_api_key') {
+        try {
+          const footballDataEvents = await this.fetchFootballDataEvents(leagueIds);
+          allEvents.push(...footballDataEvents);
+          console.log(`Football-data.org returned ${footballDataEvents.length} events`);
+        } catch (error) {
+          console.error('Failed to fetch from football-data.org:', error);
+        }
+      }
+    }
+    
+    return allEvents;
+  }
+
+  /**
+   * Fetch events from OpenLigaDB (free API for Bundesliga)
+   */
+  private async fetchOpenLigaDBEvents(): Promise<TheSportsDBEvent[]> {
+    try {
+      const response = await axios.get('https://api.openligadb.de/getmatchdata/bl1/2024/2025');
+      const matches = response.data || [];
+      
+      return matches.map((match: any) => ({
+        idEvent: `openliga_${match.matchID}`,
+        strEvent: `${match.team1?.teamName || 'Home'} vs ${match.team2?.teamName || 'Away'}`,
+        strHomeTeam: match.team1?.teamName || 'Home',
+        strAwayTeam: match.team2?.teamName || 'Away',
+        dateEvent: match.matchDateTime?.split('T')[0] || '',
+        strTime: match.matchDateTime?.split('T')[1]?.substring(0, 5) + ':00' || '00:00:00',
+        strStatus: match.matchIsFinished ? 'Match Finished' : 'Not Started',
+        intHomeScore: match.matchResults?.[0]?.pointsTeam1?.toString() || null,
+        intAwayScore: match.matchResults?.[0]?.pointsTeam2?.toString() || null,
+        strVenue: match.location?.locationStadium || '',
+        strLeague: 'Bundesliga',
+        strTimestamp: match.matchDateTime || ''
+      }));
+    } catch (error) {
+      console.error('Error fetching from OpenLigaDB:', error);
+      return [];
+    }
+  }
+
+  /**
+   * Fetch events from football-data.org
+   */
+  private async fetchFootballDataEvents(leagueIds: string[]): Promise<TheSportsDBEvent[]> {
+    const footballDataKey = process.env.FOOTBALL_DATA_KEY;
+    if (!footballDataKey || footballDataKey === 'your_football_data_api_key') {
+      return [];
+    }
+
+    const leagueMapping: Record<string, string> = {
+      [LEAGUE_IDS.BUNDESLIGA]: 'BL1',
+      [LEAGUE_IDS.PREMIER_LEAGUE]: 'PL',
+      [LEAGUE_IDS.LA_LIGA]: 'PD',
+      [LEAGUE_IDS.SERIE_A]: 'SA',
+      [LEAGUE_IDS.LIGUE_1]: 'FL1',
+      [LEAGUE_IDS.CHAMPIONS_LEAGUE]: 'CL',
+      [LEAGUE_IDS.EUROPA_LEAGUE]: 'EL'
+    };
+
+    const allEvents: TheSportsDBEvent[] = [];
+
+    for (const leagueId of leagueIds) {
+      const competition = leagueMapping[leagueId];
+      if (!competition) continue;
+
+      try {
+        const today = new Date();
+        const thirtyDaysFromNow = new Date(today.getTime() + 30 * 24 * 60 * 60 * 1000);
+        const dateFrom = today.toISOString().split('T')[0];
+        const dateTo = thirtyDaysFromNow.toISOString().split('T')[0];
+        
+        const url = `https://api.football-data.org/v4/competitions/${competition}/matches?dateFrom=${dateFrom}&dateTo=${dateTo}`;
+        const response = await axios.get(url, {
+          headers: { 'X-Auth-Token': footballDataKey }
+        });
+
+        const matches = response.data?.matches || [];
+        const events = matches.map((match: any) => ({
+          idEvent: `football_data_${match.id}`,
+          strEvent: `${match.homeTeam?.name || 'Home'} vs ${match.awayTeam?.name || 'Away'}`,
+          strHomeTeam: match.homeTeam?.name || 'Home',
+          strAwayTeam: match.awayTeam?.name || 'Away',
+          dateEvent: match.utcDate?.split('T')[0] || '',
+          strTime: match.utcDate?.split('T')[1]?.substring(0, 8) || '00:00:00',
+          strStatus: match.status === 'FINISHED' ? 'Match Finished' : 
+                     match.status === 'IN_PLAY' ? 'Match Live' : 'Not Started',
+          intHomeScore: match.score?.fullTime?.home?.toString() || null,
+          intAwayScore: match.score?.fullTime?.away?.toString() || null,
+          strVenue: match.venue || '',
+          strLeague: match.competition?.name || '',
+          strTimestamp: match.utcDate || ''
+        }));
+
+        allEvents.push(...events);
+      } catch (error) {
+        console.error(`Error fetching from football-data.org for league ${leagueId}:`, error);
+      }
+    }
+
     return allEvents;
   }
 }
