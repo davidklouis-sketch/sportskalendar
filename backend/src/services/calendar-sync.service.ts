@@ -253,7 +253,27 @@ export class CalendarSyncService {
   }
 
   private transformNBAEvents(nbaEvents: any[], team: any): CalendarEvent[] {
-    return nbaEvents.map(event => ({
+    console.log(`[Calendar Sync] Filtering NBA events for team: ${team.teamName}`);
+    
+    // Filter events that include the selected team
+    const teamEvents = nbaEvents.filter(event => {
+      const homeTeam = event.strHomeTeam?.toLowerCase() || '';
+      const awayTeam = event.strAwayTeam?.toLowerCase() || '';
+      const selectedTeam = team.teamName.toLowerCase();
+      
+      const isMatch = homeTeam.includes(selectedTeam) || awayTeam.includes(selectedTeam) ||
+                     selectedTeam.includes(homeTeam) || selectedTeam.includes(awayTeam);
+      
+      if (isMatch) {
+        console.log(`[Calendar Sync] NBA match found: ${event.strHomeTeam} vs ${event.strAwayTeam} for ${team.teamName}`);
+      }
+      
+      return isMatch;
+    });
+    
+    console.log(`[Calendar Sync] Found ${teamEvents.length} NBA events for ${team.teamName} out of ${nbaEvents.length} total events`);
+    
+    return teamEvents.map(event => ({
       id: `nba_${event.idEvent}`,
       title: `${event.strHomeTeam} vs ${event.strAwayTeam}`,
       description: `NBA - ${event.strVenue || 'TBD'}`,
@@ -464,10 +484,22 @@ export class CalendarSyncService {
   }
 
   private transformF1Events(f1Events: any[], team: any): CalendarEvent[] {
+    console.log(`[Calendar Sync] Processing F1 events for driver: ${team.teamName}`);
+    
+    // For F1, we show all races since they're not team-specific
+    // But we can add driver info to the description if it's a specific driver
+    const isDriverSpecific = team.teamName.toLowerCase().includes('verstappen') || 
+                           team.teamName.toLowerCase().includes('hamilton') ||
+                           team.teamName.toLowerCase().includes('leclerc');
+    
+    console.log(`[Calendar Sync] F1 driver-specific: ${isDriverSpecific}, showing ${f1Events.length} races`);
+    
     return f1Events.map(event => ({
       id: `f1_${event.idEvent}`,
       title: event.strEvent,
-      description: `Formula 1 - ${event.strVenue || 'TBD'}`,
+      description: isDriverSpecific 
+        ? `Formula 1 - ${team.teamName} - ${event.strVenue || 'TBD'}`
+        : `Formula 1 - ${event.strVenue || 'TBD'}`,
       startDate: `${event.dateEvent}T${event.strTime || '15:00:00'}`,
       endDate: `${event.dateEvent}T${this.addMinutes(event.strTime || '15:00:00', 120)}`, // 120 minutes for F1
       location: event.strVenue || 'TBD',
