@@ -388,27 +388,11 @@ export function Calendar() {
     }
   };
 
-  // Find the next upcoming event from all loaded events
-  const findNextEvent = () => {
-    const allEvents = [
-      ...footballEvents,
-      ...f1Events,
-      ...nflEvents,
-      ...nbaEvents,
-      ...nhlEvents,
-      ...mlbEvents,
-      ...tennisEvents,
-    ];
-
-    if (allEvents.length === 0) {
-      setNextEvent(null);
-      return;
-    }
-
-    // Filter only future events and sort by date
+  // Helper function to filter events by future dates
+  const filterFutureEvents = (events: Event[]) => {
     const now = new Date();
     
-    const upcomingEvents = allEvents
+    return events
       .map(event => {
         // Try multiple date parsing methods
         let eventDate: Date;
@@ -455,6 +439,26 @@ export function Calendar() {
       })
       .filter(event => event && event.isFuture)
       .sort((a, b) => a!.parsedDate.getTime() - b!.parsedDate.getTime());
+  };
+
+  // Find the next upcoming event from all loaded events
+  const findNextEvent = () => {
+    const allEvents = [
+      ...footballEvents,
+      ...f1Events,
+      ...nflEvents,
+      ...nbaEvents,
+      ...nhlEvents,
+      ...mlbEvents,
+      ...tennisEvents,
+    ];
+
+    if (allEvents.length === 0) {
+      setNextEvent(null);
+      return;
+    }
+
+    const upcomingEvents = filterFutureEvents(allEvents);
 
     if (upcomingEvents.length > 0) {
       const nextEvent = upcomingEvents[0]!;
