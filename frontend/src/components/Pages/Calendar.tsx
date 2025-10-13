@@ -547,16 +547,8 @@ export function Calendar() {
         throw apiError;
       }
       
-      // Additional frontend filtering if needed (backend should handle most filtering now)
-      if (fallbackTeam?.teamName && allHighlights.length > 0) {
-        allHighlights = allHighlights.filter((highlight: Highlight) => {
-          const searchText = (highlight.title + ' ' + (highlight.description || '')).toLowerCase();
-          
-          // Use the same team variations as backend
-          const teamVariations = getTeamVariations(fallbackTeam.teamName);
-          return teamVariations.some(variation => searchText.includes(variation));
-        });
-      }
+      // Backend should handle team filtering, so we don't need additional frontend filtering
+      console.log('[Calendar Highlights] No additional filtering - backend handles team filtering');
       
       console.log('[Calendar Highlights] Final highlights count:', allHighlights.length);
       setHighlights(allHighlights);
