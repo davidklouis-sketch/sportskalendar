@@ -4,6 +4,17 @@ import { CalendarSyncService } from '../services/calendar-sync.service';
 
 export const calendarSyncRouter = Router();
 
+// Test endpoint without authentication
+calendarSyncRouter.get('/test', (req, res) => {
+  console.log('[Calendar Sync] Test endpoint called');
+  res.json({ 
+    status: 'OK', 
+    message: 'Calendar Sync API is working',
+    timestamp: new Date().toISOString(),
+    headers: req.headers
+  });
+});
+
 // Generate iCal/ICS file for user's selected teams
 calendarSyncRouter.get('/export', requireAuth, async (req, res) => {
   try {
@@ -68,17 +79,28 @@ calendarSyncRouter.get('/url', requireAuth, async (req, res) => {
 // Get calendar sync status and settings
 calendarSyncRouter.get('/status', requireAuth, async (req, res) => {
   try {
-    const userId = (req as any).user.id;
+    console.log('[Calendar Sync] Status request received');
+    console.log('[Calendar Sync] Headers:', req.headers);
+    console.log('[Calendar Sync] Cookies:', req.headers.cookie);
+    console.log('[Calendar Sync] User from auth:', (req as any).user);
+    
+    const userId = (req as any).user?.id;
+    
+    if (!userId) {
+      console.error('[Calendar Sync] No user ID found in request');
+      return res.status(401).json({ error: 'User not authenticated' });
+    }
     
     console.log(`[Calendar Sync] Status request from user ${userId}`);
     
     const calendarSyncService = new CalendarSyncService();
     const status = await calendarSyncService.getSyncStatus(userId);
     
+    console.log('[Calendar Sync] Status generated successfully:', status);
     res.json(status);
   } catch (error) {
     console.error('[Calendar Sync] Status error:', error);
-    res.status(500).json({ error: 'Failed to get sync status' });
+    res.status(500).json({ error: 'Failed to get sync status', details: error.message });
   }
 });
 
