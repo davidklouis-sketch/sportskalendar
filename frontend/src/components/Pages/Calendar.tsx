@@ -942,7 +942,7 @@ export function Calendar() {
                                          selectedSport === 'nhl' ? nhlEvents :
                                          selectedSport === 'mlb' ? mlbEvents :
                                          selectedSport === 'tennis' ? tennisEvents : [];
-                            return `${events.length} ${t('upcomingGames')}`;
+                            return `${events.length} ${events.length === 1 ? 'Event' : 'Events'}`;
                           })()}
                         </p>
                       </div>
@@ -963,6 +963,9 @@ export function Calendar() {
                                      selectedSport === 'mlb' ? mlbEvents :
                                      selectedSport === 'tennis' ? tennisEvents : [];
                         
+                        // For now, show all events regardless of date to avoid blocking NBA preseason games
+                        // TODO: Implement proper future/past event filtering when API provides future events
+                        
                         if (events.length === 0) {
                           return (
                             <div className="text-center py-12">
@@ -976,7 +979,12 @@ export function Calendar() {
                           );
                         }
                         
-                        return events.slice(0, 5).map((event) => (
+                        return events.slice(0, 5).map((event) => {
+                          // Check if event is in the future for styling
+                          const eventDate = new Date(event.startsAt);
+                          const isFuture = eventDate > new Date();
+                          
+                          return (
                           <div key={event.id} className="group/event flex items-center justify-between p-6 bg-gradient-to-r from-gray-50 to-gray-100 dark:from-gray-700/50 dark:to-gray-700 rounded-2xl hover:from-gray-100 hover:to-gray-200 dark:hover:from-gray-600 dark:hover:to-gray-600 transition-all duration-200 transform hover:scale-[1.02]">
                             <div className="flex items-center">
                               <div className="w-10 h-10 bg-gradient-to-r from-emerald-500 to-green-600 rounded-2xl flex items-center justify-center mr-4">
@@ -984,18 +992,20 @@ export function Calendar() {
                               </div>
                               <div>
                                 <p className="font-semibold text-gray-900 dark:text-white">{event.title}</p>
-              <p className="text-sm text-gray-600 dark:text-gray-400">
+                                <p className="text-sm text-gray-600 dark:text-gray-400">
                                   {format(new Date(event.startsAt), 'dd.MM.yyyy HH:mm')} Uhr
-              </p>
-            </div>
+                                  {!isFuture && <span className="ml-2 text-xs text-orange-500">(Beendet)</span>}
+                                </p>
+                              </div>
                             </div>
                             <div className="opacity-0 group-hover/event:opacity-100 transition-opacity duration-200">
                               <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
                               </svg>
                             </div>
-                      </div>
-                        ));
+                          </div>
+                          );
+                        });
                       })()}
                     </div>
                   </div>

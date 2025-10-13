@@ -35,7 +35,30 @@ sportsRouter.get('/nba/teams', async (req: Request, res: Response) => {
  */
 sportsRouter.get('/nba/events', async (req: Request, res: Response) => {
   try {
-    const season = (req.query.season as string) || '2024-2025';
+    // Auto-detect current NBA season (starts in October, ends in June)
+    const now = new Date();
+    const currentYear = now.getFullYear();
+    const currentMonth = now.getMonth() + 1; // 1-12
+    
+    // NBA season starts in October (month 10) and ends in June (month 6)
+    let season: string;
+    if (currentMonth >= 10) {
+      // October-December: current year to next year
+      season = `${currentYear}-${currentYear + 1}`;
+    } else if (currentMonth <= 6) {
+      // January-June: previous year to current year
+      season = `${currentYear - 1}-${currentYear}`;
+    } else {
+      // July-September: previous year to current year (off-season)
+      season = `${currentYear - 1}-${currentYear}`;
+    }
+    
+    // Allow override via query parameter
+    const requestedSeason = req.query.season as string;
+    if (requestedSeason) {
+      season = requestedSeason;
+    }
+    
     const events = await theSportsDBService.getNBAEvents(season);
 
     const transformedEvents = events.map(event => ({
@@ -132,7 +155,30 @@ sportsRouter.get('/nhl/teams', async (req: Request, res: Response) => {
  */
 sportsRouter.get('/nhl/events', async (req: Request, res: Response) => {
   try {
-    const season = (req.query.season as string) || '2024-2025';
+    // Auto-detect current NHL season (starts in October, ends in June)
+    const now = new Date();
+    const currentYear = now.getFullYear();
+    const currentMonth = now.getMonth() + 1; // 1-12
+    
+    // NHL season starts in October (month 10) and ends in June (month 6)
+    let season: string;
+    if (currentMonth >= 10) {
+      // October-December: current year to next year
+      season = `${currentYear}-${currentYear + 1}`;
+    } else if (currentMonth <= 6) {
+      // January-June: previous year to current year
+      season = `${currentYear - 1}-${currentYear}`;
+    } else {
+      // July-September: previous year to current year (off-season)
+      season = `${currentYear - 1}-${currentYear}`;
+    }
+    
+    // Allow override via query parameter
+    const requestedSeason = req.query.season as string;
+    if (requestedSeason) {
+      season = requestedSeason;
+    }
+    
     const events = await theSportsDBService.getNHLEvents(season);
 
     const transformedEvents = events.map(event => ({
@@ -194,7 +240,27 @@ sportsRouter.get('/mlb/teams', async (req: Request, res: Response) => {
  */
 sportsRouter.get('/mlb/events', async (req: Request, res: Response) => {
   try {
-    const season = (req.query.season as string) || '2024';
+    // Auto-detect current MLB season (starts in March, ends in October)
+    const now = new Date();
+    const currentYear = now.getFullYear();
+    const currentMonth = now.getMonth() + 1; // 1-12
+    
+    // MLB season starts in March (month 3) and ends in October (month 10)
+    let season: string;
+    if (currentMonth >= 3 && currentMonth <= 10) {
+      // March-October: current year
+      season = currentYear.toString();
+    } else {
+      // November-February: previous year (off-season)
+      season = (currentYear - 1).toString();
+    }
+    
+    // Allow override via query parameter
+    const requestedSeason = req.query.season as string;
+    if (requestedSeason) {
+      season = requestedSeason;
+    }
+    
     const events = await theSportsDBService.getMLBEvents(season);
 
     const transformedEvents = events.map(event => ({
