@@ -26,6 +26,9 @@ import { Header } from './components/Layout/Header';
 import { Footer } from './components/Layout/Footer';
 import { CookieBanner } from './components/Layout/CookieBanner';
 
+// SEO Components
+import { SEOProvider, useSEO } from './components/SEO/SEOProvider';
+
 // Page Components
 import { Calendar } from './components/Pages/Calendar';
 import { Live } from './components/Pages/Live';
@@ -46,10 +49,11 @@ import { AdManager, useAdTrigger, SportsKalendarInterstitial } from './component
 type AuthView = 'login' | 'register' | null; // Auth Modal Ansicht (Login, Register oder geschlossen)
 type Page = 'calendar' | 'live' | 'highlights' | 'premium' | 'admin' | 'settings' | 'calendar-sync' | 'privacy' | 'contact'; // Verfügbare Seiten
 
-function App() {
+function AppContent() {
   // Global State Management
   const { user, isAuthenticated, setUser, setLoading } = useAuthStore(); // Authentifizierungs-State aus Zustand Store
   const { setTheme } = useThemeStore(); // Theme (Dark/Light Mode) aus Zustand Store
+  const { updateSEO } = useSEO(); // SEO Hook für dynamische Meta-Tags
   
   // Local Component State
   const [authView, setAuthView] = useState<AuthView | null>(null); // Aktuell angezeigte Auth-Ansicht
@@ -147,6 +151,22 @@ function App() {
       }
     }
   }, [isAuthenticated, user, isInitializing, authView, currentPage]);
+
+  /**
+   * EFFECT: SEO Update
+   * 
+   * Aktualisiert SEO-Meta-Tags basierend auf aktueller Seite und User-Daten.
+   * Dynamische SEO-Optimierung für bessere Suchmaschinen-Rankings.
+   */
+  useEffect(() => {
+    const dynamicContent = {
+      teamCount: user?.selectedTeams?.length || 0,
+      sportTypes: user?.selectedTeams?.map((t: any) => t.sport) || [],
+      upcomingEvents: 0 // Could be calculated from actual events
+    };
+
+    updateSEO(currentPage, user, dynamicContent);
+  }, [currentPage, user, updateSEO]);
 
   /**
    * RENDER: Loading Screen
@@ -322,6 +342,20 @@ function App() {
         <SportsKalendarInterstitial trigger={interstitialTrigger} />
       </div>
     </AdManager>
+  );
+}
+
+/**
+ * MAIN APP COMPONENT
+ * 
+ * Wrapper-Komponente, die das SEO-Provider umhüllt.
+ * Ermöglicht SEO-Updates in der gesamten App.
+ */
+function App() {
+  return (
+    <SEOProvider>
+      <AppContent />
+    </SEOProvider>
   );
 }
 

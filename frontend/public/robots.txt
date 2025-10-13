@@ -1,46 +1,38 @@
+# Robots.txt für Sportskalendar - 2025 Best Practices
+
+# Erlaubte Crawler
 User-agent: *
 Allow: /
 
-# Sitemap
-Sitemap: https://sportskalendar.de/sitemap.xml
-
-# Crawl-delay for polite crawling
-Crawl-delay: 1
-
-# Allow all search engines
+# Spezielle Regeln für Googlebot
 User-agent: Googlebot
 Allow: /
+Crawl-delay: 1
 
+# Spezielle Regeln für Bingbot
 User-agent: Bingbot
 Allow: /
+Crawl-delay: 1
 
-User-agent: Slurp
-Allow: /
-
-User-agent: DuckDuckBot
-Allow: /
-
-User-agent: Baiduspider
-Allow: /
-
-User-agent: YandexBot
-Allow: /
-
-# Disallow admin areas and API endpoints
-Disallow: /admin/
-Disallow: /api/
-Disallow: /_next/
-Disallow: /static/
-
-# Allow important pages
+# Erlaubte Pfade
 Allow: /calendar
 Allow: /live
 Allow: /highlights
-Allow: /settings
+Allow: /premium
 Allow: /privacy
 Allow: /contact
 
-# Host
+# Verbotene Pfade (Private/Admin Bereiche)
+Disallow: /admin
+Disallow: /settings
+Disallow: /calendar-sync
+Disallow: /api/
+Disallow: /*.json$
+Disallow: /*?debug=1
+Disallow: /*?test=1
+
+# Sitemap URL
+Sitemap: https://sportskalendar.de/sitemap.xml
+
+# Host Information
 Host: https://sportskalendar.de
-
-

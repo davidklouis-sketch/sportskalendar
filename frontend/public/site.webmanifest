@@ -11,6 +11,8 @@
   "lang": "de",
   "dir": "ltr",
   "categories": ["sports", "lifestyle", "productivity"],
+  "id": "sportskalendar-app",
+  "version": "2.0.0",
   "icons": [
     {
       "src": "/icon-192.png",
