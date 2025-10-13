@@ -45,6 +45,7 @@ import { userRouter } from './routes/user';
 import { liveRouter } from './routes/live';
 import { stripeRouter, handleStripeWebhook } from './routes/stripe';
 import sportsRouter from './routes/sports';
+import { calendarSyncRouter } from './routes/calendar-sync';
 
 // Middleware imports
 import { enhancedSecurityMiddleware, validateJwtSecret } from './middleware/security-enhanced';
@@ -318,6 +319,7 @@ app.use('/api/user', userRouter);
 app.use('/api/live', liveRouter);
 app.use('/api/stripe', stripeRouter);
 app.use('/api/sports', sportsRouter); // TheSportsDB API für Basketball, Hockey, Baseball, Tennis, etc.
+app.use('/api/calendar-sync', calendarSyncRouter); // Calendar Sync für Premium Nutzer
 
 /**
  * PROTECTED ENDPOINT EXAMPLE

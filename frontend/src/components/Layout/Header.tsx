@@ -7,8 +7,8 @@ import { t } from '../../lib/i18n';
 import { useLanguage } from '../../hooks/useLanguage';
 
 interface HeaderProps {
-  currentPage: 'calendar' | 'live' | 'highlights' | 'premium' | 'admin' | 'settings' | 'privacy' | 'contact';
-  onNavigate: (page: 'calendar' | 'live' | 'highlights' | 'premium' | 'admin' | 'settings' | 'privacy' | 'contact') => void;
+  currentPage: 'calendar' | 'live' | 'highlights' | 'premium' | 'admin' | 'settings' | 'calendar-sync' | 'privacy' | 'contact';
+  onNavigate: (page: 'calendar' | 'live' | 'highlights' | 'premium' | 'admin' | 'settings' | 'calendar-sync' | 'privacy' | 'contact') => void;
   onShowLogin?: () => void;
   onShowRegister?: () => void;
 }
@@ -33,6 +33,7 @@ export function Header({ currentPage, onNavigate, onShowLogin, onShowRegister }:
     { key: 'calendar', label: t('calendar'), icon: '📅', requiresAuth: false },
     { key: 'live', label: t('live'), icon: '🔴', requiresAuth: true },
     { key: 'highlights', label: t('highlights'), icon: '🎬', requiresAuth: true },
+    { key: 'calendar-sync', label: 'Kalender-Sync', icon: '🔄', requiresAuth: true, requiresPremium: true },
     { key: 'premium', label: t('premium'), icon: '⭐', requiresAuth: false, hideForPremium: true }
   ];
 
@@ -40,6 +41,10 @@ export function Header({ currentPage, onNavigate, onShowLogin, onShowRegister }:
   const visibleNavigationItems = navigationItems.filter(item => {
     // Hide premium navigation item for premium users
     if (item.hideForPremium && user?.isPremium) {
+      return false;
+    }
+    // Hide calendar-sync for non-premium users
+    if (item.requiresPremium && !user?.isPremium) {
       return false;
     }
     // Standard auth filtering

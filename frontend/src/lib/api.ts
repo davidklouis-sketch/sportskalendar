@@ -305,6 +305,34 @@ export const highlightsApi = {
 };
 
 /**
+ * CALENDAR SYNC API
+ * 
+ * Calendar Sync Endpoints für Premium-Nutzer.
+ */
+export const calendarSyncApi = {
+  // Sync-Status abrufen
+  getSyncStatus: () => api.get('/calendar-sync/status'),
+  
+  // Sync-URL generieren für externe Kalender-Apps
+  getSyncUrl: () => api.get('/calendar-sync/url'),
+  
+  // Kalender exportieren (ICS, JSON, CSV)
+  exportCalendar: (format: 'ics' | 'json' | 'csv') => api.get(`/calendar-sync/export?format=${format}`, { responseType: 'blob' }),
+  
+  // Sync-Einstellungen aktualisieren
+  updateSettings: (settings: any) => api.post('/calendar-sync/settings', settings),
+  
+  // Kalender-Events abrufen
+  getEvents: (startDate?: string, endDate?: string, sport?: string) => {
+    const params = new URLSearchParams();
+    if (startDate) params.append('start', startDate);
+    if (endDate) params.append('end', endDate);
+    if (sport) params.append('sport', sport);
+    return api.get(`/calendar-sync/events?${params.toString()}`);
+  }
+};
+
+/**
  * STRIPE API
  * 
  * Stripe Payment Endpoints für Premium-Subscriptions.

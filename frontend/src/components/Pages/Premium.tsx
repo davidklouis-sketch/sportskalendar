@@ -56,6 +56,14 @@ export function Premium({ }: PremiumProps) {
 
   const features = [
     {
+      title: getCurrentLanguage() === 'de' ? 'Kalender-Synchronisation' : 'Calendar Synchronization',
+      description: getCurrentLanguage() === 'de' 
+        ? 'Synchronisiere deine Lieblings-Teams mit deinem Kalender (Google, Outlook, Apple)'
+        : 'Sync your favorite teams with your calendar (Google, Outlook, Apple)',
+      icon: '🔄',
+      isNew: true
+    },
+    {
       title: t('adFreeExperience'),
       description: getCurrentLanguage() === 'de' 
         ? 'Genieße die App ohne störende Werbung'

@@ -33,6 +33,7 @@ import { Highlights } from './components/Pages/Highlights';
 import { Premium } from './components/Pages/Premium';
 import { Admin } from './components/Pages/Admin';
 import { Settings } from './components/Pages/Settings';
+import CalendarSync from './components/Pages/CalendarSync';
 import { LandingPage } from './components/Pages/LandingPage';
 import Privacy from './components/Pages/Privacy';
 import Contact from './components/Pages/Contact';
@@ -43,7 +44,7 @@ import { AdManager, useAdTrigger, SportsKalendarInterstitial } from './component
 
 // Type Definitions
 type AuthView = 'login' | 'register' | null; // Auth Modal Ansicht (Login, Register oder geschlossen)
-type Page = 'calendar' | 'live' | 'highlights' | 'premium' | 'admin' | 'settings' | 'privacy' | 'contact'; // Verfügbare Seiten
+type Page = 'calendar' | 'live' | 'highlights' | 'premium' | 'admin' | 'settings' | 'calendar-sync' | 'privacy' | 'contact'; // Verfügbare Seiten
 
 function App() {
   // Global State Management
@@ -185,8 +186,8 @@ function App() {
         
         {/* Header mit Navigation und Auth-Buttons */}
         <Header 
-          currentPage={currentPage} 
-          onNavigate={setCurrentPage}
+          currentPage={currentPage as any} 
+          onNavigate={setCurrentPage as any}
           onShowLogin={() => setAuthView('login')}
           onShowRegister={() => setAuthView('register')}
         />
@@ -229,6 +230,30 @@ function App() {
               <h2 className="text-2xl font-bold mb-4">🔒 Anmeldung erforderlich</h2>
               <p className="text-gray-600 dark:text-gray-400 mb-6">
                 Bitte melden Sie sich an, um auf die Einstellungen zuzugreifen.
+              </p>
+              <div className="flex gap-3 justify-center">
+                <button 
+                  onClick={() => setAuthView('login')}
+                  className="btn btn-primary"
+                >
+                  Anmelden
+                </button>
+                <button 
+                  onClick={() => setCurrentPage('calendar')}
+                  className="btn btn-secondary"
+                >
+                  Zurück zum Kalender
+                </button>
+              </div>
+            </div>
+          ) : null}
+          
+          {/* Calendar Sync Page - Premium Required */}
+          {currentPage === 'calendar-sync' && user ? <CalendarSync /> : currentPage === 'calendar-sync' ? (
+            <div className="card p-12 text-center">
+              <h2 className="text-2xl font-bold mb-4">🔒 Anmeldung erforderlich</h2>
+              <p className="text-gray-600 dark:text-gray-400 mb-6">
+                Bitte melden Sie sich an, um auf die Kalender-Sync-Funktion zuzugreifen.
               </p>
               <div className="flex gap-3 justify-center">
                 <button 
