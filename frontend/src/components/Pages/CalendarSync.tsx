@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useAuthStore } from '../../store/useAuthStore';
 import { calendarSyncApi } from '../../lib/api';
 
@@ -37,11 +37,7 @@ const CalendarSync: React.FC = () => {
   const [showInstructions, setShowInstructions] = useState(false);
   // const [selectedFormat, setSelectedFormat] = useState<'ics' | 'json' | 'csv'>('ics');
 
-  useEffect(() => {
-    loadSyncStatus();
-  }, [user]);
-
-  const loadSyncStatus = async () => {
+  const loadSyncStatus = useCallback(async () => {
     try {
       setIsLoading(true);
       console.log('[Calendar Sync Frontend] Loading sync status...');
@@ -74,7 +70,13 @@ const CalendarSync: React.FC = () => {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [user?.id]); // Add dependencies for useCallback
+
+  useEffect(() => {
+    if (user?.id) {
+      loadSyncStatus();
+    }
+  }, [user?.id, loadSyncStatus]); // Include loadSyncStatus as dependency
 
   const handleExport = async (format: 'ics' | 'json' | 'csv') => {
     try {
