@@ -647,7 +647,31 @@ function getTeamVariations(teamName: string): string[] {
     'max verstappen': ['verstappen', 'max'],
     'lewis hamilton': ['hamilton', 'lewis'],
     'charles leclerc': ['leclerc', 'charles'],
-    'lando norris': ['norris', 'lando']
+    'lando norris': ['norris', 'lando'],
+    // NBA Teams
+    'boston celtics': ['celtics', 'boston', 'celts'],
+    'lakers': ['los angeles lakers', 'lal', 'lakers'],
+    'warriors': ['golden state warriors', 'gsw', 'dubs'],
+    'bulls': ['chicago bulls', 'chicago'],
+    'heat': ['miami heat', 'miami'],
+    'nets': ['brooklyn nets', 'brooklyn'],
+    'knicks': ['new york knicks', 'ny knicks', 'knicks'],
+    'raptors': ['toronto raptors', 'toronto'],
+    'pistons': ['detroit pistons', 'detroit'],
+    // NHL Teams
+    'bruins': ['boston bruins', 'boston'],
+    'rangers': ['new york rangers', 'ny rangers'],
+    'maple leafs': ['toronto maple leafs', 'toronto'],
+    'canadiens': ['montreal canadiens', 'montreal'],
+    // MLB Teams
+    'yankees': ['new york yankees', 'ny yankees'],
+    'red sox': ['boston red sox', 'boston'],
+    'dodgers': ['los angeles dodgers', 'la dodgers'],
+    // Tennis Players
+    'novak djokovic': ['djokovic', 'novak'],
+    'rafael nadal': ['nadal', 'rafa'],
+    'roger federer': ['federer', 'roger'],
+    'serena williams': ['serena', 'williams']
   };
   
   for (const [key, values] of Object.entries(mappings)) {
