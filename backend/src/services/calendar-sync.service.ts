@@ -217,6 +217,12 @@ export class CalendarSyncService {
         const transformed = this.transformF1Events(f1Events, team);
         console.log(`[Calendar Sync] Transformed F1 events: ${transformed.length}`);
         events.push(...transformed);
+      } else if (team.sport === 'tennis') {
+        console.log(`[Calendar Sync] Tennis events not yet implemented - skipping`);
+        // TODO: Implement Tennis API when available
+      } else if (team.sport === 'nfl') {
+        console.log(`[Calendar Sync] NFL events not yet implemented - skipping`);
+        // TODO: Implement NFL API when available
       }
     } catch (error) {
       console.error(`Error getting events for ${team.sport}:`, error);
@@ -292,7 +298,27 @@ export class CalendarSyncService {
   }
 
   private transformNHLEvents(nhlEvents: any[], team: any): CalendarEvent[] {
-    return nhlEvents.map(event => ({
+    console.log(`[Calendar Sync] Filtering NHL events for team: ${team.teamName}`);
+    
+    // Filter events that include the selected team
+    const teamEvents = nhlEvents.filter(event => {
+      const homeTeam = event.strHomeTeam?.toLowerCase() || '';
+      const awayTeam = event.strAwayTeam?.toLowerCase() || '';
+      const selectedTeam = team.teamName.toLowerCase();
+      
+      const isMatch = homeTeam.includes(selectedTeam) || awayTeam.includes(selectedTeam) ||
+                     selectedTeam.includes(homeTeam) || selectedTeam.includes(awayTeam);
+      
+      if (isMatch) {
+        console.log(`[Calendar Sync] NHL match found: ${event.strHomeTeam} vs ${event.strAwayTeam} for ${team.teamName}`);
+      }
+      
+      return isMatch;
+    });
+    
+    console.log(`[Calendar Sync] Found ${teamEvents.length} NHL events for ${team.teamName} out of ${nhlEvents.length} total events`);
+    
+    return teamEvents.map(event => ({
       id: `nhl_${event.idEvent}`,
       title: `${event.strHomeTeam} vs ${event.strAwayTeam}`,
       description: `NHL - ${event.strVenue || 'TBD'}`,
@@ -311,7 +337,27 @@ export class CalendarSyncService {
   }
 
   private transformMLBEvents(mlbEvents: any[], team: any): CalendarEvent[] {
-    return mlbEvents.map(event => ({
+    console.log(`[Calendar Sync] Filtering MLB events for team: ${team.teamName}`);
+    
+    // Filter events that include the selected team
+    const teamEvents = mlbEvents.filter(event => {
+      const homeTeam = event.strHomeTeam?.toLowerCase() || '';
+      const awayTeam = event.strAwayTeam?.toLowerCase() || '';
+      const selectedTeam = team.teamName.toLowerCase();
+      
+      const isMatch = homeTeam.includes(selectedTeam) || awayTeam.includes(selectedTeam) ||
+                     selectedTeam.includes(homeTeam) || selectedTeam.includes(awayTeam);
+      
+      if (isMatch) {
+        console.log(`[Calendar Sync] MLB match found: ${event.strHomeTeam} vs ${event.strAwayTeam} for ${team.teamName}`);
+      }
+      
+      return isMatch;
+    });
+    
+    console.log(`[Calendar Sync] Found ${teamEvents.length} MLB events for ${team.teamName} out of ${mlbEvents.length} total events`);
+    
+    return teamEvents.map(event => ({
       id: `mlb_${event.idEvent}`,
       title: `${event.strHomeTeam} vs ${event.strAwayTeam}`,
       description: `MLB - ${event.strVenue || 'TBD'}`,
@@ -328,6 +374,7 @@ export class CalendarSyncService {
       awayScore: event.intAwayScore
     }));
   }
+
 
   private async getFootballEventsFromAPI(leagueId: string): Promise<any[]> {
     try {
