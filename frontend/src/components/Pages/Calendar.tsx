@@ -519,23 +519,28 @@ export function Calendar() {
       // Get current values from state
       const currentTeam = localTeams.find(t => t.sport === selectedSport);
       
+      // If no team found in localTeams, try to get from user.selectedTeams
+      const fallbackTeam = !currentTeam && user?.selectedTeams 
+        ? user.selectedTeams.find(t => t.sport === selectedSport)
+        : currentTeam;
+      
       // Add timeout to prevent hanging
       const timeoutPromise = new Promise<never>((_, reject) => {
         setTimeout(() => reject(new Error('Request timeout')), 15000); // 15 second timeout
       });
       
-      const fetchPromise = highlightsApi.getHighlights(sportMapping[selectedSport], currentTeam?.teamName);
+      const fetchPromise = highlightsApi.getHighlights(sportMapping[selectedSport], fallbackTeam?.teamName);
       const response = await Promise.race([fetchPromise, timeoutPromise]);
       
       let allHighlights = response.data.items || [];
       
       // Additional frontend filtering if needed (backend should handle most filtering now)
-      if (currentTeam?.teamName && allHighlights.length > 0) {
+      if (fallbackTeam?.teamName && allHighlights.length > 0) {
         allHighlights = allHighlights.filter((highlight: Highlight) => {
           const searchText = (highlight.title + ' ' + (highlight.description || '')).toLowerCase();
           
           // Use the same team variations as backend
-          const teamVariations = getTeamVariations(currentTeam.teamName);
+          const teamVariations = getTeamVariations(fallbackTeam.teamName);
           return teamVariations.some(variation => searchText.includes(variation));
         });
       }
@@ -639,12 +644,22 @@ export function Calendar() {
     }
   }, [user?.selectedTeams]);
 
-  // Load highlights when sport selection changes (but only if we have teams)
+  // Load highlights when sport selection changes
   useEffect(() => {
-    if (selectedSport && localTeams.length > 0) {
+    if (selectedSport) {
       loadHighlights();
     }
   }, [selectedSport]);
+
+  // Also load highlights when selectedSportTab changes (for UI consistency)
+  useEffect(() => {
+    if (selectedSportTab) {
+      // Update selectedSport to match selectedSportTab for highlights
+      if (selectedSport !== selectedSportTab) {
+        setSelectedSport(selectedSportTab);
+      }
+    }
+  }, [selectedSportTab]);
 
   // Load teams from API when modal opens
   const loadTeamsFromApi = async () => {
