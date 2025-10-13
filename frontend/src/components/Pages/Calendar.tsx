@@ -16,6 +16,8 @@ interface Event {
   startsAt: string;
   homeTeam?: string;
   awayTeam?: string;
+  homeTeamBadge?: string;
+  awayTeamBadge?: string;
   homeScore?: string | null;
   awayScore?: string | null;
   status?: string;
@@ -1059,9 +1061,42 @@ export function Calendar() {
                                 return (
                                 <div key={event.id} className="group/event flex items-center justify-between p-6 bg-gradient-to-r from-gray-50 to-gray-100 dark:from-gray-700/50 dark:to-gray-700 rounded-2xl hover:from-gray-100 hover:to-gray-200 dark:hover:from-gray-600 dark:hover:to-gray-600 transition-all duration-200 transform hover:scale-[1.02]">
                                   <div className="flex items-center flex-1">
-                                    <div className="w-10 h-10 bg-gradient-to-r from-emerald-500 to-green-600 rounded-2xl flex items-center justify-center mr-4">
-                                      <span className="text-lg">{getSportIcon(selectedSport)}</span>
-                                    </div>
+                                    {/* Premium Feature: Team Logos */}
+                                    {user?.isPremium && (event.homeTeamBadge || event.awayTeamBadge) ? (
+                                      <div className="flex items-center gap-2 mr-4">
+                                        {event.homeTeamBadge && (
+                                          <div className="w-10 h-10 bg-white dark:bg-gray-800 rounded-xl p-1 flex items-center justify-center shadow-sm">
+                                            <img 
+                                              src={event.homeTeamBadge} 
+                                              alt={event.homeTeam || 'Home'} 
+                                              className="w-full h-full object-contain"
+                                              onError={(e) => {
+                                                e.currentTarget.style.display = 'none';
+                                                e.currentTarget.parentElement!.innerHTML = `<span class="text-lg">${getSportIcon(selectedSport)}</span>`;
+                                              }}
+                                            />
+                                          </div>
+                                        )}
+                                        <span className="text-gray-400 dark:text-gray-500 font-bold">vs</span>
+                                        {event.awayTeamBadge && (
+                                          <div className="w-10 h-10 bg-white dark:bg-gray-800 rounded-xl p-1 flex items-center justify-center shadow-sm">
+                                            <img 
+                                              src={event.awayTeamBadge} 
+                                              alt={event.awayTeam || 'Away'} 
+                                              className="w-full h-full object-contain"
+                                              onError={(e) => {
+                                                e.currentTarget.style.display = 'none';
+                                                e.currentTarget.parentElement!.innerHTML = `<span class="text-lg">${getSportIcon(selectedSport)}</span>`;
+                                              }}
+                                            />
+                                          </div>
+                                        )}
+                                      </div>
+                                    ) : (
+                                      <div className="w-10 h-10 bg-gradient-to-r from-emerald-500 to-green-600 rounded-2xl flex items-center justify-center mr-4">
+                                        <span className="text-lg">{getSportIcon(selectedSport)}</span>
+                                      </div>
+                                    )}
                                     <div className="flex-1">
                                       <p className="font-semibold text-gray-900 dark:text-white">{event.title}</p>
                                       <p className="text-sm text-gray-600 dark:text-gray-400">

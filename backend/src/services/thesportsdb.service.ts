@@ -85,6 +85,8 @@ export interface TheSportsDBEvent {
   strAwayTeam: string;          // Auswärts-Team Name
   idHomeTeam: string;           // Heim-Team ID
   idAwayTeam: string;           // Auswärts-Team ID
+  strHomeTeamBadge?: string;    // Heim-Team Logo URL
+  strAwayTeamBadge?: string;    // Auswärts-Team Logo URL
   intHomeScore?: string;        // Heim-Team Score
   intAwayScore?: string;        // Auswärts-Team Score
   strStatus?: string;           // Event-Status (z.B. "Not Started", "In Progress", "Finished")
