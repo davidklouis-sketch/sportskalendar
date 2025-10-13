@@ -15,7 +15,7 @@ highlightsRouter.get('/', async (req, res) => {
   console.log(`[Highlights API] Request for sport: ${sport}, query: ${query}, team: ${team}`);
   
   // Always try to fetch external data first, but with timeout and fallback
-  if (sport && ['F1', 'NFL', 'Fußball', 'Basketball', 'Tennis'].includes(sport)) {
+  if (sport && ['F1', 'NFL', 'Fußball', 'Basketball', 'Tennis', 'NHL', 'MLB'].includes(sport)) {
     try {
       console.log(`[Highlights API] Fetching external highlights for ${sport}`);
       
@@ -147,14 +147,32 @@ const VIDEO_SOURCES = {
     { name: 'Sky Sports', channelId: 'UCVr_x4G5d7b8Z-1Qh8q8Xw', priority: 'medium' }
   ],
   'Basketball': [
-    { name: 'NBA Official', channelId: 'UCVr_x4G5d7b8Z-1Qh8q8Xw', priority: 'high' },
-    { name: 'NBA Highlights', channelId: 'UCVr_x4G5d7b8Z-1Qh8q8Xw', priority: 'high' },
-    { name: 'ESPN', channelId: 'UCVr_x4G5d7b8Z-1Qh8q8Xw', priority: 'medium' }
+    { name: 'NBA Official', channelId: 'UCNBA', priority: 'high' },
+    { name: 'NBA Highlights', channelId: 'UCNBA', priority: 'high' },
+    { name: 'ESPN NBA', channelId: 'UCiWLfSweyRNmLpgEHekhoAg', priority: 'high' },
+    { name: 'Bleacher Report', channelId: 'UCVr_x4G5d7b8Z-1Qh8q8Xw', priority: 'medium' },
+    { name: 'House of Highlights', channelId: 'UCtFh8Pv6QYzS5D2tKbR6yzw', priority: 'medium' }
+  ],
+  'NHL': [
+    { name: 'NHL Official', channelId: 'UCHm6k0Wgx7tVnLqJ3nHxQDQ', priority: 'high' },
+    { name: 'NHL Highlights', channelId: 'UCHm6k0Wgx7tVnLqJ3nHxQDQ', priority: 'high' },
+    { name: 'ESPN NHL', channelId: 'UCiWLfSweyRNmLpgEHekhoAg', priority: 'high' },
+    { name: 'TSN', channelId: 'UCVr_x4G5d7b8Z-1Qh8q8Xw', priority: 'medium' },
+    { name: 'Sportsnet', channelId: 'UCVr_x4G5d7b8Z-1Qh8q8Xw', priority: 'medium' }
+  ],
+  'MLB': [
+    { name: 'MLB Official', channelId: 'UCVr_x4G5d7b8Z-1Qh8q8Xw', priority: 'high' },
+    { name: 'MLB Highlights', channelId: 'UCVr_x4G5d7b8Z-1Qh8q8Xw', priority: 'high' },
+    { name: 'ESPN MLB', channelId: 'UCiWLfSweyRNmLpgEHekhoAg', priority: 'high' },
+    { name: 'MLB Network', channelId: 'UCVr_x4G5d7b8Z-1Qh8q8Xw', priority: 'medium' },
+    { name: 'Bleacher Report MLB', channelId: 'UCVr_x4G5d7b8Z-1Qh8q8Xw', priority: 'medium' }
   ],
   'Tennis': [
     { name: 'ATP Tour', channelId: 'UCVr_x4G5d7b8Z-1Qh8q8Xw', priority: 'high' },
     { name: 'WTA Tour', channelId: 'UCVr_x4G5d7b8Z-1Qh8q8Xw', priority: 'high' },
-    { name: 'Tennis Channel', channelId: 'UCVr_x4G5d7b8Z-1Qh8q8Xw', priority: 'medium' }
+    { name: 'Tennis Channel', channelId: 'UCVr_x4G5d7b8Z-1Qh8q8Xw', priority: 'high' },
+    { name: 'ESPN Tennis', channelId: 'UCiWLfSweyRNmLpgEHekhoAg', priority: 'medium' },
+    { name: 'Eurosport Tennis', channelId: 'UCVr_x4G5d7b8Z-1Qh8q8Xw', priority: 'medium' }
   ]
 };
 
@@ -180,12 +198,26 @@ const NEWS_SOURCES = {
   'Basketball': [
     { name: 'ESPN NBA', rssUrl: 'https://www.espn.com/nba/rss.xml', priority: 'high' },
     { name: 'NBA News', rssUrl: 'https://www.nba.com/news/rss.xml', priority: 'high' },
-    { name: 'CBS Sports NBA', rssUrl: 'https://www.cbssports.com/rss/headlines/nba/', priority: 'medium' }
+    { name: 'CBS Sports NBA', rssUrl: 'https://www.cbssports.com/rss/headlines/nba/', priority: 'medium' },
+    { name: 'Bleacher Report NBA', rssUrl: 'https://bleacherreport.com/nba/rss', priority: 'medium' }
+  ],
+  'NHL': [
+    { name: 'ESPN NHL', rssUrl: 'https://www.espn.com/nhl/rss.xml', priority: 'high' },
+    { name: 'NHL News', rssUrl: 'https://www.nhl.com/news/rss', priority: 'high' },
+    { name: 'TSN Hockey', rssUrl: 'https://www.tsn.ca/hockey/rss', priority: 'high' },
+    { name: 'Sportsnet NHL', rssUrl: 'https://www.sportsnet.ca/hockey/nhl/rss/', priority: 'medium' }
+  ],
+  'MLB': [
+    { name: 'ESPN MLB', rssUrl: 'https://www.espn.com/mlb/rss.xml', priority: 'high' },
+    { name: 'MLB News', rssUrl: 'https://www.mlb.com/news/rss', priority: 'high' },
+    { name: 'CBS Sports MLB', rssUrl: 'https://www.cbssports.com/rss/headlines/mlb/', priority: 'medium' },
+    { name: 'Bleacher Report MLB', rssUrl: 'https://bleacherreport.com/mlb/rss', priority: 'medium' }
   ],
   'Tennis': [
     { name: 'ATP News', rssUrl: 'https://www.atptour.com/en/news/rss.xml', priority: 'high' },
     { name: 'WTA News', rssUrl: 'https://www.wtatennis.com/news/rss.xml', priority: 'high' },
-    { name: 'ESPN Tennis', rssUrl: 'https://www.espn.com/tennis/rss.xml', priority: 'medium' }
+    { name: 'ESPN Tennis', rssUrl: 'https://www.espn.com/tennis/rss.xml', priority: 'medium' },
+    { name: 'Tennis Channel News', rssUrl: 'https://www.tennis.com/news/rss.xml', priority: 'medium' }
   ]
 };
 
@@ -502,6 +534,60 @@ function generateFallbackHighlights(sport: string, teamName?: string): Highlight
         createdAt: new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString(),
         priority: 'high',
         type: 'news'
+      },
+      {
+        id: `fallback_basketball_2_${Date.now()}`,
+        title: 'NBA Top 10 Plays der Woche',
+        url: 'https://www.nba.com/news/highlights',
+        sport: 'Basketball',
+        description: 'Die spektakulärsten Spielzüge der NBA-Woche',
+        createdAt: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString(),
+        priority: 'high',
+        type: 'news'
+      }
+    ],
+    'NHL': [
+      {
+        id: `fallback_nhl_1_${Date.now()}`,
+        title: 'NHL Highlights - Best Goals',
+        url: 'https://www.nhl.com/news/highlights',
+        sport: 'NHL',
+        description: 'Die besten Tore der NHL',
+        createdAt: new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString(),
+        priority: 'high',
+        type: 'news'
+      },
+      {
+        id: `fallback_nhl_2_${Date.now()}`,
+        title: 'NHL Top Saves - Spectacular Goalkeeping',
+        url: 'https://www.nhl.com/news/highlights',
+        sport: 'NHL',
+        description: 'Die spektakulärsten Paraden der NHL-Torhüter',
+        createdAt: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString(),
+        priority: 'high',
+        type: 'news'
+      }
+    ],
+    'MLB': [
+      {
+        id: `fallback_mlb_1_${Date.now()}`,
+        title: 'MLB Highlights - Home Runs',
+        url: 'https://www.mlb.com/news/highlights',
+        sport: 'MLB',
+        description: 'Die besten Home Runs der MLB',
+        createdAt: new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString(),
+        priority: 'high',
+        type: 'news'
+      },
+      {
+        id: `fallback_mlb_2_${Date.now()}`,
+        title: 'MLB Web Gems - Amazing Defensive Plays',
+        url: 'https://www.mlb.com/news/highlights',
+        sport: 'MLB',
+        description: 'Die spektakulärsten Defensivaktionen der MLB',
+        createdAt: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString(),
+        priority: 'high',
+        type: 'news'
       }
     ],
     'Tennis': [
@@ -512,6 +598,16 @@ function generateFallbackHighlights(sport: string, teamName?: string): Highlight
         sport: 'Tennis',
         description: 'Die besten Punkte des Tennis',
         createdAt: new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString(),
+        priority: 'high',
+        type: 'news'
+      },
+      {
+        id: `fallback_tennis_2_${Date.now()}`,
+        title: 'Tennis - Best Rallies & Shots',
+        url: 'https://www.wtatennis.com/news/highlights',
+        sport: 'Tennis',
+        description: 'Die spektakulärsten Ballwechsel und Schläge',
+        createdAt: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString(),
         priority: 'high',
         type: 'news'
       }
