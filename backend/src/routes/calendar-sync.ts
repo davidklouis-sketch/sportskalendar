@@ -100,6 +100,56 @@ calendarSyncRouter.get('/debug', (req, res) => {
   });
 });
 
+// Debug endpoint to check user's selected teams (requires auth)
+calendarSyncRouter.get('/debug-user', requireAuth, async (req, res) => {
+  try {
+    const userId = (req as any).user.id;
+    console.log(`[Calendar Sync] Debug user endpoint called for user ${userId}`);
+    
+    // Get user data from database
+    const { UserRepository } = await import('../database/repositories/userRepository');
+    const user = await UserRepository.findById(userId);
+    
+    if (!user) {
+      return res.status(404).json({ 
+        error: 'User not found',
+        userId: userId
+      });
+    }
+    
+    // Try to get events for this user
+    const calendarSyncService = new CalendarSyncService();
+    const events = await calendarSyncService.getCalendarEvents(userId);
+    
+    res.json({
+      status: 'OK',
+      userId: userId,
+      user: {
+        id: user.id,
+        email: user.email,
+        displayName: user.displayName,
+        isPremium: user.isPremium,
+        selectedTeams: user.selectedTeams || [],
+        selectedTeamsCount: user.selectedTeams?.length || 0
+      },
+      events: {
+        count: events.length,
+        sample: events.slice(0, 3) // First 3 events as sample
+      },
+      environment: {
+        FOOTBALL_DATA_KEY: process.env.FOOTBALL_DATA_KEY ? 'SET' : 'NOT_SET',
+        API_FOOTBALL_KEY: process.env.API_FOOTBALL_KEY ? 'SET' : 'NOT_SET'
+      }
+    });
+  } catch (error) {
+    console.error('[Calendar Sync] Debug user error:', error);
+    res.status(500).json({ 
+      error: 'Debug failed', 
+      message: error instanceof Error ? error.message : 'Unknown error'
+    });
+  }
+});
+
 // Simple ICS test endpoint without authentication
 calendarSyncRouter.get('/test.ics', (req, res) => {
   console.log('[Calendar Sync] Test ICS endpoint called');
