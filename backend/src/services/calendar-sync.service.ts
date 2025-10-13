@@ -146,7 +146,7 @@ export class CalendarSyncService {
     try {
       if (team.sport === 'football') {
         // Get football events from TheSportsDB or Football-Data API
-        const footballEvents = await this.theSportsDBService.getFootballEvents(team.leagueId);
+        const footballEvents = await this.theSportsDBService.getFootballEvents(team.leagueId, '2025-26');
         events.push(...this.transformFootballEvents(footballEvents, team));
       } else if (team.sport === 'nba') {
         const nbaEvents = await this.theSportsDBService.getNBAEvents('2025-26');
