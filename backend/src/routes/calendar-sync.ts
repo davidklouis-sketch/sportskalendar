@@ -242,7 +242,17 @@ async function testFootballAPIs(team: any) {
     }
     
     console.log(`[Debug Football] Using season: ${season} (same as Calendar-Sync)`);
-    const footballEvents = await theSportsDBService.getFootballEventsMultipleLeagues([team.leagueId], season);
+    
+    // Map frontend league IDs to TheSportsDB league IDs
+    const leagueMapping: Record<string, string> = {
+      '78': '4331',  // Frontend Liga 78 -> TheSportsDB Bundesliga 4331
+      '39': '4328',  // Frontend Liga 39 -> TheSportsDB Premier League 4328
+    };
+    
+    const theSportsDBLeagueId = leagueMapping[team.leagueId] || team.leagueId;
+    console.log(`[Debug Football] Mapped league ${team.leagueId} -> ${theSportsDBLeagueId}`);
+    
+    const footballEvents = await theSportsDBService.getFootballEventsMultipleLeagues([theSportsDBLeagueId], season);
     
     results.tests.theSportsDB = {
       season: season,

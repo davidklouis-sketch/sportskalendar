@@ -202,7 +202,17 @@ export class CalendarSyncService {
         }
         
         console.log(`[Calendar Sync] Using football season: ${season} (exact same logic as app)`);
-        const footballEvents = await this.theSportsDBService.getFootballEventsMultipleLeagues([team.leagueId], season);
+        
+        // Map frontend league IDs to TheSportsDB league IDs
+        const leagueMapping: Record<string, string> = {
+          '78': '4331',  // Frontend Liga 78 -> TheSportsDB Bundesliga 4331
+          '39': '4328',  // Frontend Liga 39 -> TheSportsDB Premier League 4328
+        };
+        
+        const theSportsDBLeagueId = leagueMapping[team.leagueId] || team.leagueId;
+        console.log(`[Calendar Sync] Mapped league ${team.leagueId} -> ${theSportsDBLeagueId}`);
+        
+        const footballEvents = await this.theSportsDBService.getFootballEventsMultipleLeagues([theSportsDBLeagueId], season);
         console.log(`[Calendar Sync] Raw football events: ${footballEvents.length}`);
         const transformed = this.transformFootballEvents(footballEvents, team);
         console.log(`[Calendar Sync] Transformed football events: ${transformed.length}`);
