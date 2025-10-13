@@ -66,8 +66,14 @@ export class CalendarSyncService {
 
   async generateSyncUrl(userId: string): Promise<string> {
     // Generate a unique URL for calendar subscription
-    const baseUrl = process.env.FRONTEND_URL || 'https://sportskalendar.de';
-    const syncUrl = `${baseUrl}/api/calendar-sync/export?user=${userId}&format=ics&token=${this.generateSyncToken(userId)}`;
+    // Always use HTTPS for calendar sync URLs
+    const baseUrl = process.env.API_URL || 'https://api.sportskalendar.de';
+    
+    // Ensure HTTPS is used
+    const httpsUrl = baseUrl.startsWith('https://') ? baseUrl : baseUrl.replace('http://', 'https://');
+    
+    const syncUrl = `${httpsUrl}/api/calendar-sync/export?user=${userId}&format=ics&token=${this.generateSyncToken(userId)}`;
+    console.log(`[Calendar Sync] Generated HTTPS sync URL: ${syncUrl}`);
     return syncUrl;
   }
 
