@@ -44,11 +44,29 @@ const CalendarSync: React.FC = () => {
   const loadSyncStatus = async () => {
     try {
       setIsLoading(true);
+      console.log('[Calendar Sync Frontend] Loading sync status...');
+      
+      // First test if the API endpoint is available
+      try {
+        const testResponse = await fetch('/api/calendar-sync/test');
+        const testData = await testResponse.json();
+        console.log('[Calendar Sync Frontend] Test endpoint response:', testData);
+      } catch (testError) {
+        console.error('[Calendar Sync Frontend] Test endpoint failed:', testError);
+      }
+      
       const response = await calendarSyncApi.getSyncStatus();
+      console.log('[Calendar Sync Frontend] Sync status response:', response.data);
       setSyncStatus(response.data);
-    } catch (error) {
-      console.error('Failed to load sync status:', error);
-      setError('Fehler beim Laden der Kalender-Sync-Status');
+    } catch (error: any) {
+      console.error('[Calendar Sync Frontend] Failed to load sync status:', error);
+      console.error('[Calendar Sync Frontend] Error details:', {
+        message: error.message,
+        status: error.response?.status,
+        statusText: error.response?.statusText,
+        data: error.response?.data
+      });
+      setError(`Fehler beim Laden der Kalender-Sync-Status: ${error.message}`);
     } finally {
       setIsLoading(false);
     }
