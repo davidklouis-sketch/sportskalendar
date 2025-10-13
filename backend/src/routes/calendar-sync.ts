@@ -15,6 +15,17 @@ calendarSyncRouter.get('/test', (req, res) => {
   });
 });
 
+// OPTIONS endpoint for CORS preflight requests
+calendarSyncRouter.options('/export', (req, res) => {
+  console.log('[Calendar Sync] OPTIONS preflight request');
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  res.setHeader('Access-Control-Allow-Methods', 'GET, OPTIONS');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization, Cookie');
+  res.setHeader('Access-Control-Allow-Credentials', 'true');
+  res.setHeader('Access-Control-Max-Age', '86400'); // 24 hours
+  res.status(200).end();
+});
+
 // Generate iCal/ICS file for user's selected teams
 calendarSyncRouter.get('/export', requireAuth, async (req, res) => {
   try {
@@ -27,8 +38,14 @@ calendarSyncRouter.get('/export', requireAuth, async (req, res) => {
     const result = await calendarSyncService.generateCalendarExport(userId, format);
     
     if (format === 'ics') {
+      // Calendar apps expect specific headers for ICS files
       res.setHeader('Content-Type', 'text/calendar; charset=utf-8');
-      res.setHeader('Content-Disposition', `attachment; filename="sportskalendar-${userId}.ics"`);
+      res.setHeader('Cache-Control', 'public, max-age=3600'); // Cache for 1 hour
+      res.setHeader('Access-Control-Allow-Origin', '*'); // Allow cross-origin requests
+      res.setHeader('Access-Control-Allow-Methods', 'GET, OPTIONS');
+      res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+      
+      // Don't set Content-Disposition for calendar sync - apps expect inline content
       res.send(result);
     } else if (format === 'json') {
       res.setHeader('Content-Type', 'application/json');

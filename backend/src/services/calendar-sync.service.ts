@@ -310,32 +310,54 @@ export class CalendarSyncService {
   private generateICS(events: CalendarEvent[], userEmail: string): string {
     const now = new Date().toISOString().replace(/[-:]/g, '').split('.')[0] + 'Z';
     
-    let ics = `BEGIN:VCALENDAR
-VERSION:2.0
-PRODID:-//SportsKalendar//Sports Calendar//EN
-CALSCALE:GREGORIAN
-METHOD:PUBLISH
-X-WR-CALNAME:SportsKalendar
-X-WR-CALDESC:Sports Calendar for your favorite teams
-X-WR-TIMEZONE:Europe/Berlin
-`;
+    // Use proper CRLF line endings for ICS format
+    const crlf = '\r\n';
+    
+    let ics = [
+      'BEGIN:VCALENDAR',
+      'VERSION:2.0',
+      'PRODID:-//SportsKalendar//Sports Calendar//EN',
+      'CALSCALE:GREGORIAN',
+      'METHOD:PUBLISH',
+      'X-WR-CALNAME:SportsKalendar',
+      'X-WR-CALDESC:Sports Calendar for your favorite teams',
+      'X-WR-TIMEZONE:Europe/Berlin',
+      'X-WR-RELCALID:sportskalendar-calendar',
+      'REFRESH-INTERVAL;VALUE=DURATION:PT1H',
+      'X-PUBLISHED-TTL:PT1H'
+    ].join(crlf) + crlf;
 
     events.forEach(event => {
       const startDate = event.startDate.replace(/[-:]/g, '').split('.')[0] + 'Z';
       const endDate = event.endDate.replace(/[-:]/g, '').split('.')[0] + 'Z';
       
-      ics += `BEGIN:VEVENT
-UID:${event.id}@sportskalendar.de
-DTSTAMP:${now}
-DTSTART:${startDate}
-DTEND:${endDate}
-SUMMARY:${event.title}
-DESCRIPTION:${event.description || ''}
-LOCATION:${event.location || ''}
-URL:${event.url || ''}
-STATUS:${event.status === 'Finished' ? 'CONFIRMED' : 'TENTATIVE'}
-END:VEVENT
-`;
+      // Escape special characters for ICS format
+      const escapeICS = (text: string) => {
+        return text
+          .replace(/\\/g, '\\\\')
+          .replace(/;/g, '\\;')
+          .replace(/,/g, '\\,')
+          .replace(/\n/g, '\\n')
+          .replace(/\r/g, '');
+      };
+      
+      const eventLines = [
+        'BEGIN:VEVENT',
+        `UID:${event.id}@sportskalendar.de`,
+        `DTSTAMP:${now}`,
+        `DTSTART:${startDate}`,
+        `DTEND:${endDate}`,
+        `SUMMARY:${escapeICS(event.title)}`,
+        `DESCRIPTION:${escapeICS(event.description || '')}`,
+        `LOCATION:${escapeICS(event.location || '')}`,
+        event.url ? `URL:${escapeICS(event.url)}` : '',
+        `STATUS:${event.status === 'Finished' ? 'CONFIRMED' : 'TENTATIVE'}`,
+        'SEQUENCE:0',
+        'TRANSP:OPAQUE',
+        'END:VEVENT'
+      ].filter(line => line !== ''); // Remove empty lines
+      
+      ics += eventLines.join(crlf) + crlf;
     });
 
     ics += 'END:VCALENDAR';
