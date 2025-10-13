@@ -130,26 +130,23 @@ function App() {
    * 
    * Navigiert zur Calendar-Seite, wenn User sich erfolgreich anmeldet.
    * Besonders wichtig für Mobile Devices, wo die Navigation manchmal nicht funktioniert.
+   * Nur ausführen wenn User auf einer nicht-authentifizierten Seite ist.
    */
   useEffect(() => {
-    if (isAuthenticated && user && !isInitializing) {
-      // User ist eingeloggt -> navigiere zur Calendar-Seite
-      setCurrentPage('calendar');
+    if (isAuthenticated && user && !isInitializing && currentPage === 'calendar') {
+      // User ist eingeloggt und auf Calendar-Seite -> alles OK
+      return;
     }
-  }, [isAuthenticated, user, isInitializing]);
-
-  /**
-   * EFFECT: Fallback Navigation für Mobile Login
-   * 
-   * Zusätzlicher Effekt, der sicherstellt, dass nach dem Login zur Calendar-Seite navigiert wird.
-   * Wird ausgelöst, wenn der User authentifiziert ist und das Auth-Modal geschlossen wird.
-   */
-  useEffect(() => {
-    if (isAuthenticated && user && !authView && !isInitializing) {
-      // User ist eingeloggt, kein Auth-Modal offen -> navigiere zur Calendar-Seite
-      setCurrentPage('calendar');
+    
+    if (isAuthenticated && user && !isInitializing && !authView) {
+      // User ist eingeloggt, kein Auth-Modal offen, aber nicht auf Calendar-Seite
+      // Nur navigieren wenn es sich um eine Authentifizierung handelt, nicht um normale Navigation
+      const isAuthPage = currentPage === 'calendar' || currentPage === 'live' || currentPage === 'highlights' || currentPage === 'settings' || currentPage === 'calendar-sync';
+      if (!isAuthPage) {
+        setCurrentPage('calendar');
+      }
     }
-  }, [isAuthenticated, user, authView, isInitializing]);
+  }, [isAuthenticated, user, isInitializing, authView, currentPage]);
 
   /**
    * RENDER: Loading Screen
@@ -188,9 +185,9 @@ function App() {
         <AuthModal
           onClose={() => setAuthView(null)}
           onSuccess={() => {
-            // After successful login, close auth modal and navigate to calendar
+            // After successful login, close auth modal
             setAuthView(null);
-            setCurrentPage('calendar');
+            // Don't force navigation - let the useEffect handle it
           }}
           initialMode={authView}
         />
