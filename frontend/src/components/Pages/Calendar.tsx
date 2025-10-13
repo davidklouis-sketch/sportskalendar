@@ -502,7 +502,14 @@ export function Calendar() {
 
   // Load highlights for selected sport
   const loadHighlights = async () => {
-    if (!selectedSport) return;
+    if (!selectedSport) {
+      console.log('[Calendar Highlights] No selectedSport, skipping highlights load');
+      return;
+    }
+    
+    console.log('[Calendar Highlights] Loading highlights for sport:', selectedSport);
+    console.log('[Calendar Highlights] localTeams:', localTeams);
+    console.log('[Calendar Highlights] user.selectedTeams:', user?.selectedTeams);
     
     setIsLoadingHighlights(true);
     try {
@@ -518,21 +525,25 @@ export function Calendar() {
 
       // Get current values from state
       const currentTeam = localTeams.find(t => t.sport === selectedSport);
+      console.log('[Calendar Highlights] currentTeam from localTeams:', currentTeam);
       
       // If no team found in localTeams, try to get from user.selectedTeams
       const fallbackTeam = !currentTeam && user?.selectedTeams 
         ? user.selectedTeams.find(t => t.sport === selectedSport)
         : currentTeam;
+      console.log('[Calendar Highlights] fallbackTeam:', fallbackTeam);
       
       // Add timeout to prevent hanging
       const timeoutPromise = new Promise<never>((_, reject) => {
         setTimeout(() => reject(new Error('Request timeout')), 15000); // 15 second timeout
       });
       
+      console.log('[Calendar Highlights] Calling API with sport:', sportMapping[selectedSport], 'team:', fallbackTeam?.teamName);
       const fetchPromise = highlightsApi.getHighlights(sportMapping[selectedSport], fallbackTeam?.teamName);
       const response = await Promise.race([fetchPromise, timeoutPromise]);
       
       let allHighlights = response.data.items || [];
+      console.log('[Calendar Highlights] API response items:', allHighlights.length);
       
       // Additional frontend filtering if needed (backend should handle most filtering now)
       if (fallbackTeam?.teamName && allHighlights.length > 0) {
@@ -545,9 +556,10 @@ export function Calendar() {
         });
       }
       
+      console.log('[Calendar Highlights] Final highlights count:', allHighlights.length);
       setHighlights(allHighlights);
     } catch (error) {
-      console.error('Failed to load highlights:', error);
+      console.error('[Calendar Highlights] Failed to load highlights:', error);
       setHighlights([]);
     } finally {
       setIsLoadingHighlights(false);
@@ -646,6 +658,7 @@ export function Calendar() {
 
   // Load highlights when sport selection changes
   useEffect(() => {
+    console.log('[Calendar Highlights] selectedSport changed:', selectedSport);
     if (selectedSport) {
       loadHighlights();
     }
@@ -653,9 +666,11 @@ export function Calendar() {
 
   // Also load highlights when selectedSportTab changes (for UI consistency)
   useEffect(() => {
+    console.log('[Calendar Highlights] selectedSportTab changed:', selectedSportTab);
     if (selectedSportTab) {
       // Update selectedSport to match selectedSportTab for highlights
       if (selectedSport !== selectedSportTab) {
+        console.log('[Calendar Highlights] Syncing selectedSport to selectedSportTab');
         setSelectedSport(selectedSportTab);
       }
     }
