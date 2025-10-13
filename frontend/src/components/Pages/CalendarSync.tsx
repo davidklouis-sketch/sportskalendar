@@ -93,9 +93,10 @@ const CalendarSync: React.FC = () => {
       link.click();
       document.body.removeChild(link);
       window.URL.revokeObjectURL(url);
-    } catch (error) {
+    } catch (error: unknown) {
       console.error('Export failed:', error);
-      setError('Export fehlgeschlagen');
+      const errorMessage = error instanceof Error ? error.message : 'Unbekannter Fehler';
+      setError(`Export fehlgeschlagen: ${errorMessage}`);
     }
   };
 
@@ -105,9 +106,10 @@ const CalendarSync: React.FC = () => {
       setInstructions(response.data.instructions);
       setSyncStatus(prev => prev ? { ...prev, syncUrl: response.data.syncUrl } : null);
       setShowInstructions(true);
-    } catch (error) {
+    } catch (error: unknown) {
       console.error('Failed to get sync URL:', error);
-      setError('Fehler beim Generieren der Sync-URL');
+      const errorMessage = error instanceof Error ? error.message : 'Unbekannter Fehler';
+      setError(`Fehler beim Generieren der Sync-URL: ${errorMessage}`);
     }
   };
 
@@ -121,8 +123,10 @@ const CalendarSync: React.FC = () => {
       setTimeout(() => {
         button.textContent = originalText;
       }, 2000);
-    } catch (error) {
+    } catch (error: unknown) {
       console.error('Failed to copy:', error);
+      const errorMessage = error instanceof Error ? error.message : 'Unbekannter Fehler';
+      console.warn('Copy to clipboard failed:', errorMessage);
     }
   };
 
