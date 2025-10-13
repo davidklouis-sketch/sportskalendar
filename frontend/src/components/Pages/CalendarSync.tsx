@@ -209,46 +209,46 @@ const CalendarSync: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-dark-900 via-dark-800 to-dark-900 py-8">
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 via-gray-100 to-gray-50 dark:from-dark-900 dark:via-dark-800 dark:to-dark-900 py-8">
       <div className="max-w-4xl mx-auto px-4">
         <div className="text-center mb-8">
           <h1 className="heading-sport text-4xl font-bold mb-4">📅 Kalender-Sync</h1>
-          <p className="text-gray-300 text-lg">
+          <p className="text-gray-600 dark:text-gray-300 text-lg">
             Synchronisiere deine Lieblings-Teams mit deinem Kalender
           </p>
         </div>
 
         {/* Status Overview */}
         <div className="card p-8 mb-6">
-          <h2 className="text-xl font-semibold text-gray-900 mb-4">Sync-Status</h2>
+          <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-4">Sync-Status</h2>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             <div className="text-center">
               <div className="text-2xl font-bold text-blue-600">{syncStatus.totalEvents}</div>
-              <div className="text-sm text-gray-600">Gesamt Events</div>
+              <div className="text-sm text-gray-600 dark:text-gray-300">Gesamt Events</div>
             </div>
             <div className="text-center">
               <div className="text-2xl font-bold text-green-600">{syncStatus.upcomingEvents}</div>
-              <div className="text-sm text-gray-600">Bevorstehende</div>
+              <div className="text-sm text-gray-600 dark:text-gray-300">Bevorstehende</div>
             </div>
             <div className="text-center">
               <div className="text-2xl font-bold text-purple-600">
                 {new Date(syncStatus.lastSync).toLocaleDateString('de-DE')}
               </div>
-              <div className="text-sm text-gray-600">Letzter Sync</div>
+              <div className="text-sm text-gray-600 dark:text-gray-300">Letzter Sync</div>
             </div>
             <div className="text-center">
               <div className="text-2xl font-bold text-orange-600">
                 {syncStatus.canSync ? '✅' : '❌'}
               </div>
-              <div className="text-sm text-gray-600">Sync aktiv</div>
+              <div className="text-sm text-gray-600 dark:text-gray-300">Sync aktiv</div>
             </div>
           </div>
         </div>
 
         {/* Export Options */}
-        <div className="bg-white rounded-lg shadow-md p-6 mb-6">
-          <h2 className="text-xl font-semibold text-gray-900 mb-4">📥 Kalender exportieren</h2>
-          <p className="text-gray-600 mb-4">
+        <div className="card p-6 mb-6">
+          <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-4">📥 Kalender exportieren</h2>
+          <p className="text-gray-600 dark:text-gray-300 mb-4">
             Lade deine Sport-Events als Datei herunter und importiere sie in deinen Kalender.
           </p>
           
@@ -278,9 +278,9 @@ const CalendarSync: React.FC = () => {
         </div>
 
         {/* Live Sync */}
-        <div className="bg-white rounded-lg shadow-md p-6 mb-6">
-          <h2 className="text-xl font-semibold text-gray-900 mb-4">🔄 Live-Synchronisation</h2>
-          <p className="text-gray-600 mb-4">
+        <div className="card p-6 mb-6">
+          <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-4">🔄 Live-Synchronisation</h2>
+          <p className="text-gray-600 dark:text-gray-300 mb-4">
             Abonniere deinen Kalender für automatische Updates in deinen Kalender-Apps.
           </p>
           
@@ -357,8 +357,8 @@ const CalendarSync: React.FC = () => {
         </div>
 
         {/* Settings */}
-        <div className="bg-white rounded-lg shadow-md p-6">
-          <h2 className="text-xl font-semibold text-gray-900 mb-4">⚙️ Sync-Einstellungen</h2>
+        <div className="card p-6">
+          <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-4">⚙️ Sync-Einstellungen</h2>
           <div className="grid md:grid-cols-2 gap-6">
             <div>
               <h3 className="font-medium text-gray-900 mb-3">Event-Einstellungen</h3>

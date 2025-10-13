@@ -119,6 +119,23 @@ function App() {
     checkAuth();
   }, [isAuthenticated, setLoading, setUser, user]);
 
+  /**
+   * EFFECT: Navigation nach erfolgreichem Login
+   * 
+   * Navigiert zur Calendar-Seite, wenn User sich erfolgreich anmeldet.
+   * Besonders wichtig für Mobile Devices, wo die Navigation manchmal nicht funktioniert.
+   */
+  useEffect(() => {
+    if (isAuthenticated && user && currentPage === 'calendar') {
+      // User ist eingeloggt und auf Calendar-Seite -> alles OK
+      return;
+    }
+    
+    if (isAuthenticated && user && !isInitializing) {
+      // User ist eingeloggt, aber nicht auf Calendar-Seite -> navigiere dorthin
+      setCurrentPage('calendar');
+    }
+  }, [isAuthenticated, user, isInitializing, currentPage]);
 
   /**
    * RENDER: Loading Screen
@@ -156,6 +173,10 @@ function App() {
         </div>
         <AuthModal
           onClose={() => setAuthView(null)}
+          onSuccess={() => {
+            // After successful login, navigate to calendar
+            setCurrentPage('calendar');
+          }}
           initialMode={authView}
         />
       </>

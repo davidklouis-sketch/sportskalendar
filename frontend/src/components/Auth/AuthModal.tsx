@@ -4,10 +4,11 @@ import { useAuthStore } from '../../store/useAuthStore';
 
 interface AuthModalProps {
   onClose: () => void;
+  onSuccess?: () => void;
   initialMode?: 'login' | 'register';
 }
 
-export function AuthModal({ onClose, initialMode = 'login' }: AuthModalProps) {
+export function AuthModal({ onClose, onSuccess, initialMode = 'login' }: AuthModalProps) {
   const [mode, setMode] = useState<'login' | 'register'>(initialMode);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -38,7 +39,12 @@ export function AuthModal({ onClose, initialMode = 'login' }: AuthModalProps) {
       } else {
         await authApi.register({ email, password, displayName });
       }
+      
+      // After successful login/register, close modal and call success callback
       onClose();
+      if (onSuccess) {
+        onSuccess();
+      }
     } catch (err) {
       const error = err as { response?: { data?: { message?: string } } };
       setError(error.response?.data?.message || `${mode === 'login' ? 'Login' : 'Registrierung'} fehlgeschlagen`);
