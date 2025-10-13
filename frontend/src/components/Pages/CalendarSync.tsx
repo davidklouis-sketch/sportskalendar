@@ -104,13 +104,27 @@ const CalendarSync: React.FC = () => {
 
   const handleGetSyncUrl = async () => {
     try {
+      console.log('[Calendar Sync Frontend] Starting sync URL generation...');
       const response = await calendarSyncApi.getSyncUrl();
+      console.log('[Calendar Sync Frontend] Sync URL response:', response.data);
+      
       setInstructions(response.data.instructions);
       setSyncStatus(prev => prev ? { ...prev, syncUrl: response.data.syncUrl } : null);
       setShowInstructions(true);
+      
+      console.log('[Calendar Sync Frontend] Sync URL generated successfully:', response.data.syncUrl);
     } catch (error: unknown) {
-      console.error('Failed to get sync URL:', error);
+      console.error('[Calendar Sync Frontend] Failed to get sync URL:', error);
       const errorMessage = error instanceof Error ? error.message : 'Unbekannter Fehler';
+      const errorResponse = error && typeof error === 'object' && 'response' in error ? (error as any).response : null;
+      
+      console.error('[Calendar Sync Frontend] Error details:', {
+        message: errorMessage,
+        status: errorResponse?.status,
+        statusText: errorResponse?.statusText,
+        data: errorResponse?.data
+      });
+      
       setError(`Fehler beim Generieren der Sync-URL: ${errorMessage}`);
     }
   };

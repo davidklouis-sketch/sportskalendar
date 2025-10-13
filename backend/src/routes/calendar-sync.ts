@@ -55,11 +55,15 @@ calendarSyncRouter.get('/url', requireAuth, async (req, res) => {
     const userId = (req as any).user.id;
     
     console.log(`[Calendar Sync] URL request from user ${userId}`);
+    console.log(`[Calendar Sync] Request headers:`, req.headers);
+    console.log(`[Calendar Sync] Request cookies:`, req.cookies);
     
     const calendarSyncService = new CalendarSyncService();
     const syncUrl = await calendarSyncService.generateSyncUrl(userId);
     
-    res.json({ 
+    console.log(`[Calendar Sync] Generated sync URL:`, syncUrl);
+    
+    const response = { 
       syncUrl,
       instructions: {
         google: 'Copy the URL and add it to Google Calendar as a new calendar by URL',
@@ -67,12 +71,16 @@ calendarSyncRouter.get('/url', requireAuth, async (req, res) => {
         apple: 'Copy the URL and add it to Apple Calendar as a new calendar subscription',
         general: 'Use this URL to subscribe to your sports calendar in any calendar app'
       }
-    });
+    };
     
-    console.log(`[Calendar Sync] Sync URL generated for user ${userId}`);
+    console.log(`[Calendar Sync] Response data:`, response);
+    res.json(response);
+    
+    console.log(`[Calendar Sync] Sync URL generated successfully for user ${userId}`);
   } catch (error: unknown) {
     console.error('[Calendar Sync] URL generation error:', error);
-    res.status(500).json({ error: 'Failed to generate sync URL' });
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+    res.status(500).json({ error: 'Failed to generate sync URL', details: errorMessage });
   }
 });
 
