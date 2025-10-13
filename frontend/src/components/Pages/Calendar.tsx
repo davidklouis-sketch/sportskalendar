@@ -1013,11 +1013,17 @@ export function Calendar() {
                           );
                         }
                         
+                        // Filter events based on Premium status
+                        // Non-Premium users only see future events
+                        const now = new Date();
+                        const filteredEvents = user?.isPremium 
+                          ? events 
+                          : events.filter(event => new Date(event.startsAt) > now);
+                        
                         // Sort events: future events first (by date), then past events (newest first)
-                        const sortedEvents = [...events].sort((a, b) => {
+                        const sortedEvents = [...filteredEvents].sort((a, b) => {
                           const dateA = new Date(a.startsAt);
                           const dateB = new Date(b.startsAt);
-                          const now = new Date();
                           
                           const isFutureA = dateA > now;
                           const isFutureB = dateB > now;
@@ -1038,9 +1044,10 @@ export function Calendar() {
                         });
 
                         return (
-                          <div className="max-h-96 overflow-y-auto scrollbar-thin scrollbar-thumb-gray-300 dark:scrollbar-thumb-gray-600 scrollbar-track-transparent">
-                            <div className="space-y-3 pr-2">
-                              {sortedEvents.map((event) => {
+                          <>
+                            <div className="max-h-96 overflow-y-auto scrollbar-thin scrollbar-thumb-gray-300 dark:scrollbar-thumb-gray-600 scrollbar-track-transparent">
+                              <div className="space-y-3 pr-2">
+                                {sortedEvents.map((event) => {
                                 // Check if event is in the future for styling
                                 const eventDate = new Date(event.startsAt);
                                 const isFuture = eventDate > new Date();
@@ -1080,6 +1087,28 @@ export function Calendar() {
                               })}
                             </div>
                           </div>
+                          
+                          {/* Premium Hint for Non-Premium Users */}
+                          {!user?.isPremium && events.some(e => new Date(e.startsAt) <= now) && (
+                            <div className="mt-4 p-4 bg-gradient-to-r from-amber-50 to-orange-50 dark:from-amber-900/20 dark:to-orange-900/20 rounded-2xl border border-amber-200 dark:border-amber-800">
+                              <div className="flex items-start">
+                                <div className="flex-shrink-0">
+                                  <svg className="w-5 h-5 text-amber-600 dark:text-amber-400 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
+                                    <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                                  </svg>
+                                </div>
+                                <div className="ml-3 flex-1">
+                                  <h3 className="text-sm font-semibold text-amber-800 dark:text-amber-300">
+                                    Premium Feature
+                                  </h3>
+                                  <p className="mt-1 text-sm text-amber-700 dark:text-amber-400">
+                                    Vergangene Events mit Ergebnissen sind nur für Premium-Mitglieder verfügbar. Upgrade jetzt für Zugriff auf alle vergangenen Spiele!
+                                  </p>
+                                </div>
+                              </div>
+                            </div>
+                          )}
+                        </>
                         );
                       })()}
                     </div>
