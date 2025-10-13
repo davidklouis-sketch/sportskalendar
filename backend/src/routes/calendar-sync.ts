@@ -178,27 +178,49 @@ calendarSyncRouter.get('/debug-apis', requireAuth, async (req, res) => {
       apiTests: {}
     };
     
-    // Test each team's API individually
-    for (const team of user.selectedTeams) {
-      console.log(`[Calendar Sync] Testing API for team: ${team.sport} - ${team.teamName}`);
-      
-      try {
-        if (team.sport === 'football') {
-          // Test Football APIs
-          results.apiTests[`${team.sport}_${team.teamName}`] = await testFootballAPIs(team);
-        } else if (team.sport === 'nba') {
-          // Test NBA API
-          results.apiTests[`${team.sport}_${team.teamName}`] = await testNBAAPI(team);
-        } else if (team.sport === 'f1') {
-          // Test F1 API
-          results.apiTests[`${team.sport}_${team.teamName}`] = await testF1API(team);
-        }
-      } catch (error) {
-        results.apiTests[`${team.sport}_${team.teamName}`] = {
-          error: error instanceof Error ? error.message : 'Unknown error'
-        };
-      }
-    }
+                // Test each team's API individually
+                for (const team of user.selectedTeams) {
+                  console.log(`[Calendar Sync] Testing API for team: ${team.sport} - ${team.teamName}`);
+                  
+                  try {
+                    if (team.sport === 'football') {
+                      // Test Football APIs
+                      results.apiTests[`${team.sport}_${team.teamName}`] = await testFootballAPIs(team);
+                    } else if (team.sport === 'nba') {
+                      // Test NBA API
+                      results.apiTests[`${team.sport}_${team.teamName}`] = await testNBAAPI(team);
+                    } else if (team.sport === 'f1') {
+                      // Test F1 API
+                      results.apiTests[`${team.sport}_${team.teamName}`] = await testF1API(team);
+                    }
+                  } catch (error) {
+                    results.apiTests[`${team.sport}_${team.teamName}`] = {
+                      error: error instanceof Error ? error.message : 'Unknown error'
+                    };
+                  }
+                }
+                
+                // Test Calendar-Sync service directly
+                try {
+                  console.log(`[Calendar Sync] Testing Calendar-Sync service directly`);
+                  const { CalendarSyncService } = await import('../services/calendar-sync.service');
+                  const calendarSyncService = new CalendarSyncService();
+                  
+                  const calendarEvents = await calendarSyncService.getCalendarEvents(userId);
+                  
+                  results.calendarSyncTest = {
+                    totalEvents: calendarEvents.length,
+                    eventsBySport: calendarEvents.reduce((acc: any, event: any) => {
+                      acc[event.sport] = (acc[event.sport] || 0) + 1;
+                      return acc;
+                    }, {}),
+                    sampleEvents: calendarEvents.slice(0, 5)
+                  };
+                } catch (error) {
+                  results.calendarSyncTest = {
+                    error: error instanceof Error ? error.message : 'Unknown error'
+                  };
+                }
     
     res.json(results);
   } catch (error) {
@@ -351,10 +373,21 @@ async function testF1API(team: any) {
     const data = await response.json();
     const races = data.MRData?.RaceTable?.Races || [];
     
+    // Test the same transformation as Calendar-Sync
+    const transformedEvents = races.map((race: any) => ({
+      idEvent: `f1_${race.round}`,
+      strEvent: `${race.raceName} - ${race.Circuit.circuitName}`,
+      dateEvent: race.date,
+      strTime: race.time?.replace('Z', '') || '15:00:00',
+      strVenue: race.Circuit.circuitName,
+      strStatus: 'Scheduled'
+    }));
+    
     return {
       team: team.teamName,
       totalRaces: races.length,
       sampleRaces: races.slice(0, 3),
+      transformedEvents: transformedEvents.slice(0, 3),
       currentYear: currentYear
     };
   } catch (error) {

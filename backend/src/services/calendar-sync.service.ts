@@ -147,9 +147,26 @@ export class CalendarSyncService {
       const start = startDate ? new Date(startDate) : new Date();
       const end = endDate ? new Date(endDate) : new Date(Date.now() + 365 * 24 * 60 * 60 * 1000); // 1 year from now
 
-      // Get events for each selected team
-      console.log(`[Calendar Sync] Getting events for ${user.selectedTeams.length} teams`);
-      for (const team of user.selectedTeams as any[]) {
+      // Check if user has F1 drivers selected
+      const f1Teams = (user.selectedTeams as any[]).filter(team => team.sport === 'f1');
+      if (f1Teams.length > 0) {
+        // Load F1 events once (like Calendar app shows all races when any driver is selected)
+        console.log(`[Calendar Sync] Loading F1 events for ${f1Teams.length} drivers`);
+        try {
+          const f1Events = await this.getF1EventsFromAPI();
+          console.log(`[Calendar Sync] Raw F1 events: ${f1Events.length}`);
+          const transformed = this.transformF1Events(f1Events, f1Teams[0]); // Use first team for transformation
+          console.log(`[Calendar Sync] Transformed F1 events: ${transformed.length}`);
+          events.push(...transformed);
+        } catch (error) {
+          console.error(`Error getting F1 events:`, error);
+        }
+      }
+
+      // Get events for each selected team (excluding F1 which is handled above)
+      const nonF1Teams = (user.selectedTeams as any[]).filter(team => team.sport !== 'f1');
+      console.log(`[Calendar Sync] Getting events for ${nonF1Teams.length} non-F1 teams`);
+      for (const team of nonF1Teams) {
         try {
           console.log(`[Calendar Sync] Fetching events for ${team.sport}: ${team.teamName}`);
           const teamEvents = await this.getEventsForTeam(team, start, end);
@@ -259,12 +276,9 @@ export class CalendarSyncService {
         console.log(`[Calendar Sync] Transformed MLB events: ${transformed.length}`);
         events.push(...transformed);
       } else if (team.sport === 'f1') {
-        console.log(`[Calendar Sync] Fetching F1 events`);
-        const f1Events = await this.getF1EventsFromAPI();
-        console.log(`[Calendar Sync] Raw F1 events: ${f1Events.length}`);
-        const transformed = this.transformF1Events(f1Events, team);
-        console.log(`[Calendar Sync] Transformed F1 events: ${transformed.length}`);
-        events.push(...transformed);
+        // F1 events are handled separately to avoid duplicates
+        // Skip individual team processing for F1
+        console.log(`[Calendar Sync] Skipping individual F1 processing for ${team.teamName}`);
       } else if (team.sport === 'tennis') {
         console.log(`[Calendar Sync] Tennis events not yet implemented - skipping`);
         // TODO: Implement Tennis API when available
