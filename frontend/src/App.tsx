@@ -126,16 +126,24 @@ function App() {
    * Besonders wichtig für Mobile Devices, wo die Navigation manchmal nicht funktioniert.
    */
   useEffect(() => {
-    if (isAuthenticated && user && currentPage === 'calendar') {
-      // User ist eingeloggt und auf Calendar-Seite -> alles OK
-      return;
-    }
-    
     if (isAuthenticated && user && !isInitializing) {
-      // User ist eingeloggt, aber nicht auf Calendar-Seite -> navigiere dorthin
+      // User ist eingeloggt -> navigiere zur Calendar-Seite
       setCurrentPage('calendar');
     }
-  }, [isAuthenticated, user, isInitializing, currentPage]);
+  }, [isAuthenticated, user, isInitializing]);
+
+  /**
+   * EFFECT: Fallback Navigation für Mobile Login
+   * 
+   * Zusätzlicher Effekt, der sicherstellt, dass nach dem Login zur Calendar-Seite navigiert wird.
+   * Wird ausgelöst, wenn der User authentifiziert ist und das Auth-Modal geschlossen wird.
+   */
+  useEffect(() => {
+    if (isAuthenticated && user && !authView && !isInitializing) {
+      // User ist eingeloggt, kein Auth-Modal offen -> navigiere zur Calendar-Seite
+      setCurrentPage('calendar');
+    }
+  }, [isAuthenticated, user, authView, isInitializing]);
 
   /**
    * RENDER: Loading Screen
@@ -174,7 +182,8 @@ function App() {
         <AuthModal
           onClose={() => setAuthView(null)}
           onSuccess={() => {
-            // After successful login, navigate to calendar
+            // After successful login, close auth modal and navigate to calendar
+            setAuthView(null);
             setCurrentPage('calendar');
           }}
           initialMode={authView}

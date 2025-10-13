@@ -40,11 +40,11 @@ export function AuthModal({ onClose, onSuccess, initialMode = 'login' }: AuthMod
         await authApi.register({ email, password, displayName });
       }
       
-      // After successful login/register, close modal and call success callback
-      onClose();
+      // After successful login/register, call success callback first, then close modal
       if (onSuccess) {
         onSuccess();
       }
+      onClose();
     } catch (err) {
       const error = err as { response?: { data?: { message?: string } } };
       setError(error.response?.data?.message || `${mode === 'login' ? 'Login' : 'Registrierung'} fehlgeschlagen`);
