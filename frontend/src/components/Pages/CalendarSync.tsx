@@ -58,15 +58,19 @@ const CalendarSync: React.FC = () => {
       const response = await calendarSyncApi.getSyncStatus();
       console.log('[Calendar Sync Frontend] Sync status response:', response.data);
       setSyncStatus(response.data);
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('[Calendar Sync Frontend] Failed to load sync status:', error);
+      
+      const errorMessage = error instanceof Error ? error.message : 'Unbekannter Fehler';
+      const errorResponse = error && typeof error === 'object' && 'response' in error ? (error as any).response : null;
+      
       console.error('[Calendar Sync Frontend] Error details:', {
-        message: error.message,
-        status: error.response?.status,
-        statusText: error.response?.statusText,
-        data: error.response?.data
+        message: errorMessage,
+        status: errorResponse?.status,
+        statusText: errorResponse?.statusText,
+        data: errorResponse?.data
       });
-      setError(`Fehler beim Laden der Kalender-Sync-Status: ${error.message}`);
+      setError(`Fehler beim Laden der Kalender-Sync-Status: ${errorMessage}`);
     } finally {
       setIsLoading(false);
     }
