@@ -150,6 +150,189 @@ calendarSyncRouter.get('/debug-user', requireAuth, async (req, res) => {
   }
 });
 
+// Extended debug endpoint to test individual API calls
+calendarSyncRouter.get('/debug-apis', requireAuth, async (req, res) => {
+  try {
+    const userId = (req as any).user.id;
+    console.log(`[Calendar Sync] Debug APIs endpoint called for user ${userId}`);
+    
+    // Get user data from database
+    const { UserRepository } = await import('../database/repositories/userRepository');
+    const user = await UserRepository.findById(userId);
+    
+    if (!user || !user.selectedTeams) {
+      return res.status(404).json({ 
+        error: 'User not found or no selected teams',
+        userId: userId
+      });
+    }
+    
+    const results: any = {
+      userId: userId,
+      user: {
+        id: user.id,
+        email: user.email,
+        selectedTeams: user.selectedTeams
+      },
+      apiTests: {}
+    };
+    
+    // Test each team's API individually
+    for (const team of user.selectedTeams) {
+      console.log(`[Calendar Sync] Testing API for team: ${team.sport} - ${team.teamName}`);
+      
+      try {
+        if (team.sport === 'football') {
+          // Test Football APIs
+          results.apiTests[`${team.sport}_${team.teamName}`] = await testFootballAPIs(team);
+        } else if (team.sport === 'nba') {
+          // Test NBA API
+          results.apiTests[`${team.sport}_${team.teamName}`] = await testNBAAPI(team);
+        } else if (team.sport === 'f1') {
+          // Test F1 API
+          results.apiTests[`${team.sport}_${team.teamName}`] = await testF1API(team);
+        }
+      } catch (error) {
+        results.apiTests[`${team.sport}_${team.teamName}`] = {
+          error: error instanceof Error ? error.message : 'Unknown error'
+        };
+      }
+    }
+    
+    res.json(results);
+  } catch (error) {
+    console.error('[Calendar Sync] Debug APIs error:', error);
+    res.status(500).json({ 
+      error: 'Debug APIs failed', 
+      message: error instanceof Error ? error.message : 'Unknown error'
+    });
+  }
+});
+
+// Helper function to test Football APIs
+async function testFootballAPIs(team: any) {
+  const results: any = {
+    team: team.teamName,
+    leagueId: team.leagueId,
+    tests: {}
+  };
+  
+  // Test Football-Data.org API
+  try {
+    const footballDataKey = process.env.FOOTBALL_DATA_KEY;
+    if (footballDataKey && footballDataKey !== 'your_football_data_api_key') {
+      const leagueMapping: Record<string, { id: number, name: string }> = {
+        '78': { id: 2002, name: 'Bundesliga' },
+        '39': { id: 2021, name: 'Premier League' }
+      };
+      
+      const competition = leagueMapping[team.leagueId];
+      if (competition) {
+        const headers = { 'X-Auth-Token': footballDataKey };
+        const today = new Date();
+        const thirtyDaysFromNow = new Date(today.getTime() + 30 * 24 * 60 * 60 * 1000);
+        const dateFrom = today.toISOString().split('T')[0];
+        const dateTo = thirtyDaysFromNow.toISOString().split('T')[0];
+        
+        const url = `https://api.football-data.org/v4/competitions/${competition.id}/matches?dateFrom=${dateFrom}&dateTo=${dateTo}`;
+        
+        const response = await fetch(url, { headers });
+        const data = await response.json();
+        
+        results.tests.footballDataOrg = {
+          status: response.status,
+          url: url,
+          matchCount: data?.matches?.length || 0,
+          sampleMatches: data?.matches?.slice(0, 3) || []
+        };
+      }
+    }
+  } catch (error) {
+    results.tests.footballDataOrg = {
+      error: error instanceof Error ? error.message : 'Unknown error'
+    };
+  }
+  
+  // Test API-FOOTBALL
+  try {
+    const apiFootballKey = process.env.API_FOOTBALL_KEY;
+    if (apiFootballKey && apiFootballKey !== 'your_api_football_key') {
+      const headers = { 'x-apisports-key': apiFootballKey };
+      const url = `https://v3.football.api-sports.io/fixtures?league=${team.leagueId}&next=50&timezone=Europe/Berlin`;
+      
+      const response = await fetch(url, { headers });
+      const data = await response.json();
+      
+      results.tests.apiFootball = {
+        status: response.status,
+        url: url,
+        fixtureCount: data?.response?.length || 0,
+        sampleFixtures: data?.response?.slice(0, 3) || []
+      };
+    }
+  } catch (error) {
+    results.tests.apiFootball = {
+      error: error instanceof Error ? error.message : 'Unknown error'
+    };
+  }
+  
+  return results;
+}
+
+// Helper function to test NBA API
+async function testNBAAPI(team: any) {
+  try {
+    const { TheSportsDBService } = await import('../services/thesportsdb.service');
+    const theSportsDBService = new TheSportsDBService();
+    
+    const nbaEvents = await theSportsDBService.getNBAEvents('2025-26');
+    
+    return {
+      team: team.teamName,
+      totalEvents: nbaEvents.length,
+      sampleEvents: nbaEvents.slice(0, 3),
+      teamMatches: nbaEvents.filter(event => {
+        const homeTeam = event.strHomeTeam?.toLowerCase() || '';
+        const awayTeam = event.strAwayTeam?.toLowerCase() || '';
+        const selectedTeam = team.teamName.toLowerCase();
+        return homeTeam.includes(selectedTeam) || awayTeam.includes(selectedTeam);
+      }).length
+    };
+  } catch (error) {
+    return {
+      team: team.teamName,
+      error: error instanceof Error ? error.message : 'Unknown error'
+    };
+  }
+}
+
+// Helper function to test F1 API
+async function testF1API(team: any) {
+  try {
+    const currentYear = new Date().getFullYear();
+    const response = await fetch(`https://api.jolpi.ca/ergast/f1/${currentYear}.json`);
+    
+    if (!response.ok) {
+      throw new Error(`F1 API responded with status ${response.status}`);
+    }
+    
+    const data = await response.json();
+    const races = data.MRData?.RaceTable?.Races || [];
+    
+    return {
+      team: team.teamName,
+      totalRaces: races.length,
+      sampleRaces: races.slice(0, 3),
+      currentYear: currentYear
+    };
+  } catch (error) {
+    return {
+      team: team.teamName,
+      error: error instanceof Error ? error.message : 'Unknown error'
+    };
+  }
+}
+
 // Simple ICS test endpoint without authentication
 calendarSyncRouter.get('/test.ics', (req, res) => {
   console.log('[Calendar Sync] Test ICS endpoint called');
