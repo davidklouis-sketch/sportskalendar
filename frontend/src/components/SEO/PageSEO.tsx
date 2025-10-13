@@ -1,7 +1,7 @@
 import { SEOHead } from './SEOHead';
 
 interface PageSEOProps {
-  page: 'calendar' | 'live' | 'highlights' | 'settings' | 'premium' | 'privacy' | 'contact' | 'admin';
+  page: 'calendar' | 'live' | 'highlights' | 'settings' | 'premium' | 'privacy' | 'contact' | 'admin' | 'calendar-sync';
   user?: any;
 }
 
@@ -118,6 +118,13 @@ export function PageSEO({ page, user }: PageSEOProps) {
       keywords: 'Admin, Verwaltung, Sportskalendar Admin',
       canonical: 'https://sportskalendar.de/admin',
       noIndex: true // Don't index admin pages
+    },
+    'calendar-sync': {
+      title: 'Kalender-Sync - Sportskalendar | Synchronisiere deine Teams',
+      description: 'Synchronisiere deine Lieblings-Teams mit Google Calendar, Outlook oder Apple Calendar. Premium-Feature für automatische Kalender-Updates.',
+      keywords: 'Kalender-Sync, Google Calendar, Outlook, Apple Calendar, Team-Synchronisation, Premium-Feature',
+      canonical: 'https://sportskalendar.de/calendar-sync',
+      noIndex: true // Don't index calendar-sync pages (requires login)
     }
   };
 
