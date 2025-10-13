@@ -118,10 +118,10 @@ export function LiveData({ className = '' }: LiveDataProps) {
   useEffect(() => {
     loadLiveData();
     
-    // Auto-refresh every 5 minutes (reduced to prevent rate limiting)
+    // Auto-refresh every 10 minutes (further reduced to prevent rate limiting)
     const interval = setInterval(() => {
       loadLiveData();
-    }, 300000); // 5 minutes instead of 2 minutes
+    }, 600000); // 10 minutes to avoid rate limiting
     
     return () => clearInterval(interval);
   }, [user?.selectedTeams]); // Only depend on selectedTeams, not loadLiveData function

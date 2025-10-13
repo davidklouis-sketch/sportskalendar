@@ -10,6 +10,8 @@
  * - 30 Sekunden Timeout
  * - Type-Safe API Calls
  * - Automatic Logout bei Auth-Fehlern
+ * - Request Deduplication für Live-API
+ * - Rate Limiting Protection
  * 
  * Backend URL:
  * - Production: https://api.sportskalendar.de/api
@@ -17,6 +19,10 @@
  */
 
 import axios from 'axios';
+
+// Request cache for deduplication
+const requestCache = new Map<string, { promise: Promise<any>; timestamp: number }>();
+const CACHE_DURATION = 30000; // 30 seconds cache for live API calls
 
 // API Base URL aus Environment Variable oder Production Default
 const API_URL = import.meta.env.VITE_API_URL || 'https://api.sportskalendar.de/api';
@@ -61,6 +67,12 @@ api.interceptors.response.use(
   async (error) => {
     const originalRequest = error.config;
     
+    // NIEMALS bei Rate Limiting (429) abmelden
+    if (error.response?.status === 429) {
+      console.warn('⚠️ Rate limit reached, but NOT logging out user');
+      return Promise.reject(error);
+    }
+    
     // Nur bei 401 und wenn nicht bereits retried und nicht der Refresh-Endpoint selbst
     // Live-API-Endpoints sollten nicht das Token-Refresh auslösen
     if (error.response?.status === 401 && !originalRequest._retry && 
@@ -75,8 +87,8 @@ api.interceptors.response.use(
         return api(originalRequest); // Original Request wiederholen
       } catch (refreshError) {
         console.log('❌ Token refresh failed:', refreshError);
-        // Nur bei echten Auth-Fehlern ausloggen (nicht bei Netzwerkfehlern)
-        if (error.response?.status === 401 || error.response?.status === 403) {
+        // Nur bei echten Auth-Fehlern ausloggen (NIEMALS bei Rate Limiting!)
+        if ((refreshError as any).response?.status === 401 || (refreshError as any).response?.status === 403) {
           console.log('🔒 Authentication failed, logging out user');
           // Tokens aus localStorage entfernen
           localStorage.removeItem('accessToken');
@@ -208,32 +220,72 @@ export const calendarApi = {
 };
 
 /**
+ * DEDUPLICATED REQUEST HELPER
+ * 
+ * Verhindert mehrfache gleichzeitige Requests zur gleichen URL.
+ * Cached Requests für CACHE_DURATION Millisekunden.
+ */
+function deduplicatedRequest(url: string): Promise<any> {
+  const now = Date.now();
+  const cached = requestCache.get(url);
+  
+  // Return cached promise if still valid
+  if (cached && (now - cached.timestamp) < CACHE_DURATION) {
+    console.log(`🔄 Using cached request for ${url}`);
+    return cached.promise;
+  }
+  
+  // Create new request
+  console.log(`🚀 Making new request to ${url}`);
+  const promise = api.get(url).catch(error => {
+    // Remove from cache on error to allow retry
+    requestCache.delete(url);
+    throw error;
+  });
+  
+  // Cache the promise
+  requestCache.set(url, { promise, timestamp: now });
+  
+  // Clean up cache after request completes
+  promise.finally(() => {
+    setTimeout(() => {
+      const entry = requestCache.get(url);
+      if (entry && (Date.now() - entry.timestamp) >= CACHE_DURATION) {
+        requestCache.delete(url);
+      }
+    }, CACHE_DURATION);
+  });
+  
+  return promise;
+}
+
+/**
  * LIVE API
  * 
  * Live-Daten Endpoints für verschiedene Sportarten.
- * Verwendet TheSportsDB API im Backend.
+ * Verwendet Request Deduplication um Rate Limiting zu vermeiden.
  */
 export const liveApi = {
   // Formel 1 Live-Daten
-  getF1: () => api.get('/live/f1'),
+  getF1: () => deduplicatedRequest('/live/f1'),
   
   // NFL Live-Daten
-  getNFL: () => api.get('/live/nfl'),
+  getNFL: () => deduplicatedRequest('/live/nfl'),
   
   // Fußball Live-Daten
-  getSoccer: () => api.get('/live/soccer'),
+  getSoccer: () => deduplicatedRequest('/live/soccer'),
   
   // NBA Live-Daten
-  getNBA: () => api.get('/live/nba'),
+  getNBA: () => deduplicatedRequest('/live/nba'),
   
   // NHL Live-Daten
-  getNHL: () => api.get('/live/nhl'),
+  getNHL: () => deduplicatedRequest('/live/nhl'),
   
   // MLB Live-Daten
-  getMLB: () => api.get('/live/mlb'),
+  getMLB: () => deduplicatedRequest('/live/mlb'),
   
   // Tennis Live-Daten
-  getTennis: () => api.get('/live/tennis'),
+  getTennis: () => deduplicatedRequest('/live/tennis'),
 };
 
 /**
