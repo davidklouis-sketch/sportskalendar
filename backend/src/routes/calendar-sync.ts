@@ -1,8 +1,75 @@
 import { Router } from 'express';
 import { requireAuth } from '../middleware/auth';
 import { CalendarSyncService } from '../services/calendar-sync.service';
+import { Request, Response } from 'express';
 
 export const calendarSyncRouter = Router();
+
+// Helper function for authentication
+async function authenticateRequest(req: Request, res: Response): Promise<{success: boolean, userId?: string, status?: number, error?: any}> {
+  try {
+    const authHeader = req.headers.authorization || '';
+    let token = authHeader.startsWith('Bearer ') ? authHeader.slice(7) : null;
+    if (!token) {
+      token = (req as any).cookies?.['access_token'] || null;
+    }
+    
+    if (!token) {
+      return {
+        success: false,
+        status: 401,
+        error: { 
+          error: 'Authentication required',
+          message: 'No valid token provided' 
+        }
+      };
+    }
+    
+    // Use the existing requireAuth logic
+    const jwt = require('jsonwebtoken');
+    const secret = process.env.JWT_SECRET;
+    if (!secret || secret === 'dev_secret_change_me') {
+      return {
+        success: false,
+        status: 500,
+        error: { 
+          error: 'Server configuration error',
+          message: 'Authentication service unavailable' 
+        }
+      };
+    }
+    
+    const payload = jwt.verify(token, secret, {
+      issuer: 'sportskalendar',
+      audience: 'sportskalendar-users'
+    });
+    
+    if (!payload.id || !payload.email) {
+      return {
+        success: false,
+        status: 401,
+        error: { 
+          error: 'Invalid token',
+          message: 'Token payload is invalid' 
+        }
+      };
+    }
+    
+    return {
+      success: true,
+      userId: payload.id
+    };
+  } catch (error) {
+    return {
+      success: false,
+      status: 401,
+      error: { 
+        error: 'Invalid token',
+        message: 'Token verification failed' 
+      }
+    };
+  }
+}
 
 // Test endpoint without authentication
 calendarSyncRouter.get('/test', (req, res) => {
@@ -11,7 +78,25 @@ calendarSyncRouter.get('/test', (req, res) => {
     status: 'OK', 
     message: 'Calendar Sync API is working',
     timestamp: new Date().toISOString(),
-    headers: req.headers
+    endpoint: 'test',
+    note: 'This endpoint works without authentication'
+  });
+});
+
+// Additional test endpoint for debugging
+calendarSyncRouter.get('/debug', (req, res) => {
+  console.log('[Calendar Sync] Debug endpoint called');
+  res.json({ 
+    status: 'OK', 
+    message: 'Calendar Sync Debug Info',
+    timestamp: new Date().toISOString(),
+    endpoint: 'debug',
+    headers: {
+      authorization: req.headers.authorization || 'none',
+      cookie: req.headers.cookie || 'none',
+      userAgent: req.headers['user-agent'] || 'none'
+    },
+    note: 'This endpoint works without authentication'
   });
 });
 
@@ -59,10 +144,35 @@ calendarSyncRouter.options('/export', (req, res) => {
 });
 
 // Generate iCal/ICS file for user's selected teams
-calendarSyncRouter.get('/export', requireAuth, async (req, res) => {
+// Supports both authenticated requests (with cookies) and token-based requests (for calendar apps)
+calendarSyncRouter.get('/export', async (req, res) => {
   try {
-    const userId = (req as any).user.id;
-    const format = req.query.format as string || 'ics'; // ics, json, csv
+    let userId: string;
+    let format = req.query.format as string || 'ics'; // ics, json, csv
+    
+    // Check for token-based authentication (for calendar apps)
+    const token = req.query.token as string;
+    if (token) {
+      console.log(`[Calendar Sync] Token-based export request, token: ${token.substring(0, 10)}...`);
+      // Validate token and extract user ID
+      const calendarSyncService = new CalendarSyncService();
+      const validatedUserId = await calendarSyncService.validateSyncToken(token);
+      if (!validatedUserId) {
+        return res.status(401).json({ 
+          error: 'Invalid sync token',
+          message: 'The provided sync token is invalid or expired' 
+        });
+      }
+      userId = validatedUserId;
+    } else {
+      // Fallback to cookie-based authentication (for web app)
+      console.log(`[Calendar Sync] Cookie-based export request`);
+      const authResult = await authenticateRequest(req, res);
+      if (!authResult.success) {
+        return res.status(authResult.status || 401).json(authResult.error || { error: 'Authentication failed' });
+      }
+      userId = authResult.userId || '';
+    }
     
     console.log(`[Calendar Sync] Export request from user ${userId}, format: ${format}`);
     

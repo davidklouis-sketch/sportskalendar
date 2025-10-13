@@ -72,7 +72,8 @@ export class CalendarSyncService {
     // Ensure HTTPS is used
     const httpsUrl = baseUrl.startsWith('https://') ? baseUrl : baseUrl.replace('http://', 'https://');
     
-    const syncUrl = `${httpsUrl}/api/calendar-sync/export?user=${userId}&format=ics&token=${this.generateSyncToken(userId)}`;
+    const token = this.generateSyncToken(userId);
+    const syncUrl = `${httpsUrl}/api/calendar-sync/export?format=ics&token=${token}`;
     console.log(`[Calendar Sync] Generated HTTPS sync URL: ${syncUrl}`);
     return syncUrl;
   }
@@ -402,6 +403,34 @@ export class CalendarSyncService {
   private generateSyncToken(userId: string): string {
     // Generate a secure token for calendar sync
     return Buffer.from(`${userId}:${Date.now()}`).toString('base64');
+  }
+
+  async validateSyncToken(token: string): Promise<string | null> {
+    try {
+      // Decode the token
+      const decoded = Buffer.from(token, 'base64').toString('utf-8');
+      const [userId, timestamp] = decoded.split(':');
+      
+      if (!userId || !timestamp) {
+        console.log('[Calendar Sync] Invalid token format');
+        return null;
+      }
+      
+      // Check if token is not too old (24 hours)
+      const tokenAge = Date.now() - parseInt(timestamp, 10);
+      const maxAge = 24 * 60 * 60 * 1000; // 24 hours
+      
+      if (tokenAge > maxAge) {
+        console.log(`[Calendar Sync] Token expired, age: ${tokenAge}ms`);
+        return null;
+      }
+      
+      console.log(`[Calendar Sync] Valid token for user ${userId}`);
+      return userId;
+    } catch (error) {
+      console.log('[Calendar Sync] Token validation error:', error);
+      return null;
+    }
   }
 
   private getDefaultSyncSettings(): CalendarSyncSettings {
