@@ -62,7 +62,10 @@ api.interceptors.response.use(
     const originalRequest = error.config;
     
     // Nur bei 401 und wenn nicht bereits retried und nicht der Refresh-Endpoint selbst
-    if (error.response?.status === 401 && !originalRequest._retry && !originalRequest.url?.includes('/auth/refresh')) {
+    // Live-API-Endpoints sollten nicht das Token-Refresh auslösen
+    if (error.response?.status === 401 && !originalRequest._retry && 
+        !originalRequest.url?.includes('/auth/refresh') && 
+        !originalRequest.url?.includes('/live/')) {
       originalRequest._retry = true; // Verhindert Infinite Loop
       
       try {

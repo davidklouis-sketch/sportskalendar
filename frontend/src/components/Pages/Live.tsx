@@ -83,8 +83,8 @@ export function Live() {
   useEffect(() => {
     if (selectedSport) {
       loadLiveData();
-      // Auto-refresh every 30 seconds
-      const interval = setInterval(loadLiveData, 30000);
+      // Auto-refresh every 5 minutes (reduced from 30 seconds to avoid rate limiting)
+      const interval = setInterval(loadLiveData, 300000);
       return () => clearInterval(interval);
     }
   }, [selectedSport, loadLiveData]);

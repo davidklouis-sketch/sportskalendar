@@ -43,7 +43,7 @@ type RankEntry = {
 // Cache for live data to avoid rate limiting
 let footballLiveCache: { data: RankEntry[]; timestamp: number } | null = null;
 let f1LiveCache: { data: RankEntry[]; timestamp: number } | null = null;
-const CACHE_DURATION = 2 * 60 * 1000; // 2 minutes cache
+const CACHE_DURATION = 5 * 60 * 1000; // 5 minutes cache (increased to reduce API calls)
 
 // Function to fetch live football matches from football-data.org
 async function fetchLiveFootballMatches(): Promise<RankEntry[]> {
@@ -68,6 +68,11 @@ async function fetchLiveFootballMatches(): Promise<RankEntry[]> {
       // If rate limited (429) or other error, return cached data if available
       if (response.status === 429 && footballLiveCache) {
         console.log('Rate limited, returning cached football data');
+        return footballLiveCache.data;
+      }
+      // For other errors, also try to return cached data if available
+      if (footballLiveCache) {
+        console.log(`API error ${response.status}, returning cached football data`);
         return footballLiveCache.data;
       }
       throw new Error(`API responded with status ${response.status}`);
@@ -192,10 +197,45 @@ async function fetchF1LiveData(): Promise<RankEntry[]> {
   }
 }
 
+// Cache for F1 race data
+let f1RaceCache: { data: any; timestamp: number } | null = null;
+const F1_CACHE_DURATION = 10 * 60 * 1000; // 10 minutes cache for F1 data
+
 // Function to get next F1 race information
 async function getNextF1Race(): Promise<{ name: string; date: string; circuit: string } | null> {
   try {
     const currentYear = new Date().getFullYear();
+    
+    // Check cache first
+    if (f1RaceCache && Date.now() - f1RaceCache.timestamp < F1_CACHE_DURATION) {
+      const races = f1RaceCache.data.MRData?.RaceTable?.Races || [];
+      const now = new Date();
+      
+      // Find next race from cached data
+      const nextRace = races.find((race: any) => {
+        const raceDate = new Date(race.date + 'T' + (race.time || '14:00:00'));
+        return raceDate > now;
+      });
+
+      if (nextRace) {
+        const raceDate = new Date(nextRace.date + 'T' + (nextRace.time || '14:00:00'));
+        const circuitName = nextRace.Circuit?.circuitName || nextRace.Circuit?.Location?.locality || 'Unknown Circuit';
+        
+        return {
+          name: nextRace.raceName || 'Formula 1 Race',
+          date: raceDate.toLocaleDateString('de-DE', { 
+            weekday: 'long', 
+            year: 'numeric', 
+            month: 'long', 
+            day: 'numeric',
+            hour: '2-digit',
+            minute: '2-digit'
+          }),
+          circuit: circuitName
+        };
+      }
+    }
+    
     const response = await fetchWithTimeout(
       `https://api.jolpi.ca/ergast/f1/${currentYear}.json`
     );
@@ -205,6 +245,10 @@ async function getNextF1Race(): Promise<{ name: string; date: string; circuit: s
     }
 
     const data = await response.json();
+    
+    // Cache the response
+    f1RaceCache = { data, timestamp: Date.now() };
+    
     const races = data.MRData?.RaceTable?.Races || [];
     const now = new Date();
 
@@ -316,6 +360,17 @@ liveRouter.get('/f1', async (_req, res) => {
     res.json({ entries });
   } catch (error) {
     console.error('Error in F1 route:', error);
+    
+    // Return cached data if available
+    if (f1LiveCache) {
+      console.log('Returning cached F1 data due to error');
+      const entries = f1LiveCache.data.map((e: any) => ({
+        ...e,
+        meta: e.meta || `Lap ${e.lap || 0}/${e.totalLaps || 58}${e.position > 1 && typeof e.gapSec === 'number' ? ` · +${e.gapSec.toFixed(1)}s` : ''}`
+      }));
+      return res.json({ entries, message: 'Cached data (API temporarily unavailable)' });
+    }
+    
     res.json({ 
       entries: [{
         position: 1,
@@ -383,6 +438,17 @@ liveRouter.get('/soccer', async (_req, res) => {
     res.json({ entries });
   } catch (error) {
     console.error('Error in soccer route:', error);
+    
+    // Return cached data if available, otherwise show error
+    if (footballLiveCache) {
+      console.log('Returning cached soccer data due to error');
+      const entries = footballLiveCache.data.map((e: any) => ({
+        ...e,
+        info: `${e.score || ''}${typeof e.minute === 'number' ? ` · ${e.minute}'` : ''}${e.league ? ` · ${e.league}` : ''}`.trim(),
+      }));
+      return res.json({ entries, message: 'Cached data (API temporarily unavailable)' });
+    }
+    
     res.json({ 
       entries: [{
         position: 1,
