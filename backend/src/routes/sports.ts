@@ -479,8 +479,8 @@ sportsRouter.get('/football/events', async (req: Request, res: Response) => {
       // Parse comma-separated league IDs and map to TheSportsDB IDs
       const frontendLeagueIds = leaguesParam.split(',').map(id => parseInt(id.trim()));
       leagueIds = frontendLeagueIds
-        .filter(id => FOOTBALL_LEAGUE_MAPPING[id])
-        .map(id => FOOTBALL_LEAGUE_MAPPING[id]);
+        .map(id => FOOTBALL_LEAGUE_MAPPING[id])
+        .filter((id): id is string => id !== undefined);
     } else {
       // Default: fetch all major leagues
       leagueIds = [
