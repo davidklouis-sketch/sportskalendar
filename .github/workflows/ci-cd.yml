@@ -130,11 +130,17 @@ jobs:
           export STRIPE_PRICE_ID="${{ secrets.STRIPE_PRICE_ID }}"
           export FRONTEND_URL="https://sportskalendar.de"
           
+          # Set domain configuration for Traefik SSL certificates
+          export BACKEND_HOST="api.sportskalendar.de"
+          export FRONTEND_HOST="sportskalendar.de"
+          
           # Debug: Show environment variables (without sensitive data)
           echo "🔍 Environment variables set:"
           echo "STRIPE_SECRET_KEY: ${STRIPE_SECRET_KEY:0:10}..."
           echo "STRIPE_WEBHOOK_SECRET: ${STRIPE_WEBHOOK_SECRET:0:10}..."
           echo "STRIPE_PRICE_ID: ${STRIPE_PRICE_ID}"
+          echo "BACKEND_HOST: ${BACKEND_HOST}"
+          echo "FRONTEND_HOST: ${FRONTEND_HOST}"
           echo "FRONTEND_URL: ${FRONTEND_URL}"
           echo "🔍 Checking if secrets are properly set:"
           if [ -z "$STRIPE_SECRET_KEY" ]; then echo "❌ STRIPE_SECRET_KEY is empty!"; else echo "✅ STRIPE_SECRET_KEY is set"; fi

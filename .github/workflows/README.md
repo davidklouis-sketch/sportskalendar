@@ -21,9 +21,9 @@ Gehe zu: `Settings` → `Secrets and variables` → `Actions` → `New repositor
 - `JWT_SECRET`: Sicherer JWT Secret (mindestens 32 Zeichen)
 - `DB_PASSWORD`: PostgreSQL Passwort (sicher und komplex)
 
-**Domains:**
-- `BACKEND_HOST`: Backend Domain (z.B. `api.yourdomain.com`)
-- `FRONTEND_HOST`: Frontend Domain (z.B. `yourdomain.com`)
+**Domains (für SSL-Zertifikate):**
+- `BACKEND_HOST`: Backend Domain (z.B. `api.yourdomain.com`) - **WICHTIG für SSL-Zertifikate!**
+- `FRONTEND_HOST`: Frontend Domain (z.B. `yourdomain.com`) - **WICHTIG für SSL-Zertifikate!**
 - `LETSENCRYPT_EMAIL`: Email für Let's Encrypt Zertifikate
 - `CORS_ORIGIN`: CORS Origins komma-separiert (z.B. `https://yourdomain.com,https://www.yourdomain.com`)
 
