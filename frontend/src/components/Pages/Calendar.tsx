@@ -205,10 +205,34 @@ export function Calendar() {
           
           // Filter events for selected teams
           const teamNames = nbaTeams.map(t => t.teamName.toLowerCase());
-          events = events.filter(event => {
+          const filteredEvents = events.filter(event => {
             const eventTitle = event.title.toLowerCase();
             return teamNames.some(teamName => eventTitle.includes(teamName));
           });
+          
+          setNbaEvents(filteredEvents);
+        } catch (error) {
+          console.error('Failed to load NBA events:', error);
+          setNbaEvents([]);
+        }
+      } else {
+        // Load all NBA events for next event calculation even if no teams selected
+        try {
+          const response = await calendarApi.getEvents('nba', []);
+          let events = (response.data as Event[]) || [];
+          
+          if (events.length === 0) {
+            try {
+              const sportsResponse = await liveApi.getNBA();
+              events = (sportsResponse.data.events as Event[]) || [];
+            } catch (sportsError) {
+              const directResponse = await fetch('/api/sports/nba/events');
+              if (directResponse.ok) {
+                const directData = await directResponse.json();
+                events = directData.events || [];
+              }
+            }
+          }
           
           setNbaEvents(events);
         } catch (error) {
@@ -236,10 +260,31 @@ export function Calendar() {
           
           // Filter events for selected teams
           const teamNames = nhlTeams.map(t => t.teamName.toLowerCase());
-          events = events.filter(event => {
+          const filteredEvents = events.filter(event => {
             const eventTitle = event.title.toLowerCase();
             return teamNames.some(teamName => eventTitle.includes(teamName));
           });
+          
+          setNhlEvents(filteredEvents);
+        } catch (error) {
+          console.error('Failed to load NHL events:', error);
+          setNhlEvents([]);
+        }
+      } else {
+        // Load all NHL events for next event calculation even if no teams selected
+        try {
+          let events: Event[] = [];
+          
+          try {
+            const directResponse = await fetch('/api/sports/nhl/events');
+            if (directResponse.ok) {
+              const directData = await directResponse.json();
+              events = directData.events || [];
+            }
+          } catch (directError) {
+            const response = await liveApi.getNHL();
+            events = (response.data.events as Event[]) || [];
+          }
           
           setNhlEvents(events);
         } catch (error) {
@@ -267,10 +312,31 @@ export function Calendar() {
           
           // Filter events for selected teams
           const teamNames = mlbTeams.map(t => t.teamName.toLowerCase());
-          events = events.filter(event => {
+          const filteredEvents = events.filter(event => {
             const eventTitle = event.title.toLowerCase();
             return teamNames.some(teamName => eventTitle.includes(teamName));
           });
+          
+          setMlbEvents(filteredEvents);
+        } catch (error) {
+          console.error('Failed to load MLB events:', error);
+          setMlbEvents([]);
+        }
+      } else {
+        // Load all MLB events for next event calculation even if no teams selected
+        try {
+          let events: Event[] = [];
+          
+          try {
+            const directResponse = await fetch('/api/sports/mlb/events');
+            if (directResponse.ok) {
+              const directData = await directResponse.json();
+              events = directData.events || [];
+            }
+          } catch (directError) {
+            const response = await liveApi.getMLB();
+            events = (response.data.events as Event[]) || [];
+          }
           
           setMlbEvents(events);
         } catch (error) {
@@ -288,10 +354,21 @@ export function Calendar() {
           
           // Filter events for selected tours
           const tourNames = tennisTeams.map(t => t.teamName.toLowerCase());
-          events = events.filter(event => {
+          const filteredEvents = events.filter(event => {
             const eventTitle = event.title.toLowerCase();
             return tourNames.some(tourName => eventTitle.includes(tourName));
           });
+          
+          setTennisEvents(filteredEvents);
+        } catch (error) {
+          console.error('Failed to load Tennis events:', error);
+          setTennisEvents([]);
+        }
+      } else {
+        // Load all Tennis events for next event calculation even if no teams selected
+        try {
+          const response = await liveApi.getTennis();
+          let events = (response.data.events as Event[]) || [];
           
           setTennisEvents(events);
         } catch (error) {
