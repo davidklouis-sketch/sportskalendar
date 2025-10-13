@@ -388,27 +388,11 @@ export function Calendar() {
     }
   };
 
-  // Find the next upcoming event from all loaded events
-  const findNextEvent = () => {
-    const allEvents = [
-      ...footballEvents,
-      ...f1Events,
-      ...nflEvents,
-      ...nbaEvents,
-      ...nhlEvents,
-      ...mlbEvents,
-      ...tennisEvents,
-    ];
-
-    if (allEvents.length === 0) {
-      setNextEvent(null);
-      return;
-    }
-
-    // Filter only future events and sort by date
+  // Helper function to filter events by future dates
+  const filterFutureEvents = (events: Event[]) => {
     const now = new Date();
     
-    const upcomingEvents = allEvents
+    return events
       .map(event => {
         // Try multiple date parsing methods
         let eventDate: Date;
@@ -455,6 +439,26 @@ export function Calendar() {
       })
       .filter(event => event && event.isFuture)
       .sort((a, b) => a!.parsedDate.getTime() - b!.parsedDate.getTime());
+  };
+
+  // Find the next upcoming event from all loaded events
+  const findNextEvent = () => {
+    const allEvents = [
+      ...footballEvents,
+      ...f1Events,
+      ...nflEvents,
+      ...nbaEvents,
+      ...nhlEvents,
+      ...mlbEvents,
+      ...tennisEvents,
+    ];
+
+    if (allEvents.length === 0) {
+      setNextEvent(null);
+      return;
+    }
+
+    const upcomingEvents = filterFutureEvents(allEvents);
 
     if (upcomingEvents.length > 0) {
       const nextEvent = upcomingEvents[0]!;
@@ -942,7 +946,8 @@ export function Calendar() {
                                          selectedSport === 'nhl' ? nhlEvents :
                                          selectedSport === 'mlb' ? mlbEvents :
                                          selectedSport === 'tennis' ? tennisEvents : [];
-                            return `${events.length} ${t('upcomingGames')}`;
+                            const futureEvents = filterFutureEvents(events);
+                            return `${futureEvents.length} ${t('upcomingGames')}`;
                           })()}
                         </p>
                       </div>
@@ -963,7 +968,9 @@ export function Calendar() {
                                      selectedSport === 'mlb' ? mlbEvents :
                                      selectedSport === 'tennis' ? tennisEvents : [];
                         
-                        if (events.length === 0) {
+                        const futureEvents = filterFutureEvents(events);
+                        
+                        if (futureEvents.length === 0) {
                           return (
                             <div className="text-center py-12">
                               <div className="w-20 h-20 bg-gray-100 dark:bg-gray-700 rounded-3xl flex items-center justify-center mx-auto mb-6">
@@ -976,26 +983,29 @@ export function Calendar() {
                           );
                         }
                         
-                        return events.slice(0, 5).map((event) => (
-                          <div key={event.id} className="group/event flex items-center justify-between p-6 bg-gradient-to-r from-gray-50 to-gray-100 dark:from-gray-700/50 dark:to-gray-700 rounded-2xl hover:from-gray-100 hover:to-gray-200 dark:hover:from-gray-600 dark:hover:to-gray-600 transition-all duration-200 transform hover:scale-[1.02]">
-                            <div className="flex items-center">
-                              <div className="w-10 h-10 bg-gradient-to-r from-emerald-500 to-green-600 rounded-2xl flex items-center justify-center mr-4">
-                                <span className="text-lg">{getSportIcon(selectedSport)}</span>
+                        return futureEvents.slice(0, 5).map((event) => {
+                          if (!event) return null;
+                          return (
+                            <div key={event.id} className="group/event flex items-center justify-between p-6 bg-gradient-to-r from-gray-50 to-gray-100 dark:from-gray-700/50 dark:to-gray-700 rounded-2xl hover:from-gray-100 hover:to-gray-200 dark:hover:from-gray-600 dark:hover:to-gray-600 transition-all duration-200 transform hover:scale-[1.02]">
+                              <div className="flex items-center">
+                                <div className="w-10 h-10 bg-gradient-to-r from-emerald-500 to-green-600 rounded-2xl flex items-center justify-center mr-4">
+                                  <span className="text-lg">{getSportIcon(selectedSport)}</span>
+                                </div>
+                                <div>
+                                  <p className="font-semibold text-gray-900 dark:text-white">{event.title}</p>
+                  <p className="text-sm text-gray-600 dark:text-gray-400">
+                                      {format(event.parsedDate || new Date(event.startsAt), 'dd.MM.yyyy HH:mm')} Uhr
+                  </p>
+                </div>
                               </div>
-                              <div>
-                                <p className="font-semibold text-gray-900 dark:text-white">{event.title}</p>
-              <p className="text-sm text-gray-600 dark:text-gray-400">
-                                  {format(new Date(event.startsAt), 'dd.MM.yyyy HH:mm')} Uhr
-              </p>
-            </div>
-                            </div>
-                            <div className="opacity-0 group-hover/event:opacity-100 transition-opacity duration-200">
-                              <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                              </svg>
-                            </div>
-                      </div>
-                        ));
+                              <div className="opacity-0 group-hover/event:opacity-100 transition-opacity duration-200">
+                                <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                                </svg>
+                              </div>
+                        </div>
+                          );
+                        });
                       })()}
                     </div>
                   </div>
