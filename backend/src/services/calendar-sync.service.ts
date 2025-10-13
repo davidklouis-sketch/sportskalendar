@@ -340,6 +340,8 @@ export class CalendarSyncService {
       const leagueMapping: Record<string, { id: number, name: string }> = {
         '4328': { id: 2021, name: 'Premier League' },        // Premier League
         '4331': { id: 2002, name: 'Bundesliga' },            // Bundesliga  
+        '78': { id: 2002, name: 'Bundesliga' },              // Bundesliga (alternative ID)
+        '39': { id: 2021, name: 'Premier League' },          // Premier League (alternative ID)
         '4480': { id: 2001, name: 'Champions League' },      // UEFA Champions League
         '4497': { id: 2018, name: 'European Championship' }  // UEFA European Championship
       };
@@ -347,8 +349,11 @@ export class CalendarSyncService {
       const competition = leagueMapping[leagueId];
       if (!competition) {
         console.log(`[Calendar Sync] Unknown league ID ${leagueId} for Football-Data.org`);
+        console.log(`[Calendar Sync] Available league mappings:`, Object.keys(leagueMapping));
         return [];
       }
+      
+      console.log(`[Calendar Sync] Using Football-Data.org competition ${competition.id} (${competition.name}) for league ${leagueId}`);
 
       const headers = { 'X-Auth-Token': apiKey };
       
@@ -390,7 +395,20 @@ export class CalendarSyncService {
   private async getApiFootballEvents(leagueId: string, apiKey: string): Promise<any[]> {
     try {
       const headers = { 'x-apisports-key': apiKey };
-      const url = `https://v3.football.api-sports.io/fixtures?league=${leagueId}&next=50&timezone=Europe/Berlin`;
+      
+      // Map internal league IDs to API-FOOTBALL league IDs
+      const apiFootballMapping: Record<string, string> = {
+        '78': '78',      // Bundesliga
+        '39': '39',      // Premier League
+        '4328': '39',    // Premier League (alternative)
+        '4331': '78',    // Bundesliga (alternative)
+        '2': '2',        // Champions League
+        '4': '4'         // European Championship
+      };
+      
+      const apiFootballLeagueId = apiFootballMapping[leagueId] || leagueId;
+      console.log(`[Calendar Sync] Using API-FOOTBALL league ${apiFootballLeagueId} for internal league ${leagueId}`);
+      const url = `https://v3.football.api-sports.io/fixtures?league=${apiFootballLeagueId}&next=50&timezone=Europe/Berlin`;
       
       const response = await fetch(url, { headers });
       if (!response.ok) {
