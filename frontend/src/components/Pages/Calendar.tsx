@@ -475,22 +475,40 @@ export function Calendar() {
 
   // Find the next upcoming event from all loaded events
   const findNextEvent = () => {
-    const allEvents = [
-      ...footballEvents,
-      ...f1Events,
-      ...nflEvents,
-      ...nbaEvents,
-      ...nhlEvents,
-      ...mlbEvents,
-      ...tennisEvents,
-    ];
+    // Only include events from user's selected teams, not all events
+    const userSelectedSports = user?.selectedTeams?.map((team: any) => team.sport) || [];
+    
+    const relevantEvents = [];
+    
+    // Only add events from sports that the user has teams selected for
+    if (userSelectedSports.includes('football')) {
+      relevantEvents.push(...footballEvents);
+    }
+    if (userSelectedSports.includes('f1')) {
+      relevantEvents.push(...f1Events);
+    }
+    if (userSelectedSports.includes('nfl')) {
+      relevantEvents.push(...nflEvents);
+    }
+    if (userSelectedSports.includes('nba')) {
+      relevantEvents.push(...nbaEvents);
+    }
+    if (userSelectedSports.includes('nhl')) {
+      relevantEvents.push(...nhlEvents);
+    }
+    if (userSelectedSports.includes('mlb')) {
+      relevantEvents.push(...mlbEvents);
+    }
+    if (userSelectedSports.includes('tennis')) {
+      relevantEvents.push(...tennisEvents);
+    }
 
-    if (allEvents.length === 0) {
+    if (relevantEvents.length === 0) {
       setNextEvent(null);
       return;
     }
 
-    const upcomingEvents = filterFutureEvents(allEvents);
+    const upcomingEvents = filterFutureEvents(relevantEvents);
 
     if (upcomingEvents.length > 0) {
       const nextEvent = upcomingEvents[0]!;
@@ -655,12 +673,12 @@ export function Calendar() {
     }
   }, [showTeamSelector]);
 
-  // Update next event when events change
+  // Update next event when events change or user teams change
   useEffect(() => {
     if (!isLoading) {
       findNextEvent();
     }
-  }, [footballEvents, f1Events, nflEvents, nbaEvents, nhlEvents, mlbEvents, tennisEvents, isLoading]);
+  }, [footballEvents, f1Events, nflEvents, nbaEvents, nhlEvents, mlbEvents, tennisEvents, isLoading, user?.selectedTeams]);
 
   // Force load events if we have teams but no events after 2 seconds
   useEffect(() => {
