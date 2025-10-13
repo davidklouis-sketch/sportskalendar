@@ -31,7 +31,7 @@ highlightsRouter.get('/', async (req, res) => {
         console.log(`[Highlights API] Got ${external.length} external highlights for ${sport}`);
         let items = external;
         
-        // Filter by team if provided
+        // Filter by team if provided (but be more lenient)
         if (team && items.length > 0) {
           console.log(`[Highlights API] Filtering by team: ${team}`);
           const teamVariations = getTeamVariations(team);
@@ -40,9 +40,17 @@ highlightsRouter.get('/', async (req, res) => {
           const beforeFilter = items.length;
           items = items.filter((highlight: HighlightItem) => {
             const searchText = (highlight.title + ' ' + (highlight.description || '')).toLowerCase();
-            return teamVariations.some(variation => searchText.includes(variation.toLowerCase()));
+            const matches = teamVariations.some(variation => searchText.includes(variation.toLowerCase()));
+            console.log(`[Highlights API] Highlight "${highlight.title}" matches team variations: ${matches}`);
+            return matches;
           });
           console.log(`[Highlights API] Team filtering: ${beforeFilter} -> ${items.length} highlights`);
+          
+          // If no items match, return general sport highlights instead of empty result
+          if (items.length === 0) {
+            console.log(`[Highlights API] No team-specific highlights found, returning general ${sport} highlights`);
+            items = external; // Return all highlights for the sport
+          }
         }
         
         if (query) items = items.filter(h => (h.title + ' ' + (h.description || '')).toLowerCase().includes(query.toLowerCase()));
