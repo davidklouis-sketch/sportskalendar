@@ -44,10 +44,10 @@ export function Calendar() {
   const [footballEvents, setFootballEvents] = useState<Event[]>([]);
   const [f1Events, setF1Events] = useState<Event[]>([]);
   const [nflEvents, setNflEvents] = useState<Event[]>([]);
-  const [_nbaEvents, _setNbaEvents] = useState<Event[]>([]);
-  const [_nhlEvents, _setNhlEvents] = useState<Event[]>([]);
-  const [_mlbEvents, _setMlbEvents] = useState<Event[]>([]);
-  const [_tennisEvents, _setTennisEvents] = useState<Event[]>([]);
+  const [nbaEvents, setNbaEvents] = useState<Event[]>([]);
+  const [nhlEvents, setNhlEvents] = useState<Event[]>([]);
+  const [mlbEvents, setMlbEvents] = useState<Event[]>([]);
+  const [tennisEvents, setTennisEvents] = useState<Event[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   
   const [selectedSport, setSelectedSport] = useState<'football' | 'nfl' | 'f1' | 'nba' | 'nhl' | 'mlb' | 'tennis' | null>(null);
@@ -86,10 +86,10 @@ export function Calendar() {
       setFootballEvents([]);
       setF1Events([]);
       setNflEvents([]);
-      _setNbaEvents([]);
-      _setNhlEvents([]);
-      _setMlbEvents([]);
-      _setTennisEvents([]);
+      setNbaEvents([]);
+      setNhlEvents([]);
+      setMlbEvents([]);
+      setTennisEvents([]);
       
       // Load Football Events
       const footballTeams = teams.filter(t => t.sport === 'football');
@@ -210,10 +210,10 @@ export function Calendar() {
             return teamNames.some(teamName => eventTitle.includes(teamName));
           });
           
-          _setNbaEvents(events);
+          setNbaEvents(events);
         } catch (error) {
           console.error('Failed to load NBA events:', error);
-          _setNbaEvents([]);
+          setNbaEvents([]);
         }
       }
       
@@ -241,10 +241,10 @@ export function Calendar() {
             return teamNames.some(teamName => eventTitle.includes(teamName));
           });
           
-          _setNhlEvents(events);
+          setNhlEvents(events);
         } catch (error) {
           console.error('Failed to load NHL events:', error);
-          _setNhlEvents([]);
+          setNhlEvents([]);
         }
       }
       
@@ -272,10 +272,10 @@ export function Calendar() {
             return teamNames.some(teamName => eventTitle.includes(teamName));
           });
           
-          _setMlbEvents(events);
+          setMlbEvents(events);
         } catch (error) {
           console.error('Failed to load MLB events:', error);
-          _setMlbEvents([]);
+          setMlbEvents([]);
         }
       }
       
@@ -293,10 +293,10 @@ export function Calendar() {
             return tourNames.some(tourName => eventTitle.includes(tourName));
           });
           
-          _setTennisEvents(events);
+          setTennisEvents(events);
         } catch (error) {
           console.error('Failed to load Tennis events:', error);
-          _setTennisEvents([]);
+          setTennisEvents([]);
         }
       }
       
@@ -317,10 +317,10 @@ export function Calendar() {
       ...footballEvents,
       ...f1Events,
       ...nflEvents,
-      ..._nbaEvents,
-      ..._nhlEvents,
-      ..._mlbEvents,
-      ..._tennisEvents,
+      ...nbaEvents,
+      ...nhlEvents,
+      ...mlbEvents,
+      ...tennisEvents,
     ];
 
     if (allEvents.length === 0) {
@@ -469,8 +469,8 @@ export function Calendar() {
       setLocalTeams(teams);
       
       // Only load if teams actually changed OR if we don't have events yet
-      const hasEvents = footballEvents.length > 0 || f1Events.length > 0 || _nbaEvents.length > 0 || 
-                       nflEvents.length > 0 || _nhlEvents.length > 0 || _mlbEvents.length > 0 || _tennisEvents.length > 0;
+      const hasEvents = footballEvents.length > 0 || f1Events.length > 0 || nbaEvents.length > 0 || 
+                       nflEvents.length > 0 || nhlEvents.length > 0 || mlbEvents.length > 0 || tennisEvents.length > 0;
       
       if (lastTeamsRef.current !== teamsString || !hasEvents) {
         lastTeamsRef.current = teamsString;
@@ -491,10 +491,10 @@ export function Calendar() {
       setFootballEvents([]);
       setF1Events([]);
       setNflEvents([]);
-      _setNbaEvents([]);
-      _setNhlEvents([]);
-      _setMlbEvents([]);
-      _setTennisEvents([]);
+      setNbaEvents([]);
+      setNhlEvents([]);
+      setMlbEvents([]);
+      setTennisEvents([]);
     }
   }, [user?.selectedTeams]);
 
@@ -543,13 +543,13 @@ export function Calendar() {
     if (!isLoading) {
       findNextEvent();
     }
-  }, [footballEvents, f1Events, nflEvents, _nbaEvents, _nhlEvents, _mlbEvents, _tennisEvents, isLoading]);
+  }, [footballEvents, f1Events, nflEvents, nbaEvents, nhlEvents, mlbEvents, tennisEvents, isLoading]);
 
   // Force load events if we have teams but no events after 2 seconds
   useEffect(() => {
     if (localTeams.length > 0) {
-      const hasEvents = footballEvents.length > 0 || f1Events.length > 0 || _nbaEvents.length > 0 || 
-                       nflEvents.length > 0 || _nhlEvents.length > 0 || _mlbEvents.length > 0 || _tennisEvents.length > 0;
+      const hasEvents = footballEvents.length > 0 || f1Events.length > 0 || nbaEvents.length > 0 || 
+                       nflEvents.length > 0 || nhlEvents.length > 0 || mlbEvents.length > 0 || tennisEvents.length > 0;
       
       if (!hasEvents && !isLoading) {
         const timer = setTimeout(() => {
@@ -559,7 +559,7 @@ export function Calendar() {
         return () => clearTimeout(timer);
       }
     }
-  }, [localTeams, footballEvents, f1Events, _nbaEvents, nflEvents, _nhlEvents, _mlbEvents, _tennisEvents, isLoading]);
+  }, [localTeams, footballEvents, f1Events, nbaEvents, nflEvents, nhlEvents, mlbEvents, tennisEvents, isLoading]);
 
   const handleAddTeam = async (sport: string, teamName: string, teamId?: string, leagueId?: number) => {
     if (!user) return;
@@ -861,10 +861,10 @@ export function Calendar() {
                             const events = selectedSport === 'football' ? footballEvents : 
                                          selectedSport === 'f1' ? f1Events : 
                                          selectedSport === 'nfl' ? nflEvents :
-                                         selectedSport === 'nba' ? _nbaEvents :
-                                         selectedSport === 'nhl' ? _nhlEvents :
-                                         selectedSport === 'mlb' ? _mlbEvents :
-                                         selectedSport === 'tennis' ? _tennisEvents : [];
+                                         selectedSport === 'nba' ? nbaEvents :
+                                         selectedSport === 'nhl' ? nhlEvents :
+                                         selectedSport === 'mlb' ? mlbEvents :
+                                         selectedSport === 'tennis' ? tennisEvents : [];
                             return `${events.length} ${t('upcomingGames')}`;
                           })()}
                         </p>
@@ -881,10 +881,10 @@ export function Calendar() {
                         const events = selectedSport === 'football' ? footballEvents : 
                                      selectedSport === 'f1' ? f1Events : 
                                      selectedSport === 'nfl' ? nflEvents :
-                                     selectedSport === 'nba' ? _nbaEvents :
-                                     selectedSport === 'nhl' ? _nhlEvents :
-                                     selectedSport === 'mlb' ? _mlbEvents :
-                                     selectedSport === 'tennis' ? _tennisEvents : [];
+                                     selectedSport === 'nba' ? nbaEvents :
+                                     selectedSport === 'nhl' ? nhlEvents :
+                                     selectedSport === 'mlb' ? mlbEvents :
+                                     selectedSport === 'tennis' ? tennisEvents : [];
                         
                         if (events.length === 0) {
                           return (
