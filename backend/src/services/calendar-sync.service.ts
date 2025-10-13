@@ -182,17 +182,33 @@ export class CalendarSyncService {
       console.log(`[Calendar Sync] Processing team: ${team.sport} - ${team.teamName}`);
       
       if (team.sport === 'football') {
-        // Get football events from Football-Data.org API (more complete than TheSportsDB)
-        console.log(`[Calendar Sync] Fetching football events for league ${team.leagueId}`);
-        const footballEvents = await this.getFootballEventsFromAPI(team.leagueId);
+        // Use the same method as the app - getFootballEventsMultipleLeagues
+        console.log(`[Calendar Sync] Fetching football events for league ${team.leagueId} (same as app)`);
+        const season = '2025-26'; // Same season as app
+        const footballEvents = await this.theSportsDBService.getFootballEventsMultipleLeagues([team.leagueId], season);
         console.log(`[Calendar Sync] Raw football events: ${footballEvents.length}`);
         const transformed = this.transformFootballEvents(footballEvents, team);
         console.log(`[Calendar Sync] Transformed football events: ${transformed.length}`);
         events.push(...transformed);
       } else if (team.sport === 'nba') {
         console.log(`[Calendar Sync] Fetching NBA events`);
-        const nbaEvents = await this.theSportsDBService.getNBAEvents('2025-26');
+        // Use the same season logic as the app
+        const currentYear = new Date().getFullYear();
+        const currentMonth = new Date().getMonth() + 1; // 1-12
+        
+        let season = '';
+        if (currentMonth >= 10) {
+          // October onwards - current season
+          season = `${currentYear}-${(currentYear + 1).toString().slice(-2)}`;
+        } else {
+          // Before October - previous season
+          season = `${currentYear - 1}-${currentYear.toString().slice(-2)}`;
+        }
+        
+        console.log(`[Calendar Sync] Using NBA season: ${season} (same as app)`);
+        const nbaEvents = await this.theSportsDBService.getNBAEvents(season);
         console.log(`[Calendar Sync] Raw NBA events: ${nbaEvents.length}`);
+        
         const transformed = this.transformNBAEvents(nbaEvents, team);
         console.log(`[Calendar Sync] Transformed NBA events: ${transformed.length}`);
         events.push(...transformed);
@@ -382,19 +398,31 @@ export class CalendarSyncService {
       const footballDataKey = process.env.FOOTBALL_DATA_KEY;
       if (footballDataKey && footballDataKey !== 'your_football_data_api_key') {
         console.log(`[Calendar Sync] Using Football-Data.org API for league ${leagueId}`);
-        return await this.getFootballDataOrgEvents(leagueId, footballDataKey);
+        const events = await this.getFootballDataOrgEvents(leagueId, footballDataKey);
+        if (events.length > 0) {
+          console.log(`[Calendar Sync] Football-Data.org returned ${events.length} events`);
+          return events;
+        }
+        console.log(`[Calendar Sync] Football-Data.org returned 0 events, trying fallback`);
       }
       
       // Fallback to API-FOOTBALL
       const apiFootballKey = process.env.API_FOOTBALL_KEY;
       if (apiFootballKey && apiFootballKey !== 'your_api_football_key') {
         console.log(`[Calendar Sync] Using API-FOOTBALL for league ${leagueId}`);
-        return await this.getApiFootballEvents(leagueId, apiFootballKey);
+        const events = await this.getApiFootballEvents(leagueId, apiFootballKey);
+        if (events.length > 0) {
+          console.log(`[Calendar Sync] API-FOOTBALL returned ${events.length} events`);
+          return events;
+        }
+        console.log(`[Calendar Sync] API-FOOTBALL returned 0 events, trying fallback`);
       }
       
       // Final fallback to TheSportsDB
       console.log(`[Calendar Sync] Using TheSportsDB fallback for league ${leagueId}`);
-      return await this.theSportsDBService.getFootballEvents(leagueId, '2025-26');
+      const events = await this.theSportsDBService.getFootballEvents(leagueId, '2025-26');
+      console.log(`[Calendar Sync] TheSportsDB returned ${events.length} events`);
+      return events;
     } catch (error) {
       console.error('Error fetching football events:', error);
       return [];
@@ -547,8 +575,8 @@ export class CalendarSyncService {
       description: isDriverSpecific 
         ? `Formula 1 - ${team.teamName} - ${event.strVenue || 'TBD'}`
         : `Formula 1 - ${event.strVenue || 'TBD'}`,
-      startDate: `${event.dateEvent}T${event.strTime || '15:00:00'}`,
-      endDate: `${event.dateEvent}T${this.addMinutes(event.strTime || '15:00:00', 120)}`, // 120 minutes for F1
+      startDate: `${event.dateEvent}T${event.strTime}`,
+      endDate: `${event.dateEvent}T${this.addMinutes(event.strTime, 120)}`, // 120 minutes for F1
       location: event.strVenue || 'TBD',
       sport: 'f1',
       status: event.strStatus
