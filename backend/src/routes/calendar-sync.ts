@@ -136,10 +136,11 @@ calendarSyncRouter.get('/debug-user', requireAuth, async (req, res) => {
         count: events.length,
         sample: events.slice(0, 3) // First 3 events as sample
       },
-      environment: {
-        FOOTBALL_DATA_KEY: process.env.FOOTBALL_DATA_KEY ? 'SET' : 'NOT_SET',
-        API_FOOTBALL_KEY: process.env.API_FOOTBALL_KEY ? 'SET' : 'NOT_SET'
-      }
+                  environment: {
+                    FOOTBALL_DATA_KEY: process.env.FOOTBALL_DATA_KEY ? 'SET' : 'NOT_SET',
+                    API_FOOTBALL_KEY: process.env.API_FOOTBALL_KEY ? 'SET' : 'NOT_SET',
+                    THESPORTSDB_API_KEY: process.env.THESPORTSDB_API_KEY ? 'SET' : 'NOT_SET'
+                  }
     });
   } catch (error) {
     console.error('[Calendar Sync] Debug user error:', error);

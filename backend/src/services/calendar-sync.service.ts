@@ -198,16 +198,27 @@ export class CalendarSyncService {
         
         let season = '';
         if (currentMonth >= 10) {
-          // October onwards - current season
+          // October onwards - current season (NBA starts in October)
           season = `${currentYear}-${(currentYear + 1).toString().slice(-2)}`;
+        } else if (currentMonth >= 6) {
+          // June-September - previous season still active (finals)
+          season = `${currentYear - 1}-${currentYear.toString().slice(-2)}`;
         } else {
-          // Before October - previous season
+          // January-May - previous season
           season = `${currentYear - 1}-${currentYear.toString().slice(-2)}`;
         }
         
         console.log(`[Calendar Sync] Using NBA season: ${season} (same as app)`);
-        const nbaEvents = await this.theSportsDBService.getNBAEvents(season);
-        console.log(`[Calendar Sync] Raw NBA events: ${nbaEvents.length}`);
+        let nbaEvents = await this.theSportsDBService.getNBAEvents(season);
+        console.log(`[Calendar Sync] Raw NBA events for ${season}: ${nbaEvents.length}`);
+        
+        // If no events found for current season, try previous season as fallback
+        if (nbaEvents.length === 0 && currentMonth >= 10) {
+          const prevSeason = `${currentYear - 1}-${currentYear.toString().slice(-2)}`;
+          console.log(`[Calendar Sync] No events for ${season}, trying previous season: ${prevSeason}`);
+          nbaEvents = await this.theSportsDBService.getNBAEvents(prevSeason);
+          console.log(`[Calendar Sync] Raw NBA events for ${prevSeason}: ${nbaEvents.length}`);
+        }
         
         const transformed = this.transformNBAEvents(nbaEvents, team);
         console.log(`[Calendar Sync] Transformed NBA events: ${transformed.length}`);
