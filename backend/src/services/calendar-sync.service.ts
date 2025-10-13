@@ -263,14 +263,49 @@ export class CalendarSyncService {
         events.push(...transformed);
       } else if (team.sport === 'nhl') {
         console.log(`[Calendar Sync] Fetching NHL events`);
-        const nhlEvents = await this.theSportsDBService.getNHLEvents();
+        // Use EXACT same season logic as the working app
+        const now = new Date();
+        const currentYear = now.getFullYear();
+        const currentMonth = now.getMonth() + 1; // 1-12
+        
+        // NHL season starts in October (month 10) and ends in June (month 6)
+        let season: string;
+        if (currentMonth >= 10) {
+          // October-December: current year to next year
+          season = `${currentYear}-${currentYear + 1}`;
+        } else if (currentMonth <= 6) {
+          // January-June: previous year to current year
+          season = `${currentYear - 1}-${currentYear}`;
+        } else {
+          // July-September: previous year to current year (off-season)
+          season = `${currentYear - 1}-${currentYear}`;
+        }
+        
+        console.log(`[Calendar Sync] Using NHL season: ${season} (exact same logic as app)`);
+        const nhlEvents = await this.theSportsDBService.getNHLEvents(season);
         console.log(`[Calendar Sync] Raw NHL events: ${nhlEvents.length}`);
         const transformed = this.transformNHLEvents(nhlEvents, team);
         console.log(`[Calendar Sync] Transformed NHL events: ${transformed.length}`);
         events.push(...transformed);
       } else if (team.sport === 'mlb') {
         console.log(`[Calendar Sync] Fetching MLB events`);
-        const mlbEvents = await this.theSportsDBService.getMLBEvents();
+        // Use EXACT same season logic as the working app
+        const now = new Date();
+        const currentYear = now.getFullYear();
+        const currentMonth = now.getMonth() + 1; // 1-12
+        
+        // MLB season starts in March (month 3) and ends in October (month 10)
+        let season: string;
+        if (currentMonth >= 3 && currentMonth <= 10) {
+          // March-October: current year
+          season = currentYear.toString();
+        } else {
+          // November-February: previous year (off-season)
+          season = (currentYear - 1).toString();
+        }
+        
+        console.log(`[Calendar Sync] Using MLB season: ${season} (exact same logic as app)`);
+        const mlbEvents = await this.theSportsDBService.getMLBEvents(season);
         console.log(`[Calendar Sync] Raw MLB events: ${mlbEvents.length}`);
         const transformed = this.transformMLBEvents(mlbEvents, team);
         console.log(`[Calendar Sync] Transformed MLB events: ${transformed.length}`);
@@ -280,8 +315,16 @@ export class CalendarSyncService {
         // Skip individual team processing for F1
         console.log(`[Calendar Sync] Skipping individual F1 processing for ${team.teamName}`);
       } else if (team.sport === 'tennis') {
-        console.log(`[Calendar Sync] Tennis events not yet implemented - skipping`);
-        // TODO: Implement Tennis API when available
+        console.log(`[Calendar Sync] Fetching Tennis events`);
+        // Use EXACT same logic as the working app
+        const season = '2024'; // Tennis uses current year
+        
+        console.log(`[Calendar Sync] Using Tennis season: ${season} (exact same logic as app)`);
+        const tennisEvents = await this.theSportsDBService.getATPEvents(season);
+        console.log(`[Calendar Sync] Raw Tennis events: ${tennisEvents.length}`);
+        const transformed = this.transformTennisEvents(tennisEvents, team);
+        console.log(`[Calendar Sync] Transformed Tennis events: ${transformed.length}`);
+        events.push(...transformed);
       } else if (team.sport === 'nfl') {
         console.log(`[Calendar Sync] NFL events not yet implemented - skipping`);
         // TODO: Implement NFL API when available
@@ -451,6 +494,43 @@ export class CalendarSyncService {
       awayTeam: event.strAwayTeam,
       homeTeamBadge: event.strHomeTeamBadge,
       awayTeamBadge: event.strAwayTeamBadge,
+      status: event.strStatus,
+      homeScore: event.intHomeScore,
+      awayScore: event.intAwayScore
+    }));
+  }
+
+  private transformTennisEvents(tennisEvents: any[], team: any): CalendarEvent[] {
+    console.log(`[Calendar Sync] Filtering Tennis events for team: ${team.teamName}`);
+    
+    // Filter events that include the selected team/player
+    const teamEvents = tennisEvents.filter(event => {
+      const homeTeam = event.strHomeTeam?.toLowerCase() || '';
+      const awayTeam = event.strAwayTeam?.toLowerCase() || '';
+      const selectedTeam = team.teamName.toLowerCase();
+      
+      const isMatch = homeTeam.includes(selectedTeam) || awayTeam.includes(selectedTeam) ||
+                     selectedTeam.includes(homeTeam) || selectedTeam.includes(awayTeam);
+      
+      if (isMatch) {
+        console.log(`[Calendar Sync] Tennis match found: ${event.strHomeTeam} vs ${event.strAwayTeam} for ${team.teamName}`);
+      }
+      
+      return isMatch;
+    });
+    
+    console.log(`[Calendar Sync] Found ${teamEvents.length} Tennis events for ${team.teamName} out of ${tennisEvents.length} total events`);
+    
+    return teamEvents.map(event => ({
+      id: `tennis_${event.idEvent}`,
+      title: `${event.strHomeTeam} vs ${event.strAwayTeam}`,
+      description: `Tennis - ${event.strVenue || 'TBD'}`,
+      startDate: `${event.dateEvent}T${event.strTime || '14:00:00'}`,
+      endDate: `${event.dateEvent}T${this.addMinutes(event.strTime || '14:00:00', 180)}`, // 180 minutes for Tennis
+      location: event.strVenue || 'TBD',
+      sport: 'tennis',
+      homeTeam: event.strHomeTeam,
+      awayTeam: event.strAwayTeam,
       status: event.strStatus,
       homeScore: event.intHomeScore,
       awayScore: event.intAwayScore
