@@ -220,17 +220,17 @@ export const liveApi = {
   // Fußball Live-Daten
   getSoccer: () => api.get('/live/soccer'),
   
-  // NBA Events (TheSportsDB)
-  getNBA: () => api.get('/sports/nba/events'),
+  // NBA Live-Daten
+  getNBA: () => api.get('/live/nba'),
   
-  // NHL Events (TheSportsDB)
-  getNHL: () => api.get('/sports/nhl/events'),
+  // NHL Live-Daten
+  getNHL: () => api.get('/live/nhl'),
   
-  // MLB Events (TheSportsDB)
-  getMLB: () => api.get('/sports/mlb/events'),
+  // MLB Live-Daten
+  getMLB: () => api.get('/live/mlb'),
   
-  // Tennis Events (TheSportsDB - ATP)
-  getTennis: () => api.get('/sports/tennis/atp'),
+  // Tennis Live-Daten
+  getTennis: () => api.get('/live/tennis'),
 };
 
 /**
