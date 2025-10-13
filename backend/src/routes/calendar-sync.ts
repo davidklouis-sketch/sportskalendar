@@ -43,7 +43,7 @@ calendarSyncRouter.get('/export', requireAuth, async (req, res) => {
     }
     
     console.log(`[Calendar Sync] Export completed for user ${userId}`);
-  } catch (error) {
+  } catch (error: unknown) {
     console.error('[Calendar Sync] Export error:', error);
     res.status(500).json({ error: 'Failed to generate calendar export' });
   }
@@ -70,7 +70,7 @@ calendarSyncRouter.get('/url', requireAuth, async (req, res) => {
     });
     
     console.log(`[Calendar Sync] Sync URL generated for user ${userId}`);
-  } catch (error) {
+  } catch (error: unknown) {
     console.error('[Calendar Sync] URL generation error:', error);
     res.status(500).json({ error: 'Failed to generate sync URL' });
   }
@@ -98,9 +98,10 @@ calendarSyncRouter.get('/status', requireAuth, async (req, res) => {
     
     console.log('[Calendar Sync] Status generated successfully:', status);
     res.json(status);
-  } catch (error) {
+  } catch (error: unknown) {
     console.error('[Calendar Sync] Status error:', error);
-    res.status(500).json({ error: 'Failed to get sync status', details: error.message });
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+    res.status(500).json({ error: 'Failed to get sync status', details: errorMessage });
   }
 });
 
@@ -116,7 +117,7 @@ calendarSyncRouter.post('/settings', requireAuth, async (req, res) => {
     await calendarSyncService.updateSyncSettings(userId, settings);
     
     res.json({ success: true, message: 'Calendar sync settings updated' });
-  } catch (error) {
+  } catch (error: unknown) {
     console.error('[Calendar Sync] Settings update error:', error);
     res.status(500).json({ error: 'Failed to update sync settings' });
   }
@@ -136,7 +137,7 @@ calendarSyncRouter.get('/events', requireAuth, async (req, res) => {
     const events = await calendarSyncService.getCalendarEvents(userId, startDate, endDate, sport);
     
     res.json({ events });
-  } catch (error) {
+  } catch (error: unknown) {
     console.error('[Calendar Sync] Events error:', error);
     res.status(500).json({ error: 'Failed to get calendar events' });
   }
