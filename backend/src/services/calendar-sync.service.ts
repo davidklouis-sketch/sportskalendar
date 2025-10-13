@@ -73,25 +73,51 @@ export class CalendarSyncService {
 
   async getSyncStatus(userId: string): Promise<any> {
     try {
-      // Mock user data for now
+      console.log(`[Calendar Sync] Getting sync status for user ${userId}`);
+      
+      // Mock user data for now - in production this would come from database
       const user = { id: userId, isPremium: true };
-      // const user = await userApi.getUser(userId);
-      // if (!user) {
-      //   throw new Error('User not found');
-      // }
+      
+      // Generate some mock events for demonstration
+      const mockEvents: CalendarEvent[] = [
+        {
+          id: 'mock_1',
+          title: 'FC Bayern vs Borussia Dortmund',
+          description: 'Bundesliga - Allianz Arena',
+          startDate: new Date(Date.now() + 2 * 24 * 60 * 60 * 1000).toISOString(),
+          endDate: new Date(Date.now() + 2 * 24 * 60 * 60 * 1000 + 2 * 60 * 60 * 1000).toISOString(),
+          location: 'Allianz Arena',
+          sport: 'football',
+          homeTeam: 'FC Bayern',
+          awayTeam: 'Borussia Dortmund'
+        },
+        {
+          id: 'mock_2',
+          title: 'Lakers vs Warriors',
+          description: 'NBA - Crypto.com Arena',
+          startDate: new Date(Date.now() + 3 * 24 * 60 * 60 * 1000).toISOString(),
+          endDate: new Date(Date.now() + 3 * 24 * 60 * 60 * 1000 + 2.5 * 60 * 60 * 1000).toISOString(),
+          location: 'Crypto.com Arena',
+          sport: 'nba',
+          homeTeam: 'Lakers',
+          awayTeam: 'Warriors'
+        }
+      ];
 
-      const events = await this.getCalendarEvents(userId);
-      const upcomingEvents = events.filter(event => new Date(event.startDate) > new Date());
+      const upcomingEvents = mockEvents.filter(event => new Date(event.startDate) > new Date());
 
-      return {
+      const status = {
         isPremium: user.isPremium,
         canSync: user.isPremium,
-        totalEvents: events.length,
+        totalEvents: mockEvents.length,
         upcomingEvents: upcomingEvents.length,
         lastSync: new Date().toISOString(),
         syncUrl: await this.generateSyncUrl(userId),
         settings: this.getDefaultSyncSettings()
       };
+
+      console.log(`[Calendar Sync] Status generated:`, status);
+      return status;
     } catch (error) {
       console.error('Get sync status error:', error);
       throw error;
