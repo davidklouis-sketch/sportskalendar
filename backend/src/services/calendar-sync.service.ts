@@ -182,9 +182,26 @@ export class CalendarSyncService {
       console.log(`[Calendar Sync] Processing team: ${team.sport} - ${team.teamName}`);
       
       if (team.sport === 'football') {
-        // Use the same method as the app - getFootballEventsMultipleLeagues
-        console.log(`[Calendar Sync] Fetching football events for league ${team.leagueId} (same as app)`);
-        const season = '2025-26'; // Same season as app
+        // Use EXACT same season logic as the working app
+        console.log(`[Calendar Sync] Fetching football events for league ${team.leagueId}`);
+        const now = new Date();
+        const currentYear = now.getFullYear(); // 2025
+        const currentMonth = now.getMonth() + 1; // 10 (October)
+        
+        // Football season starts in August (month 8) and ends in May (month 5)
+        let season: string;
+        if (currentMonth >= 8) {
+          // August-December: current year to next year
+          season = `${currentYear}-${currentYear + 1}`; // 2025-2026
+        } else if (currentMonth <= 5) {
+          // January-May: previous year to current year
+          season = `${currentYear - 1}-${currentYear}`; // 2024-2025
+        } else {
+          // June-July: previous year to current year (off-season)
+          season = `${currentYear - 1}-${currentYear}`; // 2024-2025
+        }
+        
+        console.log(`[Calendar Sync] Using football season: ${season} (exact same logic as app)`);
         const footballEvents = await this.theSportsDBService.getFootballEventsMultipleLeagues([team.leagueId], season);
         console.log(`[Calendar Sync] Raw football events: ${footballEvents.length}`);
         const transformed = this.transformFootballEvents(footballEvents, team);
@@ -192,11 +209,25 @@ export class CalendarSyncService {
         events.push(...transformed);
       } else if (team.sport === 'nba') {
         console.log(`[Calendar Sync] Fetching NBA events`);
-        // Use the same season logic as the app
-        // NBA season 2025-26 is currently active (October 2025 - June 2026)
-        const season = '2025-2026'; // Current season since we're in October 2025
+        // Use EXACT same season logic as the working app
+        const now = new Date();
+        const currentYear = now.getFullYear();
+        const currentMonth = now.getMonth() + 1; // 1-12
         
-        console.log(`[Calendar Sync] Using NBA season: ${season} (current season)`);
+        // NBA season starts in October (month 10) and ends in June (month 6)
+        let season: string;
+        if (currentMonth >= 10) {
+          // October-December: current year to next year
+          season = `${currentYear}-${currentYear + 1}`;
+        } else if (currentMonth <= 6) {
+          // January-June: previous year to current year
+          season = `${currentYear - 1}-${currentYear}`;
+        } else {
+          // July-September: previous year to current year (off-season)
+          season = `${currentYear - 1}-${currentYear}`;
+        }
+        
+        console.log(`[Calendar Sync] Using NBA season: ${season} (exact same logic as app)`);
         const nbaEvents = await this.theSportsDBService.getNBAEvents(season);
         console.log(`[Calendar Sync] Raw NBA events for ${season}: ${nbaEvents.length}`);
         
