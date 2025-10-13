@@ -1,7 +1,18 @@
 import { Router, Request, Response } from 'express';
-import { theSportsDBService } from '../services/thesportsdb.service';
+import { theSportsDBService, LEAGUE_IDS } from '../services/thesportsdb.service';
 
 const sportsRouter = Router();
+
+// Mapping from frontend league IDs to TheSportsDB league IDs
+const FOOTBALL_LEAGUE_MAPPING: Record<number, string> = {
+  78: LEAGUE_IDS.BUNDESLIGA,           // Bundesliga
+  39: LEAGUE_IDS.PREMIER_LEAGUE,       // Premier League
+  140: LEAGUE_IDS.LA_LIGA,             // La Liga
+  135: LEAGUE_IDS.SERIE_A,             // Serie A
+  61: LEAGUE_IDS.LIGUE_1,              // Ligue 1
+  2: LEAGUE_IDS.CHAMPIONS_LEAGUE,      // Champions League
+  3: LEAGUE_IDS.EUROPA_LEAGUE,         // Europa League
+};
 
 /**
  * Get all NBA teams
@@ -426,6 +437,94 @@ sportsRouter.get('/events/search', async (req: Request, res: Response) => {
     res.status(500).json({ 
       success: false, 
       error: 'Failed to search events' 
+    });
+  }
+});
+
+/**
+ * Get Football/Soccer events
+ * Similar to NBA API - provides comprehensive event data with scores
+ */
+sportsRouter.get('/football/events', async (req: Request, res: Response) => {
+  try {
+    // Auto-detect current football season (starts in August, ends in May)
+    const now = new Date();
+    const currentYear = now.getFullYear();
+    const currentMonth = now.getMonth() + 1; // 1-12
+    
+    // Football season starts in August (month 8) and ends in May (month 5)
+    let season: string;
+    if (currentMonth >= 8) {
+      // August-December: current year to next year
+      season = `${currentYear}-${currentYear + 1}`;
+    } else if (currentMonth <= 5) {
+      // January-May: previous year to current year
+      season = `${currentYear - 1}-${currentYear}`;
+    } else {
+      // June-July: previous year to current year (off-season)
+      season = `${currentYear - 1}-${currentYear}`;
+    }
+    
+    // Allow override via query parameter
+    const requestedSeason = req.query.season as string;
+    if (requestedSeason) {
+      season = requestedSeason;
+    }
+
+    // Get leagues from query parameter (comma-separated league IDs)
+    const leaguesParam = req.query.leagues as string;
+    let leagueIds: string[] = [];
+    
+    if (leaguesParam) {
+      // Parse comma-separated league IDs and map to TheSportsDB IDs
+      const frontendLeagueIds = leaguesParam.split(',').map(id => parseInt(id.trim()));
+      leagueIds = frontendLeagueIds
+        .filter(id => FOOTBALL_LEAGUE_MAPPING[id])
+        .map(id => FOOTBALL_LEAGUE_MAPPING[id]);
+    } else {
+      // Default: fetch all major leagues
+      leagueIds = [
+        LEAGUE_IDS.BUNDESLIGA,
+        LEAGUE_IDS.PREMIER_LEAGUE,
+        LEAGUE_IDS.LA_LIGA,
+        LEAGUE_IDS.SERIE_A,
+        LEAGUE_IDS.LIGUE_1,
+      ];
+    }
+
+    console.log(`Fetching football events for season ${season}, leagues:`, leagueIds);
+
+    // Fetch events from all requested leagues
+    const events = await theSportsDBService.getFootballEventsMultipleLeagues(leagueIds, season);
+
+    const transformedEvents = events.map(event => ({
+      id: event.idEvent,
+      title: `${event.strHomeTeam} vs ${event.strAwayTeam}`,
+      sport: 'football',
+      startsAt: `${event.dateEvent} ${event.strTime || '00:00:00'}`,
+      name: event.strEvent,
+      homeTeam: event.strHomeTeam,
+      awayTeam: event.strAwayTeam,
+      homeTeamId: event.idHomeTeam,
+      awayTeamId: event.idAwayTeam,
+      homeScore: event.intHomeScore,
+      awayScore: event.intAwayScore,
+      status: event.strStatus,
+      date: event.dateEvent,
+      time: event.strTime,
+      timestamp: event.strTimestamp,
+      venue: event.strVenue,
+      league: event.strLeague,
+    }));
+
+    console.log(`Returning ${transformedEvents.length} football events`);
+
+    res.json({ success: true, events: transformedEvents, season, leagues: leagueIds });
+  } catch (error) {
+    console.error('Error fetching football events:', error);
+    res.status(500).json({ 
+      success: false, 
+      error: 'Failed to fetch football events' 
     });
   }
 });

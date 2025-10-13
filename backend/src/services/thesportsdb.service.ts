@@ -44,6 +44,14 @@ export const LEAGUE_IDS = {
   MLB: '4424',      // Major League Baseball
   ATP: '4420',      // Tennis ATP Tour (Herren)
   WTA: '4421',      // Tennis WTA Tour (Damen)
+  // Football/Soccer Leagues
+  BUNDESLIGA: '4331',           // German Bundesliga
+  PREMIER_LEAGUE: '4328',       // English Premier League
+  LA_LIGA: '4335',              // Spanish La Liga
+  SERIE_A: '4332',              // Italian Serie A
+  LIGUE_1: '4334',              // French Ligue 1
+  CHAMPIONS_LEAGUE: '4480',     // UEFA Champions League
+  EUROPA_LEAGUE: '4481',        // UEFA Europa League
   // Weitere Ligen können hier hinzugefügt werden
 };
 
@@ -378,6 +386,110 @@ export class TheSportsDBService {
    */
   async getWTAEvents(season: string = '2024'): Promise<TheSportsDBEvent[]> {
     return this.getEventsBySeason(LEAGUE_IDS.WTA, season);
+  }
+
+  /**
+   * Get Football/Soccer events for a specific league
+   * 
+   * @param leagueId - League ID (siehe LEAGUE_IDS für Football Ligen)
+   * @param season - Saison (z.B. "2024-2025")
+   * @returns Array von Football Events
+   */
+  async getFootballEvents(leagueId: string, season: string): Promise<TheSportsDBEvent[]> {
+    return this.getEventsBySeason(leagueId, season);
+  }
+
+  /**
+   * Get Bundesliga events
+   * 
+   * @param season - Saison (default: "2024-2025")
+   * @returns Array von Bundesliga Events
+   */
+  async getBundesligaEvents(season: string = '2024-2025'): Promise<TheSportsDBEvent[]> {
+    return this.getEventsBySeason(LEAGUE_IDS.BUNDESLIGA, season);
+  }
+
+  /**
+   * Get Premier League events
+   * 
+   * @param season - Saison (default: "2024-2025")
+   * @returns Array von Premier League Events
+   */
+  async getPremierLeagueEvents(season: string = '2024-2025'): Promise<TheSportsDBEvent[]> {
+    return this.getEventsBySeason(LEAGUE_IDS.PREMIER_LEAGUE, season);
+  }
+
+  /**
+   * Get La Liga events
+   * 
+   * @param season - Saison (default: "2024-2025")
+   * @returns Array von La Liga Events
+   */
+  async getLaLigaEvents(season: string = '2024-2025'): Promise<TheSportsDBEvent[]> {
+    return this.getEventsBySeason(LEAGUE_IDS.LA_LIGA, season);
+  }
+
+  /**
+   * Get Serie A events
+   * 
+   * @param season - Saison (default: "2024-2025")
+   * @returns Array von Serie A Events
+   */
+  async getSerieAEvents(season: string = '2024-2025'): Promise<TheSportsDBEvent[]> {
+    return this.getEventsBySeason(LEAGUE_IDS.SERIE_A, season);
+  }
+
+  /**
+   * Get Ligue 1 events
+   * 
+   * @param season - Saison (default: "2024-2025")
+   * @returns Array von Ligue 1 Events
+   */
+  async getLigue1Events(season: string = '2024-2025'): Promise<TheSportsDBEvent[]> {
+    return this.getEventsBySeason(LEAGUE_IDS.LIGUE_1, season);
+  }
+
+  /**
+   * Get Champions League events
+   * 
+   * @param season - Saison (default: "2024-2025")
+   * @returns Array von Champions League Events
+   */
+  async getChampionsLeagueEvents(season: string = '2024-2025'): Promise<TheSportsDBEvent[]> {
+    return this.getEventsBySeason(LEAGUE_IDS.CHAMPIONS_LEAGUE, season);
+  }
+
+  /**
+   * Get Europa League events
+   * 
+   * @param season - Saison (default: "2024-2025")
+   * @returns Array von Europa League Events
+   */
+  async getEuropaLeagueEvents(season: string = '2024-2025'): Promise<TheSportsDBEvent[]> {
+    return this.getEventsBySeason(LEAGUE_IDS.EUROPA_LEAGUE, season);
+  }
+
+  /**
+   * Get Football events for multiple leagues
+   * Combines events from multiple football leagues
+   * 
+   * @param leagueIds - Array of league IDs
+   * @param season - Saison (default: "2024-2025")
+   * @returns Array von Football Events from all leagues
+   */
+  async getFootballEventsMultipleLeagues(leagueIds: string[], season: string = '2024-2025'): Promise<TheSportsDBEvent[]> {
+    const allEvents: TheSportsDBEvent[] = [];
+    
+    for (const leagueId of leagueIds) {
+      try {
+        const events = await this.getEventsBySeason(leagueId, season);
+        allEvents.push(...events);
+      } catch (error) {
+        console.error(`Failed to fetch events for league ${leagueId}:`, error);
+      }
+    }
+    
+    return allEvents;
   }
 }
 

@@ -14,6 +14,11 @@ interface Event {
   title: string;
   sport: string;
   startsAt: string;
+  homeTeam?: string;
+  awayTeam?: string;
+  homeScore?: string | null;
+  awayScore?: string | null;
+  status?: string;
 }
 
 interface Highlight {
@@ -96,8 +101,21 @@ export function Calendar() {
       if (footballTeams.length > 0) {
         try {
           const leagues = footballTeams.map(t => t.leagueId).filter(Boolean) as number[];
-          const response = await calendarApi.getEvents('football', leagues);
-          let events = (response.data as Event[]) || [];
+          
+          // Try new sports API first (like NBA)
+          let events: Event[] = [];
+          try {
+            const leaguesParam = leagues.join(',');
+            const directResponse = await fetch(`/api/sports/football/events?leagues=${leaguesParam}`);
+            if (directResponse.ok) {
+              const directData = await directResponse.json();
+              events = directData.events || [];
+            }
+          } catch (directError) {
+            // Fallback to old calendar API
+            const response = await calendarApi.getEvents('football', leagues);
+            events = (response.data as Event[]) || [];
+          }
           
           // Filter events for selected teams
           const teamNames = footballTeams.map(t => t.teamName.toLowerCase());
@@ -988,17 +1006,28 @@ export function Calendar() {
                           const eventDate = new Date(event.startsAt);
                           const isFuture = eventDate > new Date();
                           
+                          // Check if we have score data
+                          const hasScore = event.homeScore !== null && event.homeScore !== undefined && 
+                                          event.awayScore !== null && event.awayScore !== undefined;
+                          
                           return (
                           <div key={event.id} className="group/event flex items-center justify-between p-6 bg-gradient-to-r from-gray-50 to-gray-100 dark:from-gray-700/50 dark:to-gray-700 rounded-2xl hover:from-gray-100 hover:to-gray-200 dark:hover:from-gray-600 dark:hover:to-gray-600 transition-all duration-200 transform hover:scale-[1.02]">
-                            <div className="flex items-center">
+                            <div className="flex items-center flex-1">
                               <div className="w-10 h-10 bg-gradient-to-r from-emerald-500 to-green-600 rounded-2xl flex items-center justify-center mr-4">
                                 <span className="text-lg">{getSportIcon(selectedSport)}</span>
                               </div>
-                              <div>
+                              <div className="flex-1">
                                 <p className="font-semibold text-gray-900 dark:text-white">{event.title}</p>
                                 <p className="text-sm text-gray-600 dark:text-gray-400">
                                   {format(new Date(event.startsAt), 'dd.MM.yyyy HH:mm')} Uhr
-                                  {!isFuture && <span className="ml-2 text-xs text-orange-500">(Beendet)</span>}
+                                  {!isFuture && hasScore && (
+                                    <span className="ml-2 text-xs font-semibold text-orange-600 dark:text-orange-400">
+                                      {event.homeScore}:{event.awayScore} (Beendet)
+                                    </span>
+                                  )}
+                                  {!isFuture && !hasScore && (
+                                    <span className="ml-2 text-xs text-orange-500">(Beendet)</span>
+                                  )}
                                 </p>
                               </div>
                             </div>
