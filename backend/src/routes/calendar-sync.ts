@@ -218,38 +218,39 @@ async function testFootballAPIs(team: any) {
     tests: {}
   };
   
-  // Test Football-Data.org API
+  // Test TheSportsDB directly (same as Calendar-Sync)
   try {
-    const footballDataKey = process.env.FOOTBALL_DATA_KEY;
-    if (footballDataKey && footballDataKey !== 'your_football_data_api_key') {
-      const leagueMapping: Record<string, { id: number, name: string }> = {
-        '78': { id: 2002, name: 'Bundesliga' },
-        '39': { id: 2021, name: 'Premier League' }
-      };
-      
-      const competition = leagueMapping[team.leagueId];
-      if (competition) {
-        const headers = { 'X-Auth-Token': footballDataKey };
-        const today = new Date();
-        const thirtyDaysFromNow = new Date(today.getTime() + 30 * 24 * 60 * 60 * 1000);
-        const dateFrom = today.toISOString().split('T')[0];
-        const dateTo = thirtyDaysFromNow.toISOString().split('T')[0];
-        
-        const url = `https://api.football-data.org/v4/competitions/${competition.id}/matches?dateFrom=${dateFrom}&dateTo=${dateTo}`;
-        
-        const response = await fetch(url, { headers });
-        const data = await response.json();
-        
-        results.tests.footballDataOrg = {
-          status: response.status,
-          url: url,
-          matchCount: data?.matches?.length || 0,
-          sampleMatches: data?.matches?.slice(0, 3) || []
-        };
-      }
+    const { TheSportsDBService } = await import('../services/thesportsdb.service');
+    const theSportsDBService = new TheSportsDBService();
+    
+    // Use EXACT same season logic as Calendar-Sync
+    const now = new Date();
+    const currentYear = now.getFullYear(); // 2025
+    const currentMonth = now.getMonth() + 1; // 10 (October)
+    
+    // Football season starts in August (month 8) and ends in May (month 5)
+    let season: string;
+    if (currentMonth >= 8) {
+      // August-December: current year to next year
+      season = `${currentYear}-${currentYear + 1}`; // 2025-2026
+    } else if (currentMonth <= 5) {
+      // January-May: previous year to current year
+      season = `${currentYear - 1}-${currentYear}`; // 2024-2025
+    } else {
+      // June-July: previous year to current year (off-season)
+      season = `${currentYear - 1}-${currentYear}`; // 2024-2025
     }
+    
+    console.log(`[Debug Football] Using season: ${season} (same as Calendar-Sync)`);
+    const footballEvents = await theSportsDBService.getFootballEventsMultipleLeagues([team.leagueId], season);
+    
+    results.tests.theSportsDB = {
+      season: season,
+      eventCount: footballEvents.length,
+      sampleEvents: footballEvents.slice(0, 3)
+    };
   } catch (error) {
-    results.tests.footballDataOrg = {
+    results.tests.theSportsDB = {
       error: error instanceof Error ? error.message : 'Unknown error'
     };
   }
@@ -286,10 +287,30 @@ async function testNBAAPI(team: any) {
     const { TheSportsDBService } = await import('../services/thesportsdb.service');
     const theSportsDBService = new TheSportsDBService();
     
-    const nbaEvents = await theSportsDBService.getNBAEvents('2025-26');
+    // Use EXACT same season logic as Calendar-Sync
+    const now = new Date();
+    const currentYear = now.getFullYear();
+    const currentMonth = now.getMonth() + 1; // 1-12
+    
+    // NBA season starts in October (month 10) and ends in June (month 6)
+    let season: string;
+    if (currentMonth >= 10) {
+      // October-December: current year to next year
+      season = `${currentYear}-${currentYear + 1}`;
+    } else if (currentMonth <= 6) {
+      // January-June: previous year to current year
+      season = `${currentYear - 1}-${currentYear}`;
+    } else {
+      // July-September: previous year to current year (off-season)
+      season = `${currentYear - 1}-${currentYear}`;
+    }
+    
+    console.log(`[Debug NBA] Using season: ${season} (same as Calendar-Sync)`);
+    const nbaEvents = await theSportsDBService.getNBAEvents(season);
     
     return {
       team: team.teamName,
+      season: season,
       totalEvents: nbaEvents.length,
       sampleEvents: nbaEvents.slice(0, 3),
       teamMatches: nbaEvents.filter(event => {
