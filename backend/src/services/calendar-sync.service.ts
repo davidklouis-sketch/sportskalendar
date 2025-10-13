@@ -1,7 +1,4 @@
-// import { userApi } from '../lib/database';
 import { TheSportsDBService } from './thesportsdb.service';
-// import { FootballDataService } from './football-data.service';
-// import { ErgastService } from './ergast.service';
 
 export interface CalendarEvent {
   id: string;
@@ -34,17 +31,15 @@ export interface CalendarSyncSettings {
 
 export class CalendarSyncService {
   private theSportsDBService = new TheSportsDBService();
-  // private footballDataService = new FootballDataService();
-  // private ergastService = new ErgastService();
 
   async generateCalendarExport(userId: string, format: string = 'ics'): Promise<string> {
     try {
-      // Get user data (mock for now)
-      const user = { id: userId, email: 'user@example.com' };
-      // const user = await userApi.getUser(userId);
-      // if (!user) {
-      //   throw new Error('User not found');
-      // }
+      // Get real user data from database
+      const { UserRepository } = await import('../database/repositories/userRepository');
+      const user = await UserRepository.findById(userId);
+      if (!user) {
+        throw new Error('User not found');
+      }
 
       // Get events for user's selected teams
       const events = await this.getCalendarEvents(userId);
@@ -139,26 +134,33 @@ export class CalendarSyncService {
 
   async getCalendarEvents(userId: string, startDate?: string, endDate?: string, sport?: string): Promise<CalendarEvent[]> {
     try {
-      // Mock user data for now
-      const user = { id: userId, selectedTeams: [] };
-      // const user = await userApi.getUser(userId);
-      // if (!user || !user.selectedTeams) {
-      //   return [];
-      // }
+      // Get real user data from database
+      const { UserRepository } = await import('../database/repositories/userRepository');
+      const user = await UserRepository.findById(userId);
+      if (!user || !user.selectedTeams || user.selectedTeams.length === 0) {
+        console.log(`[Calendar Sync] User ${userId} has no selected teams`);
+        return [];
+      }
+      console.log(`[Calendar Sync] User has ${user.selectedTeams.length} selected teams`);
 
       const events: CalendarEvent[] = [];
       const start = startDate ? new Date(startDate) : new Date();
       const end = endDate ? new Date(endDate) : new Date(Date.now() + 365 * 24 * 60 * 60 * 1000); // 1 year from now
 
       // Get events for each selected team
+      console.log(`[Calendar Sync] Getting events for ${user.selectedTeams.length} teams`);
       for (const team of user.selectedTeams as any[]) {
         try {
+          console.log(`[Calendar Sync] Fetching events for ${team.sport}: ${team.teamName}`);
           const teamEvents = await this.getEventsForTeam(team, start, end);
+          console.log(`[Calendar Sync] Found ${teamEvents.length} events for ${team.teamName}`);
           events.push(...teamEvents);
         } catch (error) {
           console.error(`Error getting events for team ${team.sport}:${team.teamName}:`, error);
         }
       }
+      
+      console.log(`[Calendar Sync] Total events found: ${events.length}`);
 
       // Filter by sport if specified
       if (sport) {
@@ -177,32 +179,44 @@ export class CalendarSyncService {
     const events: CalendarEvent[] = [];
 
     try {
+      console.log(`[Calendar Sync] Processing team: ${team.sport} - ${team.teamName}`);
+      
       if (team.sport === 'football') {
         // Get football events from TheSportsDB or Football-Data API
+        console.log(`[Calendar Sync] Fetching football events for league ${team.leagueId}`);
         const footballEvents = await this.theSportsDBService.getFootballEvents(team.leagueId, '2025-26');
-        events.push(...this.transformFootballEvents(footballEvents, team));
+        console.log(`[Calendar Sync] Raw football events: ${footballEvents.length}`);
+        const transformed = this.transformFootballEvents(footballEvents, team);
+        console.log(`[Calendar Sync] Transformed football events: ${transformed.length}`);
+        events.push(...transformed);
       } else if (team.sport === 'nba') {
+        console.log(`[Calendar Sync] Fetching NBA events`);
         const nbaEvents = await this.theSportsDBService.getNBAEvents('2025-26');
-        events.push(...this.transformNBAEvents(nbaEvents, team));
+        console.log(`[Calendar Sync] Raw NBA events: ${nbaEvents.length}`);
+        const transformed = this.transformNBAEvents(nbaEvents, team);
+        console.log(`[Calendar Sync] Transformed NBA events: ${transformed.length}`);
+        events.push(...transformed);
       } else if (team.sport === 'nhl') {
+        console.log(`[Calendar Sync] Fetching NHL events`);
         const nhlEvents = await this.theSportsDBService.getNHLEvents();
-        events.push(...this.transformNHLEvents(nhlEvents, team));
+        console.log(`[Calendar Sync] Raw NHL events: ${nhlEvents.length}`);
+        const transformed = this.transformNHLEvents(nhlEvents, team);
+        console.log(`[Calendar Sync] Transformed NHL events: ${transformed.length}`);
+        events.push(...transformed);
       } else if (team.sport === 'mlb') {
+        console.log(`[Calendar Sync] Fetching MLB events`);
         const mlbEvents = await this.theSportsDBService.getMLBEvents();
-        events.push(...this.transformMLBEvents(mlbEvents, team));
+        console.log(`[Calendar Sync] Raw MLB events: ${mlbEvents.length}`);
+        const transformed = this.transformMLBEvents(mlbEvents, team);
+        console.log(`[Calendar Sync] Transformed MLB events: ${transformed.length}`);
+        events.push(...transformed);
       } else if (team.sport === 'f1') {
-        // const f1Events = await this.ergastService.getF1Events();
-        // events.push(...this.transformF1Events(f1Events, team));
-        // Mock F1 events for now
-        events.push({
-          id: `f1_mock_${Date.now()}`,
-          title: 'F1 Race - Mock Event',
-          description: 'Mock F1 Race',
-          startDate: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(),
-          endDate: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000 + 2 * 60 * 60 * 1000).toISOString(),
-          sport: 'f1',
-          location: 'Mock Circuit'
-        });
+        console.log(`[Calendar Sync] Fetching F1 events`);
+        const f1Events = await this.getF1EventsFromAPI();
+        console.log(`[Calendar Sync] Raw F1 events: ${f1Events.length}`);
+        const transformed = this.transformF1Events(f1Events, team);
+        console.log(`[Calendar Sync] Transformed F1 events: ${transformed.length}`);
+        events.push(...transformed);
       }
     } catch (error) {
       console.error(`Error getting events for ${team.sport}:`, error);
@@ -295,18 +309,44 @@ export class CalendarSyncService {
     }));
   }
 
-  // private transformF1Events(f1Events: any[], team: any): CalendarEvent[] {
-  //   return f1Events.map(event => ({
-  //     id: `f1_${event.idEvent}`,
-  //     title: event.strEvent,
-  //     description: `Formula 1 - ${event.strVenue || 'TBD'}`,
-  //     startDate: `${event.dateEvent}T${event.strTime || '15:00:00'}`,
-  //     endDate: `${event.dateEvent}T${this.addMinutes(event.strTime || '15:00:00', 120)}`, // 120 minutes for F1
-  //     location: event.strVenue || 'TBD',
-  //     sport: 'f1',
-  //     status: event.strStatus
-  //   }));
-  // }
+  private async getF1EventsFromAPI(): Promise<any[]> {
+    try {
+      const currentYear = new Date().getFullYear();
+      const response = await fetch(`https://api.jolpi.ca/ergast/f1/${currentYear}.json`);
+      
+      if (!response.ok) {
+        throw new Error(`F1 API responded with status ${response.status}`);
+      }
+      
+      const data = await response.json();
+      const races = data.MRData?.RaceTable?.Races || [];
+      
+      return races.map((race: any) => ({
+        idEvent: `f1_${race.round}`,
+        strEvent: `${race.raceName} - ${race.Circuit.circuitName}`,
+        dateEvent: race.date,
+        strTime: race.time?.replace('Z', '') || '15:00:00',
+        strVenue: race.Circuit.circuitName,
+        strStatus: 'Scheduled'
+      }));
+    } catch (error) {
+      console.error('Error fetching F1 events:', error);
+      return [];
+    }
+  }
+
+  private transformF1Events(f1Events: any[], team: any): CalendarEvent[] {
+    return f1Events.map(event => ({
+      id: `f1_${event.idEvent}`,
+      title: event.strEvent,
+      description: `Formula 1 - ${event.strVenue || 'TBD'}`,
+      startDate: `${event.dateEvent}T${event.strTime || '15:00:00'}`,
+      endDate: `${event.dateEvent}T${this.addMinutes(event.strTime || '15:00:00', 120)}`, // 120 minutes for F1
+      location: event.strVenue || 'TBD',
+      sport: 'f1',
+      status: event.strStatus
+    }));
+  }
 
   private generateICS(events: CalendarEvent[], userEmail: string): string {
     const now = new Date().toISOString().replace(/[-:]/g, '').split('.')[0] + 'Z';
