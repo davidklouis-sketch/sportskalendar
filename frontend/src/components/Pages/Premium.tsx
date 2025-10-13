@@ -63,6 +63,22 @@ export function Premium({ }: PremiumProps) {
       icon: '🚫'
     },
     {
+      title: getCurrentLanguage() === 'de' ? 'Team-Logos anzeigen' : 'Show Team Logos',
+      description: getCurrentLanguage() === 'de' 
+        ? 'Sehe offizielle Team-Logos bei allen Events'
+        : 'See official team logos for all events',
+      icon: '🏆',
+      isNew: true
+    },
+    {
+      title: getCurrentLanguage() === 'de' ? 'Vergangene Events & Ergebnisse' : 'Past Events & Results',
+      description: getCurrentLanguage() === 'de' 
+        ? 'Zugriff auf alle vergangenen Spiele mit Ergebnissen'
+        : 'Access to all past games with results',
+      icon: '📜',
+      isNew: true
+    },
+    {
       title: t('advancedStatistics'),
       description: getCurrentLanguage() === 'de' 
         ? 'Detaillierte Analysen und Trends'
@@ -148,7 +164,12 @@ export function Premium({ }: PremiumProps) {
         {/* Features Grid */}
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 mb-12">
           {features.map((feature, index) => (
-            <div key={index} className="card hover:shadow-2xl transition-all duration-300">
+            <div key={index} className="card hover:shadow-2xl transition-all duration-300 relative">
+              {feature.isNew && (
+                <div className="absolute -top-2 -right-2 bg-gradient-to-r from-amber-500 to-orange-600 text-white text-xs font-bold px-3 py-1 rounded-full shadow-lg animate-pulse">
+                  {getCurrentLanguage() === 'de' ? 'NEU' : 'NEW'}
+                </div>
+              )}
               <div className="text-3xl mb-4">{feature.icon}</div>
               <h3 className="text-xl font-semibold mb-2 text-white">
                 {feature.title}
