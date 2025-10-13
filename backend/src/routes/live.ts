@@ -239,6 +239,7 @@ async function getNextF1Race(): Promise<{ name: string; date: string; circuit: s
   }
 }
 
+
 // Function to get next NFL games (using mock schedule since free APIs are limited)
 function getNextNFLGame(): { name: string; date: string; teams: string } {
   const now = new Date();
@@ -312,7 +313,7 @@ liveRouter.get('/f1', async (_req, res) => {
       ...e,
       meta: e.meta || `Lap ${e.lap || 0}/${e.totalLaps || 58}${e.position > 1 && typeof e.gapSec === 'number' ? ` · +${e.gapSec.toFixed(1)}s` : ''}`,
     }));
-  res.json({ entries });
+    res.json({ entries });
   } catch (error) {
     console.error('Error in F1 route:', error);
     res.json({ 
@@ -376,10 +377,10 @@ liveRouter.get('/soccer', async (_req, res) => {
     }
 
     const entries = soccerData.map((e) => ({
-    ...e,
-    info: `${e.score || ''}${typeof e.minute === 'number' ? ` · ${e.minute}'` : ''}${e.league ? ` · ${e.league}` : ''}`.trim(),
-  }));
-  res.json({ entries });
+      ...e,
+      info: `${e.score || ''}${typeof e.minute === 'number' ? ` · ${e.minute}'` : ''}${e.league ? ` · ${e.league}` : ''}`.trim(),
+    }));
+    res.json({ entries });
   } catch (error) {
     console.error('Error in soccer route:', error);
     res.json({ 
@@ -390,6 +391,114 @@ liveRouter.get('/soccer', async (_req, res) => {
         meta: 'Fehler'
       }],
       error: 'Fußball-API nicht erreichbar'
+    });
+  }
+});
+
+// NBA Live Route
+liveRouter.get('/nba', (_req, res) => {
+  try {
+    // NBA doesn't have a reliable free live API, show placeholder
+    res.json({ 
+      entries: [{
+        position: 1,
+        name: 'NBA Live-Daten nicht verfügbar',
+        info: 'Keine kostenlose NBA Live-API verfügbar',
+        meta: 'Kein Live-Spiel'
+      }],
+      message: 'Keine NBA Live-Daten verfügbar'
+    });
+  } catch (error) {
+    console.error('Error in NBA route:', error);
+    res.json({ 
+      entries: [{
+        position: 1,
+        name: 'NBA-API-Fehler',
+        info: 'Fehler beim Laden der NBA-Informationen',
+        meta: 'Fehler'
+      }],
+      error: 'NBA-Daten nicht verfügbar'
+    });
+  }
+});
+
+// NHL Live Route
+liveRouter.get('/nhl', (_req, res) => {
+  try {
+    // NHL doesn't have a reliable free live API, show placeholder
+    res.json({ 
+      entries: [{
+        position: 1,
+        name: 'NHL Live-Daten nicht verfügbar',
+        info: 'Keine kostenlose NHL Live-API verfügbar',
+        meta: 'Kein Live-Spiel'
+      }],
+      message: 'Keine NHL Live-Daten verfügbar'
+    });
+  } catch (error) {
+    console.error('Error in NHL route:', error);
+    res.json({ 
+      entries: [{
+        position: 1,
+        name: 'NHL-API-Fehler',
+        info: 'Fehler beim Laden der NHL-Informationen',
+        meta: 'Fehler'
+      }],
+      error: 'NHL-Daten nicht verfügbar'
+    });
+  }
+});
+
+// MLB Live Route
+liveRouter.get('/mlb', (_req, res) => {
+  try {
+    // MLB doesn't have a reliable free live API, show placeholder
+    res.json({ 
+      entries: [{
+        position: 1,
+        name: 'MLB Live-Daten nicht verfügbar',
+        info: 'Keine kostenlose MLB Live-API verfügbar',
+        meta: 'Kein Live-Spiel'
+      }],
+      message: 'Keine MLB Live-Daten verfügbar'
+    });
+  } catch (error) {
+    console.error('Error in MLB route:', error);
+    res.json({ 
+      entries: [{
+        position: 1,
+        name: 'MLB-API-Fehler',
+        info: 'Fehler beim Laden der MLB-Informationen',
+        meta: 'Fehler'
+      }],
+      error: 'MLB-Daten nicht verfügbar'
+    });
+  }
+});
+
+// Tennis Live Route
+liveRouter.get('/tennis', (_req, res) => {
+  try {
+    // Tennis doesn't have a reliable free live API, show placeholder
+    res.json({ 
+      entries: [{
+        position: 1,
+        name: 'Tennis Live-Daten nicht verfügbar',
+        info: 'Keine kostenlose Tennis Live-API verfügbar',
+        meta: 'Kein Live-Spiel'
+      }],
+      message: 'Keine Tennis Live-Daten verfügbar'
+    });
+  } catch (error) {
+    console.error('Error in Tennis route:', error);
+    res.json({ 
+      entries: [{
+        position: 1,
+        name: 'Tennis-API-Fehler',
+        info: 'Fehler beim Laden der Tennis-Informationen',
+        meta: 'Fehler'
+      }],
+      error: 'Tennis-Daten nicht verfügbar'
     });
   }
 });
