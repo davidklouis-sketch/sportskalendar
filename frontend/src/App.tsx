@@ -54,7 +54,7 @@ function App() {
   // Local Component State
   const [authView, setAuthView] = useState<AuthView | null>(null); // Aktuell angezeigte Auth-Ansicht
   const [currentPage, setCurrentPage] = useState<Page>('calendar'); // Aktuell angezeigte Seite (Client-side Routing)
-  const [isInitializing, setIsInitializing] = useState(false); // Loading State während Initialisierung
+  const [isInitializing, setIsInitializing] = useState(true); // Loading State während Initialisierung
   const { interstitialTrigger } = useAdTrigger(); // Hook für Interstitial Ads (Vollbild-Werbung)
 
   /**
@@ -100,16 +100,22 @@ function App() {
    */
   useEffect(() => {
     const checkAuth = async () => {
-      if (isAuthenticated && user) {
+      // Nur beim ersten Laden prüfen, nicht bei jedem User-Update
+      if (isInitializing && isAuthenticated && user) {
         try {
           // Aktuelles Profil vom Backend laden (inkl. isPremium, selectedTeams)
           const { data } = await userApi.getProfile();
           setUser(data.user);
         } catch (error) {
           console.error('Failed to load user profile:', error);
-          // Profil konnte nicht geladen werden -> User ist nicht mehr authentifiziert
-          // Auth State clearen, aber App nicht blockieren
-          setUser(null);
+          // Profil konnte nicht geladen werden, aber User bleibt eingeloggt
+          // Nur bei echten Auth-Fehlern (401/403) ausloggen, nicht bei Netzwerk-Fehlern
+          if (error && typeof error === 'object' && 'response' in error) {
+            const status = (error as any).response?.status;
+            if (status === 401 || status === 403) {
+              setUser(null);
+            }
+          }
         }
       }
       setLoading(false);
@@ -117,7 +123,7 @@ function App() {
     };
 
     checkAuth();
-  }, [isAuthenticated, setLoading, setUser, user]);
+  }, [isInitializing, setLoading, setUser]); // Entfernt isAuthenticated und user aus Dependencies
 
   /**
    * EFFECT: Navigation nach erfolgreichem Login

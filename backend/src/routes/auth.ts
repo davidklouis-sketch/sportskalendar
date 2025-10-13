@@ -85,6 +85,8 @@ export function setAuthCookies(res: Response, tokens: { access: string; refresh:
   // If keepLoggedIn is true, refresh token cookie expires in 30 days
   const refreshMaxAge = keepLoggedIn ? 30 * 24 * 60 * 60 * 1000 : 7 * 24 * 60 * 60 * 1000;
   
+  // Mobile-optimized cookie settings
+  // Use 'lax' for better mobile browser compatibility
   res.cookie('access_token', tokens.access, {
     httpOnly: true,
     secure: isHttps,
@@ -357,6 +359,7 @@ authRouter.post('/logout', (req: Request, res: Response) => {
     }
     
     const isProd = process.env.NODE_ENV === 'production';
+    
     res.clearCookie('access_token', { 
       path: '/', 
       sameSite: 'lax', 
