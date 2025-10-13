@@ -15,6 +15,38 @@ calendarSyncRouter.get('/test', (req, res) => {
   });
 });
 
+// Simple ICS test endpoint without authentication
+calendarSyncRouter.get('/test.ics', (req, res) => {
+  console.log('[Calendar Sync] Test ICS endpoint called');
+  
+  const testICS = `BEGIN:VCALENDAR
+VERSION:2.0
+PRODID:-//SportsKalendar//Test Calendar//EN
+CALSCALE:GREGORIAN
+METHOD:PUBLISH
+X-WR-CALNAME:SportsKalendar Test
+X-WR-CALDESC:Test calendar for SportsKalendar
+X-WR-TIMEZONE:Europe/Berlin
+BEGIN:VEVENT
+UID:test-event@sportskalendar.de
+DTSTAMP:${new Date().toISOString().replace(/[-:]/g, '').split('.')[0]}Z
+DTSTART:${new Date(Date.now() + 24*60*60*1000).toISOString().replace(/[-:]/g, '').split('.')[0]}Z
+DTEND:${new Date(Date.now() + 24*60*60*1000 + 2*60*60*1000).toISOString().replace(/[-:]/g, '').split('.')[0]}Z
+SUMMARY:Test Event - SportsKalendar
+DESCRIPTION:This is a test event to verify calendar sync functionality
+STATUS:CONFIRMED
+SEQUENCE:0
+TRANSP:OPAQUE
+CLASS:PUBLIC
+PRIORITY:5
+END:VEVENT
+END:VCALENDAR`;
+
+  res.setHeader('Content-Type', 'text/calendar; charset=utf-8');
+  res.setHeader('Cache-Control', 'public, max-age=300'); // 5 minutes
+  res.send(testICS);
+});
+
 // OPTIONS endpoint for CORS preflight requests
 calendarSyncRouter.options('/export', (req, res) => {
   console.log('[Calendar Sync] OPTIONS preflight request');
@@ -40,10 +72,15 @@ calendarSyncRouter.get('/export', requireAuth, async (req, res) => {
     if (format === 'ics') {
       // Calendar apps expect specific headers for ICS files
       res.setHeader('Content-Type', 'text/calendar; charset=utf-8');
-      res.setHeader('Cache-Control', 'public, max-age=3600'); // Cache for 1 hour
+      res.setHeader('Cache-Control', 'public, max-age=1800'); // Cache for 30 minutes
       res.setHeader('Access-Control-Allow-Origin', '*'); // Allow cross-origin requests
       res.setHeader('Access-Control-Allow-Methods', 'GET, OPTIONS');
       res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+      res.setHeader('Access-Control-Expose-Headers', 'Content-Type, Cache-Control');
+      
+      // Add calendar-specific headers
+      res.setHeader('X-Content-Type-Options', 'nosniff');
+      res.setHeader('X-Frame-Options', 'SAMEORIGIN');
       
       // Don't set Content-Disposition for calendar sync - apps expect inline content
       res.send(result);

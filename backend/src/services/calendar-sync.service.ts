@@ -319,12 +319,14 @@ export class CalendarSyncService {
       'PRODID:-//SportsKalendar//Sports Calendar//EN',
       'CALSCALE:GREGORIAN',
       'METHOD:PUBLISH',
-      'X-WR-CALNAME:SportsKalendar',
-      'X-WR-CALDESC:Sports Calendar for your favorite teams',
+      'X-WR-CALNAME:SportsKalendar - Your Teams',
+      'X-WR-CALDESC:Sports Calendar for your favorite teams from SportsKalendar',
       'X-WR-TIMEZONE:Europe/Berlin',
       'X-WR-RELCALID:sportskalendar-calendar',
-      'REFRESH-INTERVAL;VALUE=DURATION:PT1H',
-      'X-PUBLISHED-TTL:PT1H'
+      'REFRESH-INTERVAL;VALUE=DURATION:PT30M',
+      'X-PUBLISHED-TTL:PT30M',
+      'X-WR-CALID:12345678-1234-1234-1234-123456789012@sportskalendar.de',
+      'URL:https://sportskalendar.de'
     ].join(crlf) + crlf;
 
     events.forEach(event => {
@@ -348,12 +350,14 @@ export class CalendarSyncService {
         `DTSTART:${startDate}`,
         `DTEND:${endDate}`,
         `SUMMARY:${escapeICS(event.title)}`,
-        `DESCRIPTION:${escapeICS(event.description || '')}`,
-        `LOCATION:${escapeICS(event.location || '')}`,
+        `DESCRIPTION:${escapeICS(event.description || event.title)}`,
+        event.location ? `LOCATION:${escapeICS(event.location)}` : '',
         event.url ? `URL:${escapeICS(event.url)}` : '',
         `STATUS:${event.status === 'Finished' ? 'CONFIRMED' : 'TENTATIVE'}`,
         'SEQUENCE:0',
         'TRANSP:OPAQUE',
+        'CLASS:PUBLIC',
+        'PRIORITY:5',
         'END:VEVENT'
       ].filter(line => line !== ''); // Remove empty lines
       
