@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { useAuthStore } from '../../store/useAuthStore';
-import { calendarApi, userApi, highlightsApi, liveApi, sportsApi } from '../../lib/api';
+import { calendarApi, userApi, highlightsApi, sportsApi } from '../../lib/api';
 import { format } from 'date-fns';
 import { FOOTBALL_LEAGUES, FOOTBALL_TEAMS, F1_DRIVERS, NFL_TEAMS, NBA_TEAMS, NHL_TEAMS, MLB_TEAMS } from '../../data/teams';
 import { LiveData } from '../LiveData';
@@ -210,14 +210,13 @@ export function Calendar() {
           // If calendar API doesn't have NBA events, try sports API
           if (events.length === 0) {
             try {
-              const sportsResponse = await liveApi.getNBA();
-              events = (sportsResponse.data.events as Event[]) || [];
-            } catch (sportsError) {
               const directResponse = await fetch('/api/sports/nba/events');
               if (directResponse.ok) {
                 const directData = await directResponse.json();
                 events = directData.events || [];
               }
+            } catch (sportsError) {
+              console.error('Failed to load NBA events from sports API:', sportsError);
             }
           }
           
@@ -241,14 +240,13 @@ export function Calendar() {
           
           if (events.length === 0) {
             try {
-              const sportsResponse = await liveApi.getNBA();
-              events = (sportsResponse.data.events as Event[]) || [];
-            } catch (sportsError) {
               const directResponse = await fetch('/api/sports/nba/events');
               if (directResponse.ok) {
                 const directData = await directResponse.json();
                 events = directData.events || [];
               }
+            } catch (sportsError) {
+              console.error('Failed to load NBA events from sports API:', sportsError);
             }
           }
           
@@ -272,8 +270,7 @@ export function Calendar() {
               events = directData.events || [];
             }
           } catch (directError) {
-            const response = await liveApi.getNHL();
-            events = (response.data.events as Event[]) || [];
+            console.error('Failed to load NHL events from sports API:', directError);
           }
           
           // Filter events for selected teams
@@ -300,8 +297,7 @@ export function Calendar() {
               events = directData.events || [];
             }
           } catch (directError) {
-            const response = await liveApi.getNHL();
-            events = (response.data.events as Event[]) || [];
+            console.error('Failed to load NHL events from sports API:', directError);
           }
           
           setNhlEvents(events);
@@ -324,8 +320,7 @@ export function Calendar() {
               events = directData.events || [];
             }
           } catch (directError) {
-            const response = await liveApi.getMLB();
-            events = (response.data.events as Event[]) || [];
+            console.error('Failed to load MLB events from sports API:', directError);
           }
           
           // Filter events for selected teams
@@ -352,8 +347,7 @@ export function Calendar() {
               events = directData.events || [];
             }
           } catch (directError) {
-            const response = await liveApi.getMLB();
-            events = (response.data.events as Event[]) || [];
+            console.error('Failed to load MLB events from sports API:', directError);
           }
           
           setMlbEvents(events);
@@ -367,8 +361,17 @@ export function Calendar() {
       const tennisTeams = teams.filter(t => t.sport === 'tennis');
       if (tennisTeams.length > 0) {
         try {
-          const response = await liveApi.getTennis();
-          let events = (response.data.events as Event[]) || [];
+          let events: Event[] = [];
+          
+          try {
+            const directResponse = await fetch('/api/sports/tennis/atp');
+            if (directResponse.ok) {
+              const directData = await directResponse.json();
+              events = directData.events || [];
+            }
+          } catch (directError) {
+            console.error('Failed to load Tennis events from sports API:', directError);
+          }
           
           // Filter events for selected tours
           const tourNames = tennisTeams.map(t => t.teamName.toLowerCase());
@@ -385,8 +388,17 @@ export function Calendar() {
       } else {
         // Load all Tennis events for next event calculation even if no teams selected
         try {
-          const response = await liveApi.getTennis();
-          let events = (response.data.events as Event[]) || [];
+          let events: Event[] = [];
+          
+          try {
+            const directResponse = await fetch('/api/sports/tennis/atp');
+            if (directResponse.ok) {
+              const directData = await directResponse.json();
+              events = directData.events || [];
+            }
+          } catch (directError) {
+            console.error('Failed to load Tennis events from sports API:', directError);
+          }
           
           setTennisEvents(events);
         } catch (error) {
