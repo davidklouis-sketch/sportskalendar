@@ -278,7 +278,27 @@ export class CalendarSyncService {
   }
 
   private transformFootballEvents(footballEvents: any[], team: any): CalendarEvent[] {
-    return footballEvents.map(event => ({
+    console.log(`[Calendar Sync] Filtering football events for team: ${team.teamName}`);
+    
+    // Filter events that include the selected team (same logic as NBA/NHL)
+    const teamEvents = footballEvents.filter(event => {
+      const homeTeam = event.strHomeTeam?.toLowerCase() || '';
+      const awayTeam = event.strAwayTeam?.toLowerCase() || '';
+      const selectedTeam = team.teamName.toLowerCase();
+      
+      const isMatch = homeTeam.includes(selectedTeam) || awayTeam.includes(selectedTeam) ||
+                     selectedTeam.includes(homeTeam) || selectedTeam.includes(awayTeam);
+      
+      if (isMatch) {
+        console.log(`[Calendar Sync] Football match found: ${event.strHomeTeam} vs ${event.strAwayTeam} for ${team.teamName}`);
+      }
+      
+      return isMatch;
+    });
+    
+    console.log(`[Calendar Sync] Found ${teamEvents.length} football events for ${team.teamName} out of ${footballEvents.length} total events`);
+    
+    return teamEvents.map(event => ({
       id: `football_${event.idEvent}`,
       title: `${event.strHomeTeam} vs ${event.strAwayTeam}`,
       description: `${event.strLeague} - ${event.strVenue || 'TBD'}`,
@@ -597,8 +617,8 @@ export class CalendarSyncService {
       description: isDriverSpecific 
         ? `Formula 1 - ${team.teamName} - ${event.strVenue || 'TBD'}`
         : `Formula 1 - ${event.strVenue || 'TBD'}`,
-      startDate: `${event.dateEvent}T${event.strTime}`,
-      endDate: `${event.dateEvent}T${this.addMinutes(event.strTime, 120)}`, // 120 minutes for F1
+      startDate: `${event.dateEvent}T${event.strTime || '15:00:00'}`,
+      endDate: `${event.dateEvent}T${this.addMinutes(event.strTime || '15:00:00', 120)}`, // 120 minutes for F1
       location: event.strVenue || 'TBD',
       sport: 'f1',
       status: event.strStatus
