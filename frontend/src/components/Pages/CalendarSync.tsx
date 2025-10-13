@@ -148,10 +148,10 @@ const CalendarSync: React.FC = () => {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+      <div className="min-h-screen bg-gray-50 dark:bg-dark-900 flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
-          <p className="mt-4 text-gray-600">Lade Kalender-Sync-Status...</p>
+          <p className="mt-4 text-gray-600 dark:text-gray-300">Lade Kalender-Sync-Status...</p>
         </div>
       </div>
     );
@@ -159,11 +159,11 @@ const CalendarSync: React.FC = () => {
 
   if (error) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+      <div className="min-h-screen bg-gray-50 dark:bg-dark-900 flex items-center justify-center">
         <div className="text-center">
           <div className="text-red-600 text-6xl mb-4">⚠️</div>
           <h2 className="text-2xl font-bold text-white mb-2">Fehler</h2>
-          <p className="text-gray-600 mb-4">{error}</p>
+          <p className="text-gray-600 dark:text-gray-300 mb-4">{error}</p>
           <button
             onClick={loadSyncStatus}
             className="btn btn-primary flex items-center gap-2"
@@ -177,11 +177,11 @@ const CalendarSync: React.FC = () => {
 
   if (!syncStatus) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+      <div className="min-h-screen bg-gray-50 dark:bg-dark-900 flex items-center justify-center">
         <div className="text-center">
-          <div className="text-gray-600 text-6xl mb-4">📅</div>
-          <h2 className="text-2xl font-bold text-gray-900 mb-2">Keine Daten</h2>
-          <p className="text-gray-600">Kalender-Sync-Status konnte nicht geladen werden.</p>
+          <div className="text-gray-600 dark:text-gray-300 text-6xl mb-4">📅</div>
+          <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">Keine Daten</h2>
+          <p className="text-gray-600 dark:text-gray-300">Kalender-Sync-Status konnte nicht geladen werden.</p>
         </div>
       </div>
     );
@@ -189,11 +189,11 @@ const CalendarSync: React.FC = () => {
 
   if (!syncStatus.isPremium) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+      <div className="min-h-screen bg-gray-50 dark:bg-dark-900 flex items-center justify-center">
         <div className="max-w-md mx-auto text-center">
           <div className="text-yellow-500 text-6xl mb-4">👑</div>
-          <h2 className="text-2xl font-bold text-gray-900 mb-2">Premium erforderlich</h2>
-          <p className="text-gray-600 mb-6">
+          <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">Premium erforderlich</h2>
+          <p className="text-gray-600 dark:text-gray-300 mb-6">
             Kalender-Sync ist ein Premium-Feature. Upgrade dein Konto, um deine Lieblings-Teams 
             mit deinem Kalender zu synchronisieren.
           </p>
@@ -326,28 +326,28 @@ const CalendarSync: React.FC = () => {
                         <span className="text-xl">📱</span>
                         Google Calendar
                       </h5>
-                      <p className="text-sm text-gray-600 leading-relaxed">{instructions.google}</p>
+                      <p className="text-sm text-gray-600 dark:text-gray-300 leading-relaxed">{instructions.google}</p>
                     </div>
                     <div className="card p-4 hover:shadow-xl transition-all duration-300 group">
                       <h5 className="font-semibold text-orange-600 mb-2 flex items-center gap-2 group-hover:text-orange-500 transition-colors">
                         <span className="text-xl">📧</span>
                         Outlook
                       </h5>
-                      <p className="text-sm text-gray-600 leading-relaxed">{instructions.outlook}</p>
+                      <p className="text-sm text-gray-600 dark:text-gray-300 leading-relaxed">{instructions.outlook}</p>
                     </div>
                     <div className="card p-4 hover:shadow-xl transition-all duration-300 group">
-                      <h5 className="font-semibold text-gray-700 mb-2 flex items-center gap-2 group-hover:text-gray-600 transition-colors">
+                      <h5 className="font-semibold text-gray-700 dark:text-gray-300 dark:text-gray-300 mb-2 flex items-center gap-2 group-hover:text-gray-600 dark:group-hover:text-gray-400 transition-colors">
                         <span className="text-xl">🍎</span>
                         Apple Calendar
                       </h5>
-                      <p className="text-sm text-gray-600 leading-relaxed">{instructions.apple}</p>
+                      <p className="text-sm text-gray-600 dark:text-gray-300 leading-relaxed">{instructions.apple}</p>
                     </div>
                     <div className="card p-4 hover:shadow-xl transition-all duration-300 group">
                       <h5 className="font-semibold text-lime-600 mb-2 flex items-center gap-2 group-hover:text-lime-500 transition-colors">
                         <span className="text-xl">🌐</span>
                         Andere Apps
                       </h5>
-                      <p className="text-sm text-gray-600 leading-relaxed">{instructions.general}</p>
+                      <p className="text-sm text-gray-600 dark:text-gray-300 leading-relaxed">{instructions.general}</p>
                     </div>
                   </div>
                 </div>
@@ -361,7 +361,7 @@ const CalendarSync: React.FC = () => {
           <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-4">⚙️ Sync-Einstellungen</h2>
           <div className="grid md:grid-cols-2 gap-6">
             <div>
-              <h3 className="font-medium text-gray-900 mb-3">Event-Einstellungen</h3>
+              <h3 className="font-medium text-gray-900 dark:text-white mb-3">Event-Einstellungen</h3>
               <div className="space-y-3">
                 <label className="flex items-center">
                   <input
@@ -370,7 +370,7 @@ const CalendarSync: React.FC = () => {
                     className="mr-2"
                     readOnly
                   />
-                  <span className="text-sm text-gray-700">Vergangene Events einschließen</span>
+                  <span className="text-sm text-gray-700 dark:text-gray-300">Vergangene Events einschließen</span>
                 </label>
                 <label className="flex items-center">
                   <input
@@ -379,7 +379,7 @@ const CalendarSync: React.FC = () => {
                     className="mr-2"
                     readOnly
                   />
-                  <span className="text-sm text-gray-700">Zukünftige Events einschließen</span>
+                  <span className="text-sm text-gray-700 dark:text-gray-300">Zukünftige Events einschließen</span>
                 </label>
                 <label className="flex items-center">
                   <input
@@ -388,7 +388,7 @@ const CalendarSync: React.FC = () => {
                     className="mr-2"
                     readOnly
                   />
-                  <span className="text-sm text-gray-700">Ergebnisse einschließen</span>
+                  <span className="text-sm text-gray-700 dark:text-gray-300">Ergebnisse einschließen</span>
                 </label>
                 <label className="flex items-center">
                   <input
@@ -397,23 +397,23 @@ const CalendarSync: React.FC = () => {
                     className="mr-2"
                     readOnly
                   />
-                  <span className="text-sm text-gray-700">Team-Logos einschließen</span>
+                  <span className="text-sm text-gray-700 dark:text-gray-300">Team-Logos einschließen</span>
                 </label>
               </div>
             </div>
             <div>
-              <h3 className="font-medium text-gray-900 mb-3">Benachrichtigungen</h3>
+              <h3 className="font-medium text-gray-900 dark:text-white mb-3">Benachrichtigungen</h3>
               <div className="space-y-2">
-                <div className="text-sm text-gray-600">
+                <div className="text-sm text-gray-600 dark:text-gray-300">
                   <span className="font-medium">Erinnerungen:</span> {syncStatus.settings.eventReminders.join(', ')} Minuten vorher
                 </div>
-                <div className="text-sm text-gray-600">
+                <div className="text-sm text-gray-600 dark:text-gray-300">
                   <span className="font-medium">Standard-Dauer:</span> {syncStatus.settings.defaultEventDuration} Minuten
                 </div>
-                <div className="text-sm text-gray-600">
+                <div className="text-sm text-gray-600 dark:text-gray-300">
                   <span className="font-medium">Zeitzone:</span> {syncStatus.settings.timezone}
                 </div>
-                <div className="text-sm text-gray-600">
+                <div className="text-sm text-gray-600 dark:text-gray-300">
                   <span className="font-medium">Sportarten:</span> {syncStatus.settings.sports.join(', ')}
                 </div>
               </div>
