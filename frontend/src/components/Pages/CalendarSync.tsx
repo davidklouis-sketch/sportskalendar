@@ -162,13 +162,13 @@ const CalendarSync: React.FC = () => {
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
           <div className="text-red-600 text-6xl mb-4">⚠️</div>
-          <h2 className="text-2xl font-bold text-gray-900 mb-2">Fehler</h2>
+          <h2 className="text-2xl font-bold text-white mb-2">Fehler</h2>
           <p className="text-gray-600 mb-4">{error}</p>
           <button
             onClick={loadSyncStatus}
-            className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700"
+            className="btn btn-primary flex items-center gap-2"
           >
-            Erneut versuchen
+            🔄 Erneut versuchen
           </button>
         </div>
       </div>
@@ -209,17 +209,17 @@ const CalendarSync: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 py-8">
+    <div className="min-h-screen bg-gradient-to-br from-dark-900 via-dark-800 to-dark-900 py-8">
       <div className="max-w-4xl mx-auto px-4">
         <div className="text-center mb-8">
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">📅 Kalender-Sync</h1>
-          <p className="text-gray-600">
+          <h1 className="heading-sport text-4xl font-bold mb-4">📅 Kalender-Sync</h1>
+          <p className="text-gray-300 text-lg">
             Synchronisiere deine Lieblings-Teams mit deinem Kalender
           </p>
         </div>
 
         {/* Status Overview */}
-        <div className="bg-white rounded-lg shadow-md p-6 mb-6">
+        <div className="card p-8 mb-6">
           <h2 className="text-xl font-semibold text-gray-900 mb-4">Sync-Status</h2>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             <div className="text-center">
@@ -255,21 +255,24 @@ const CalendarSync: React.FC = () => {
           <div className="flex flex-wrap gap-3">
             <button
               onClick={() => handleExport('ics')}
-              className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 flex items-center gap-2"
+              className="btn btn-primary flex items-center gap-2 group"
             >
-              📅 iCal (.ics)
+              <span className="text-lg group-hover:scale-110 transition-transform duration-300">📅</span>
+              <span className="font-semibold">iCal (.ics)</span>
             </button>
             <button
               onClick={() => handleExport('json')}
-              className="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 flex items-center gap-2"
+              className="btn btn-accent flex items-center gap-2 group"
             >
-              📄 JSON
+              <span className="text-lg group-hover:scale-110 transition-transform duration-300">📄</span>
+              <span className="font-semibold">JSON</span>
             </button>
             <button
               onClick={() => handleExport('csv')}
-              className="bg-gray-600 text-white px-4 py-2 rounded-lg hover:bg-gray-700 flex items-center gap-2"
+              className="btn btn-secondary flex items-center gap-2 group"
             >
-              📊 CSV
+              <span className="text-lg group-hover:scale-110 transition-transform duration-300">📊</span>
+              <span className="font-semibold">CSV</span>
             </button>
           </div>
         </div>
@@ -283,48 +286,68 @@ const CalendarSync: React.FC = () => {
           
           <button
             onClick={handleGetSyncUrl}
-            className="bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-700 flex items-center gap-2"
+            className="btn btn-primary text-lg px-8 py-4 flex items-center gap-3 group"
           >
-            🔗 Sync-URL generieren
+            <span className="text-2xl group-hover:rotate-12 transition-transform duration-300">🔄</span>
+            <span className="font-bold">Sync-URL generieren</span>
           </button>
 
           {showInstructions && syncStatus.syncUrl && (
-            <div className="mt-6 p-4 bg-gray-50 rounded-lg">
-              <h3 className="font-semibold text-gray-900 mb-3">Sync-URL:</h3>
+            <div className="mt-6 p-6 card">
+              <h3 className="font-semibold text-white mb-4 flex items-center gap-2">
+                <span className="text-xl">🔗</span>
+                Sync-URL:
+              </h3>
               <div className="flex gap-2 mb-4">
                 <input
                   type="text"
                   value={syncStatus.syncUrl}
                   readOnly
-                  className="flex-1 p-2 border rounded-lg bg-white"
+                  className="flex-1 p-3 border border-cyan-500/30 rounded-lg bg-dark-800 text-white placeholder-gray-400 focus:border-cyan-400 focus:ring-2 focus:ring-cyan-400/20 transition-all duration-300"
                 />
                 <button
                   onClick={() => copyToClipboard(syncStatus.syncUrl)}
-                  className="bg-blue-600 text-white px-3 py-2 rounded-lg hover:bg-blue-700"
+                  className="btn btn-primary px-4 py-2 flex items-center gap-2 group"
                 >
-                  Kopieren
+                  <span className="group-hover:scale-110 transition-transform duration-300">📋</span>
+                  <span className="font-semibold">Kopieren</span>
                 </button>
               </div>
 
               {instructions && (
                 <div className="space-y-3">
-                  <h4 className="font-semibold text-gray-900">Anleitungen:</h4>
+                  <h4 className="font-semibold text-white mb-4 flex items-center gap-2">
+                    <span className="text-xl">📖</span>
+                    Anleitungen:
+                  </h4>
                   <div className="grid md:grid-cols-2 gap-4">
-                    <div className="p-3 bg-white rounded border">
-                      <h5 className="font-medium text-blue-600 mb-2">📱 Google Calendar</h5>
-                      <p className="text-sm text-gray-600">{instructions.google}</p>
+                    <div className="card p-4 hover:shadow-xl transition-all duration-300 group">
+                      <h5 className="font-semibold text-cyan-600 mb-2 flex items-center gap-2 group-hover:text-cyan-500 transition-colors">
+                        <span className="text-xl">📱</span>
+                        Google Calendar
+                      </h5>
+                      <p className="text-sm text-gray-600 leading-relaxed">{instructions.google}</p>
                     </div>
-                    <div className="p-3 bg-white rounded border">
-                      <h5 className="font-medium text-orange-600 mb-2">📧 Outlook</h5>
-                      <p className="text-sm text-gray-600">{instructions.outlook}</p>
+                    <div className="card p-4 hover:shadow-xl transition-all duration-300 group">
+                      <h5 className="font-semibold text-orange-600 mb-2 flex items-center gap-2 group-hover:text-orange-500 transition-colors">
+                        <span className="text-xl">📧</span>
+                        Outlook
+                      </h5>
+                      <p className="text-sm text-gray-600 leading-relaxed">{instructions.outlook}</p>
                     </div>
-                    <div className="p-3 bg-white rounded border">
-                      <h5 className="font-medium text-gray-600 mb-2">🍎 Apple Calendar</h5>
-                      <p className="text-sm text-gray-600">{instructions.apple}</p>
+                    <div className="card p-4 hover:shadow-xl transition-all duration-300 group">
+                      <h5 className="font-semibold text-gray-700 mb-2 flex items-center gap-2 group-hover:text-gray-600 transition-colors">
+                        <span className="text-xl">🍎</span>
+                        Apple Calendar
+                      </h5>
+                      <p className="text-sm text-gray-600 leading-relaxed">{instructions.apple}</p>
                     </div>
-                    <div className="p-3 bg-white rounded border">
-                      <h5 className="font-medium text-green-600 mb-2">🌐 Andere Apps</h5>
-                      <p className="text-sm text-gray-600">{instructions.general}</p>
+                    <div className="card p-4 hover:shadow-xl transition-all duration-300 group">
+                      <h5 className="font-semibold text-lime-600 mb-2 flex items-center gap-2 group-hover:text-lime-500 transition-colors">
+                        <span className="text-xl">🌐</span>
+                        Andere Apps
+                      </h5>
+                      <p className="text-sm text-gray-600 leading-relaxed">{instructions.general}</p>
                     </div>
                   </div>
                 </div>
