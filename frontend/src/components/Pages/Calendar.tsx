@@ -899,18 +899,7 @@ export function Calendar() {
                           );
                         }
                         
-                        // Filter nur zukünftige Events
-                        const now = new Date();
-                        const upcomingEvents = events.filter(event => {
-                          try {
-                            const eventDate = new Date(event.startsAt);
-                            return eventDate > now && !isNaN(eventDate.getTime());
-                          } catch {
-                            return false;
-                          }
-                        }).sort((a, b) => new Date(a.startsAt).getTime() - new Date(b.startsAt).getTime());
-                        
-                        return upcomingEvents.slice(0, 5).map((event) => (
+                        return events.slice(0, 5).map((event) => (
                           <div key={event.id} className="group/event flex items-center justify-between p-6 bg-gradient-to-r from-gray-50 to-gray-100 dark:from-gray-700/50 dark:to-gray-700 rounded-2xl hover:from-gray-100 hover:to-gray-200 dark:hover:from-gray-600 dark:hover:to-gray-600 transition-all duration-200 transform hover:scale-[1.02]">
                             <div className="flex items-center">
                               <div className="w-10 h-10 bg-gradient-to-r from-emerald-500 to-green-600 rounded-2xl flex items-center justify-center mr-4">
