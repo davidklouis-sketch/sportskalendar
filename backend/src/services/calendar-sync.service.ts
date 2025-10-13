@@ -182,9 +182,9 @@ export class CalendarSyncService {
       console.log(`[Calendar Sync] Processing team: ${team.sport} - ${team.teamName}`);
       
       if (team.sport === 'football') {
-        // Get football events from TheSportsDB or Football-Data API
+        // Get football events from Football-Data.org API (more complete than TheSportsDB)
         console.log(`[Calendar Sync] Fetching football events for league ${team.leagueId}`);
-        const footballEvents = await this.theSportsDBService.getFootballEvents(team.leagueId, '2025-26');
+        const footballEvents = await this.getFootballEventsFromAPI(team.leagueId);
         console.log(`[Calendar Sync] Raw football events: ${footballEvents.length}`);
         const transformed = this.transformFootballEvents(footballEvents, team);
         console.log(`[Calendar Sync] Transformed football events: ${transformed.length}`);
@@ -307,6 +307,116 @@ export class CalendarSyncService {
       homeScore: event.intHomeScore,
       awayScore: event.intAwayScore
     }));
+  }
+
+  private async getFootballEventsFromAPI(leagueId: string): Promise<any[]> {
+    try {
+      // Try Football-Data.org API first (most complete)
+      const footballDataKey = process.env.FOOTBALL_DATA_KEY;
+      if (footballDataKey && footballDataKey !== 'your_football_data_api_key') {
+        console.log(`[Calendar Sync] Using Football-Data.org API for league ${leagueId}`);
+        return await this.getFootballDataOrgEvents(leagueId, footballDataKey);
+      }
+      
+      // Fallback to API-FOOTBALL
+      const apiFootballKey = process.env.API_FOOTBALL_KEY;
+      if (apiFootballKey && apiFootballKey !== 'your_api_football_key') {
+        console.log(`[Calendar Sync] Using API-FOOTBALL for league ${leagueId}`);
+        return await this.getApiFootballEvents(leagueId, apiFootballKey);
+      }
+      
+      // Final fallback to TheSportsDB
+      console.log(`[Calendar Sync] Using TheSportsDB fallback for league ${leagueId}`);
+      return await this.theSportsDBService.getFootballEvents(leagueId, '2025-26');
+    } catch (error) {
+      console.error('Error fetching football events:', error);
+      return [];
+    }
+  }
+
+  private async getFootballDataOrgEvents(leagueId: string, apiKey: string): Promise<any[]> {
+    try {
+      // Map internal league IDs to football-data.org competition IDs
+      const leagueMapping: Record<string, { id: number, name: string }> = {
+        '4328': { id: 2021, name: 'Premier League' },        // Premier League
+        '4331': { id: 2002, name: 'Bundesliga' },            // Bundesliga  
+        '4480': { id: 2001, name: 'Champions League' },      // UEFA Champions League
+        '4497': { id: 2018, name: 'European Championship' }  // UEFA European Championship
+      };
+
+      const competition = leagueMapping[leagueId];
+      if (!competition) {
+        console.log(`[Calendar Sync] Unknown league ID ${leagueId} for Football-Data.org`);
+        return [];
+      }
+
+      const headers = { 'X-Auth-Token': apiKey };
+      
+      // Get upcoming matches with 30-day range
+      const today = new Date();
+      const thirtyDaysFromNow = new Date(today.getTime() + 30 * 24 * 60 * 60 * 1000);
+      const dateFrom = today.toISOString().split('T')[0];
+      const dateTo = thirtyDaysFromNow.toISOString().split('T')[0];
+      
+      let url = `https://api.football-data.org/v4/competitions/${competition.id}/matches?dateFrom=${dateFrom}&dateTo=${dateTo}`;
+      
+      const response = await fetch(url, { headers });
+      if (!response.ok) {
+        console.log(`[Calendar Sync] Football-Data.org API failed with status ${response.status}`);
+        return [];
+      }
+      
+      const data = await response.json();
+      const matches = data?.matches || [];
+      
+      console.log(`[Calendar Sync] Football-Data.org returned ${matches.length} matches`);
+      
+      return matches.map((match: any) => ({
+        idEvent: `football_${match.id}`,
+        strEvent: `${match.homeTeam.name} vs ${match.awayTeam.name}`,
+        dateEvent: match.utcDate.split('T')[0],
+        strTime: match.utcDate.split('T')[1]?.split('.')[0] || '15:00:00',
+        strHomeTeam: match.homeTeam.name,
+        strAwayTeam: match.awayTeam.name,
+        strStatus: match.status === 'SCHEDULED' ? 'Scheduled' : match.status,
+        strVenue: match.venue || 'TBD'
+      }));
+    } catch (error) {
+      console.error('Error fetching Football-Data.org events:', error);
+      return [];
+    }
+  }
+
+  private async getApiFootballEvents(leagueId: string, apiKey: string): Promise<any[]> {
+    try {
+      const headers = { 'x-apisports-key': apiKey };
+      const url = `https://v3.football.api-sports.io/fixtures?league=${leagueId}&next=50&timezone=Europe/Berlin`;
+      
+      const response = await fetch(url, { headers });
+      if (!response.ok) {
+        console.log(`[Calendar Sync] API-FOOTBALL failed with status ${response.status}`);
+        return [];
+      }
+      
+      const data = await response.json();
+      const fixtures = data?.response || [];
+      
+      console.log(`[Calendar Sync] API-FOOTBALL returned ${fixtures.length} fixtures`);
+      
+      return fixtures.map((fixture: any) => ({
+        idEvent: `football_${fixture.fixture.id}`,
+        strEvent: `${fixture.teams.home.name} vs ${fixture.teams.away.name}`,
+        dateEvent: fixture.fixture.date.split('T')[0],
+        strTime: fixture.fixture.date.split('T')[1]?.split('.')[0] || '15:00:00',
+        strHomeTeam: fixture.teams.home.name,
+        strAwayTeam: fixture.teams.away.name,
+        strStatus: fixture.fixture.status.short,
+        strVenue: fixture.fixture.venue?.name || 'TBD'
+      }));
+    } catch (error) {
+      console.error('Error fetching API-FOOTBALL events:', error);
+      return [];
+    }
   }
 
   private async getF1EventsFromAPI(): Promise<any[]> {
