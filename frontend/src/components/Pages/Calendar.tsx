@@ -608,7 +608,9 @@ export function Calendar() {
         
         // Auto-select first sport if not selected
         if (!selectedSport) {
-          setSelectedSport(teams[0].sport as 'football' | 'nfl' | 'f1' | 'nba' | 'nhl' | 'mlb' | 'tennis');
+          const firstSport = teams[0].sport as 'football' | 'nfl' | 'f1' | 'nba' | 'nhl' | 'mlb' | 'tennis';
+          setSelectedSport(firstSport);
+          setSelectedSportTab(firstSport);
         }
         
         // Load events for teams
@@ -636,13 +638,23 @@ export function Calendar() {
     }
   }, [selectedSport]); // Nur selectedSport als Dependency um Infinite Loops zu vermeiden
 
-  // Also load highlights when selectedSportTab changes (for UI consistency)
+  // Initialize selectedSportTab based on user's first team
+  useEffect(() => {
+    if (user?.selectedTeams?.length && selectedSportTab === 'football') {
+      const firstSport = user.selectedTeams[0].sport as 'football' | 'nfl' | 'f1' | 'nba' | 'nhl' | 'mlb' | 'tennis';
+      if (firstSport !== 'football') {
+        setSelectedSportTab(firstSport);
+      }
+    }
+  }, [user?.selectedTeams, selectedSportTab]);
+
+  // Sync selectedSport with selectedSportTab for highlights consistency
   useEffect(() => {
     if (selectedSportTab && selectedSport !== selectedSportTab) {
       // Update selectedSport to match selectedSportTab for highlights
       setSelectedSport(selectedSportTab);
     }
-  }, [selectedSportTab, selectedSport]); // Beide Dependencies um korrekte Synchronisation zu gewährleisten
+  }, [selectedSportTab]); // Only selectedSportTab as dependency to avoid infinite loops
 
   // Load teams from API when modal opens
   const loadTeamsFromApi = useCallback(async () => {
