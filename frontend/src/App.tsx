@@ -199,6 +199,7 @@ function AppContent() {
             <LandingPage 
               onShowLogin={() => setAuthView('login')} 
               onShowRegister={() => setAuthView('register')} 
+              onNavigate={setCurrentPage}
             />
           </div>
         </div>
