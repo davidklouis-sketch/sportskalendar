@@ -71,7 +71,7 @@ export function Live() {
     } finally {
       setIsLoading(false);
     }
-  }, [selectedSport, user?.selectedTeams]);
+  }, [selectedSport, user]); // selectedTeams zu user vereinfacht
 
   useEffect(() => {
     // Set initial sport from user's selected teams
