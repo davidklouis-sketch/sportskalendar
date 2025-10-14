@@ -913,9 +913,12 @@ export function Calendar() {
             {/* Sport Selection - Floating Pills */}
             {localTeams.length > 0 && (
               <div className="flex flex-wrap gap-3 justify-center lg:justify-start">
-                {['football', 'f1', 'nfl', 'nba', 'nhl', 'mlb', 'tennis'].map((sport) => {
-                  const hasTeams = localTeams.some(t => t.sport === sport);
-                  if (!hasTeams) return null;
+                {(() => {
+                  // PERFORMANCE FIX: Create Set for O(1) lookups
+                  const sportsWithTeams = new Set(localTeams.map(t => t.sport));
+                  return ['football', 'f1', 'nfl', 'nba', 'nhl', 'mlb', 'tennis'].map((sport) => {
+                    const hasTeams = sportsWithTeams.has(sport);
+                    if (!hasTeams) return null;
                   
                   const sportNames: Record<string, string> = {
                     'football': t('football'),
@@ -944,7 +947,8 @@ export function Calendar() {
                       )}
                     </button>
                   );
-                })}
+                  });
+                })()}
               </div>
             )}
 
@@ -1059,6 +1063,7 @@ export function Calendar() {
                               <div className="space-y-3 pr-2">
                                 {(() => {
                                   const now = new Date(); // Create once outside map to prevent infinite loops
+                                  const hasPastEvents = events.some(e => new Date(e.startsAt) <= now);
                                   return sortedEvents.map((event) => {
                                   // Check if event is in the future for styling
                                   const eventDate = new Date(event.startsAt);
@@ -1135,7 +1140,7 @@ export function Calendar() {
                           </div>
                           
                           {/* Premium Hint for Non-Premium Users */}
-                          {!user?.isPremium && events.some(e => new Date(e.startsAt) <= now) && (
+                          {!user?.isPremium && hasPastEvents && (
                             <div className="mt-4 p-4 bg-gradient-to-r from-amber-50 to-orange-50 dark:from-amber-900/20 dark:to-orange-900/20 rounded-2xl border border-amber-200 dark:border-amber-800">
                               <div className="flex items-start">
                                 <div className="flex-shrink-0">
