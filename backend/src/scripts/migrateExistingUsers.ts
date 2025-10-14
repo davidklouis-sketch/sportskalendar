@@ -13,13 +13,19 @@ import { emailService } from '../services/email.service';
 
 async function migrateExistingUsers() {
   console.log('🔄 Starting migration of existing users...');
+  console.log('🔍 Environment check:');
+  console.log('  - DATABASE_URL configured:', !!process.env.DATABASE_URL);
+  console.log('  - NODE_ENV:', process.env.NODE_ENV);
   
   try {
     // Check if database is configured
     if (!process.env.DATABASE_URL) {
       console.error('❌ DATABASE_URL not configured');
+      console.error('❌ Cannot run migration without database connection');
       process.exit(1);
     }
+    
+    console.log('✅ DATABASE_URL is configured, proceeding with migration...');
 
     // Get all existing users
     console.log('📊 Fetching all existing users...');
@@ -85,6 +91,11 @@ async function migrateExistingUsers() {
 
   } catch (error) {
     console.error('❌ Migration failed:', error);
+    console.error('❌ Error details:', {
+      message: error instanceof Error ? error.message : 'Unknown error',
+      stack: error instanceof Error ? error.stack : undefined,
+      name: error instanceof Error ? error.name : undefined
+    });
     process.exit(1);
   }
 }
