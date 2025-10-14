@@ -618,7 +618,7 @@ export function Calendar() {
       setMlbEvents([]);
       setTennisEvents([]);
     }
-  }, [user?.selectedTeams]); // Vereinfacht um Infinite Loops zu vermeiden, aber Events werden geladen
+  }, [user?.selectedTeams]); // loadAllEvents wird innerhalb aufgerufen, muss nicht in Dependencies sein
 
   // Load highlights when sport selection changes
   useEffect(() => {
@@ -626,7 +626,7 @@ export function Calendar() {
     if (selectedSport) {
       loadHighlights();
     }
-  }, [selectedSport, loadHighlights]); // loadHighlights hinzugefügt für korrekte Funktionalität
+  }, [selectedSport]); // loadHighlights wird innerhalb aufgerufen, muss nicht in Dependencies sein
 
   // Also load highlights when selectedSportTab changes (for UI consistency)
   useEffect(() => {
@@ -638,7 +638,7 @@ export function Calendar() {
         setSelectedSport(selectedSportTab);
       }
     }
-  }, [selectedSportTab, selectedSport]); // selectedSport wieder hinzugefügt für korrekte Funktionalität
+  }, [selectedSportTab, selectedSport]); // selectedSport nötig für Vergleich
 
   // Load teams from API when modal opens
   const loadTeamsFromApi = useCallback(async () => {
@@ -671,14 +671,14 @@ export function Calendar() {
     if (showTeamSelector && (nbaTeamsFromApi.length === 0 || nhlTeamsFromApi.length === 0 || mlbTeamsFromApi.length === 0)) {
       loadTeamsFromApi();
     }
-  }, [showTeamSelector, loadTeamsFromApi, nbaTeamsFromApi.length, nhlTeamsFromApi.length, mlbTeamsFromApi.length]); // Dependencies wiederhergestellt für korrekte Funktionalität
+  }, [showTeamSelector, nbaTeamsFromApi.length, nhlTeamsFromApi.length, mlbTeamsFromApi.length]); // loadTeamsFromApi wird innerhalb aufgerufen, muss nicht in Dependencies sein
 
   // Update next event when events change or user teams change
   useEffect(() => {
     if (!isLoading) {
       findNextEvent();
     }
-  }, [footballEvents, f1Events, nflEvents, nbaEvents, nhlEvents, mlbEvents, tennisEvents, isLoading, user?.selectedTeams, findNextEvent]); // findNextEvent wieder hinzugefügt für korrekte Funktionalität
+  }, [footballEvents, f1Events, nflEvents, nbaEvents, nhlEvents, mlbEvents, tennisEvents, isLoading, user?.selectedTeams]); // findNextEvent wird innerhalb aufgerufen, muss nicht in Dependencies sein
 
   // Force load events if we have teams but no events after 2 seconds
   useEffect(() => {
@@ -694,7 +694,7 @@ export function Calendar() {
         return () => clearTimeout(timer);
       }
     }
-  }, [localTeams, footballEvents, f1Events, nbaEvents, nflEvents, nhlEvents, mlbEvents, tennisEvents, isLoading, loadAllEvents]); // loadAllEvents wieder hinzugefügt für korrekte Funktionalität
+  }, [localTeams, footballEvents, f1Events, nbaEvents, nflEvents, nhlEvents, mlbEvents, tennisEvents, isLoading]); // loadAllEvents wird innerhalb aufgerufen, muss nicht in Dependencies sein
 
   const handleAddTeam = async (sport: string, teamName: string, teamId?: string, leagueId?: number) => {
     if (!user) return;
