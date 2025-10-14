@@ -68,10 +68,18 @@ export class EmailService {
             pass: process.env.SMTP_PASS // This should be your Outlook App Password
           },
           tls: {
-            ciphers: 'SSLv3'
-          }
+            ciphers: 'SSLv3',
+            rejectUnauthorized: false
+          },
+          requireTLS: true
         };
         console.log('📧 Using App Password authentication');
+        console.log('📧 SMTP Config:', {
+          host: emailConfig.host,
+          port: emailConfig.port,
+          user: emailConfig.auth.user,
+          hasPassword: !!emailConfig.auth.pass
+        });
       }
 
       // Validate basic configuration
