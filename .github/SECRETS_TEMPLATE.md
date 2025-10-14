@@ -184,6 +184,39 @@ Example: https://sportskalendar.de,https://www.sportskalendar.de
 
 ---
 
+### 📧 Email Configuration
+
+```
+SMTP_HOST
+Value: smtp-mail.outlook.com
+Description: SMTP server hostname
+Required: ✅ For email functionality
+```
+
+```
+SMTP_PORT
+Value: 587
+Description: SMTP server port
+Required: ✅ For email functionality
+```
+
+```
+SMTP_USER
+Value: sportskalendar@outlook.de
+Description: Your Outlook email address
+Required: ✅ For email functionality
+```
+
+```
+SMTP_PASS
+Value: your_outlook_app_password_here
+Description: Outlook App Password (16 characters)
+Required: ✅ For email functionality
+Get it: https://account.microsoft.com/security → Advanced security → App passwords
+```
+
+---
+
 ### 🔧 Optional Secrets
 
 ```
@@ -214,6 +247,7 @@ Required: ❌ Optional (defaults to 'info')
 6. `CORS_ORIGIN`
 7. `FOOTBALL_DATA_KEY` or `API_FOOTBALL_KEY`
 8. `THESPORTSDB_API_KEY` (use `3` for free)
+9. `SMTP_USER` and `SMTP_PASS` (for email functionality)
 
 ### Full Setup (All Features)
 - All secrets from Minimal Setup

@@ -145,7 +145,7 @@ function AppContent() {
     if (isAuthenticated && user && !isInitializing && !authView) {
       // User ist eingeloggt, kein Auth-Modal offen, aber nicht auf Calendar-Seite
       // Nur navigieren wenn es sich um eine Authentifizierung handelt, nicht um normale Navigation
-      const isAuthPage = currentPage === 'calendar' || currentPage === 'live' || currentPage === 'highlights' || currentPage === 'settings' || currentPage === 'calendar-sync';
+      const isAuthPage = currentPage === 'calendar' || currentPage === 'live' || currentPage === 'highlights' || currentPage === 'settings' || currentPage === 'calendar-sync' || currentPage === 'admin';
       if (!isAuthPage) {
         setCurrentPage('calendar');
       }

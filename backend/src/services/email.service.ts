@@ -1,5 +1,7 @@
 import nodemailer, { Transporter } from 'nodemailer';
 import crypto from 'crypto';
+import https from 'https';
+import querystring from 'querystring';
 
 export interface EmailVerificationToken {
   token: string;
@@ -16,6 +18,8 @@ export interface EmailTemplate {
 export class EmailService {
   private transporter!: Transporter;
   private isConfigured: boolean = false;
+  private accessToken: string | null = null;
+  private tokenExpiry: Date | null = null;
 
   constructor() {
     this.initializeTransporter();
@@ -23,24 +27,75 @@ export class EmailService {
 
   private initializeTransporter(): void {
     try {
-      // Check if all required email configuration is present
-      const emailConfig = {
-        host: process.env.SMTP_HOST || 'smtp-mail.outlook.com',
-        port: parseInt(process.env.SMTP_PORT || '587'),
-        secure: false, // true for 465, false for other ports
-        auth: {
-          user: process.env.SMTP_USER || 'sportskalendar@outlook.de',
-          pass: process.env.SMTP_PASS || 'o%5yl8XBw5b39o!Q'
-        },
-        tls: {
-          ciphers: 'SSLv3'
-        }
-      };
-
-      // Validate configuration
-      if (!emailConfig.auth.user || !emailConfig.auth.pass) {
-        console.warn('⚠️ Email configuration incomplete - SMTP_USER or SMTP_PASS not set');
+      // TEMPORARY: Skip email service initialization in development
+      if (process.env.NODE_ENV === 'development') {
+        console.log('📧 Email service disabled in development mode');
         return;
+      }
+
+      // Check if we have OAuth2 credentials first
+      const hasOAuth2 = process.env.OAUTH_CLIENT_ID && process.env.OAUTH_CLIENT_SECRET && process.env.OAUTH_REFRESH_TOKEN;
+      
+      let emailConfig: any;
+
+      if (hasOAuth2) {
+        // Use OAuth2 configuration
+        emailConfig = {
+          host: process.env.SMTP_HOST || 'smtp-mail.outlook.com',
+          port: parseInt(process.env.SMTP_PORT || '587'),
+          secure: false, // STARTTLS
+          auth: {
+            type: 'OAuth2',
+            user: process.env.SMTP_USER || 'sportskalendar@outlook.de',
+            clientId: process.env.OAUTH_CLIENT_ID,
+            clientSecret: process.env.OAUTH_CLIENT_SECRET,
+            refreshToken: process.env.OAUTH_REFRESH_TOKEN,
+            accessToken: process.env.OAUTH_ACCESS_TOKEN
+          },
+          tls: {
+            ciphers: 'SSLv3'
+          }
+        };
+        console.log('📧 Using OAuth2 authentication');
+      } else {
+        // Use App Password authentication (simpler, no Azure required)
+        emailConfig = {
+          host: process.env.SMTP_HOST || 'smtp-mail.outlook.com',
+          port: parseInt(process.env.SMTP_PORT || '587'),
+          secure: false, // STARTTLS
+          auth: {
+            user: process.env.SMTP_USER || 'sportskalendar@outlook.de',
+            pass: process.env.SMTP_PASS // This should be your Outlook App Password
+          },
+          tls: {
+            ciphers: 'SSLv3'
+          }
+        };
+        console.log('📧 Using App Password authentication');
+      }
+
+      // Validate basic configuration
+      if (!emailConfig.auth.user) {
+        console.warn('⚠️ Email configuration incomplete - missing SMTP_USER');
+        console.log('📧 Required: SMTP_USER (your Outlook email address)');
+        return;
+      }
+
+      // Validate authentication method
+      if (hasOAuth2) {
+        if (!emailConfig.auth.clientId || !emailConfig.auth.clientSecret || !emailConfig.auth.refreshToken) {
+          console.warn('⚠️ OAuth2 configuration incomplete');
+          console.log('📧 OAuth2 requires: OAUTH_CLIENT_ID, OAUTH_CLIENT_SECRET, OAUTH_REFRESH_TOKEN');
+          console.log('📧 Alternative: Use SMTP_PASS (App Password) instead');
+          return;
+        }
+      } else {
+        if (!emailConfig.auth.pass) {
+          console.warn('⚠️ App Password configuration incomplete');
+          console.log('📧 Required: SMTP_PASS (Outlook App Password)');
+          console.log('📧 Get App Password: https://account.microsoft.com/security → Advanced security → App passwords');
+          return;
+        }
       }
 
       this.transporter = nodemailer.createTransport(emailConfig);
@@ -48,7 +103,8 @@ export class EmailService {
       // Verify connection configuration
       this.transporter.verify((error: any, success: any) => {
         if (error) {
-          console.error('❌ Email service configuration error:', error);
+          console.warn('⚠️ Email service configuration error (non-critical):', error.message);
+          console.log('📧 Email service will work in limited mode - emails may not be sent');
           this.isConfigured = false;
         } else {
           console.log('✅ Email service configured successfully');
