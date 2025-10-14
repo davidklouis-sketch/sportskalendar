@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useRef, useEffect } from 'react';
 import { authApi } from '../../lib/api';
 import { useAuthStore } from '../../store/useAuthStore';
 import { FormErrorBoundary } from './FormErrorBoundary';
@@ -18,6 +18,14 @@ export function AuthModal({ onClose, onSuccess, initialMode = 'login' }: AuthMod
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const setUser = useAuthStore((state) => state.setUser);
+  
+  // Use refs to avoid infinite loops in useCallback
+  const formDataRef = useRef({ email, password, displayName, keepLoggedIn });
+  
+  // Update ref when state changes
+  useEffect(() => {
+    formDataRef.current = { email, password, displayName, keepLoggedIn };
+  }, [email, password, displayName, keepLoggedIn]);
 
   const handleSubmit = useCallback(async (e: React.FormEvent) => {
     e.preventDefault();
@@ -26,19 +34,27 @@ export function AuthModal({ onClose, onSuccess, initialMode = 'login' }: AuthMod
 
     try {
       if (mode === 'login') {
-        const { data: loginData } = await authApi.login({ email, password, keepLoggedIn });
+        const { data: loginData } = await authApi.login({ 
+          email: formDataRef.current.email, 
+          password: formDataRef.current.password, 
+          keepLoggedIn: formDataRef.current.keepLoggedIn 
+        });
         
         // Login response now includes premium status and selectedTeams
         setUser(loginData.user);
         
         // Store keepLoggedIn preference in localStorage
-        if (keepLoggedIn) {
+        if (formDataRef.current.keepLoggedIn) {
           localStorage.setItem('keepLoggedIn', 'true');
         } else {
           localStorage.removeItem('keepLoggedIn');
         }
       } else {
-        await authApi.register({ email, password, displayName });
+        await authApi.register({ 
+          email: formDataRef.current.email, 
+          password: formDataRef.current.password, 
+          displayName: formDataRef.current.displayName 
+        });
       }
       
       // After successful login/register, call success callback first, then close modal
@@ -52,7 +68,7 @@ export function AuthModal({ onClose, onSuccess, initialMode = 'login' }: AuthMod
     } finally {
       setIsLoading(false);
     }
-  }, [mode, email, password, displayName, keepLoggedIn, setUser, onSuccess, onClose]);
+  }, [mode, setUser, onSuccess, onClose]); // Remove state variables to prevent infinite loops
 
   const switchMode = () => {
     setMode(mode === 'login' ? 'register' : 'login');

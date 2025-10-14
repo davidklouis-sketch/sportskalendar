@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useRef, useEffect } from 'react';
 import { authApi } from '../../lib/api';
 import { useAuthStore } from '../../store/useAuthStore';
 import { FormErrorBoundary } from './FormErrorBoundary';
@@ -15,6 +15,14 @@ export function Login({ onSwitchToRegister, onSuccess }: LoginProps) {
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const setUser = useAuthStore((state) => state.setUser);
+  
+  // Use refs to avoid infinite loops in useCallback
+  const formDataRef = useRef({ email, password, keepLoggedIn });
+  
+  // Update ref when state changes
+  useEffect(() => {
+    formDataRef.current = { email, password, keepLoggedIn };
+  }, [email, password, keepLoggedIn]);
 
   const handleSubmit = useCallback(async (e: React.FormEvent) => {
     e.preventDefault();
@@ -22,13 +30,17 @@ export function Login({ onSwitchToRegister, onSuccess }: LoginProps) {
     setIsLoading(true);
 
     try {
-      const { data: loginData } = await authApi.login({ email, password, keepLoggedIn });
+      const { data: loginData } = await authApi.login({ 
+        email: formDataRef.current.email, 
+        password: formDataRef.current.password, 
+        keepLoggedIn: formDataRef.current.keepLoggedIn 
+      });
       
       // Login response now includes premium status and selectedTeams
       setUser(loginData.user);
       
       // Store keepLoggedIn preference in localStorage
-      if (keepLoggedIn) {
+      if (formDataRef.current.keepLoggedIn) {
         localStorage.setItem('keepLoggedIn', 'true');
       } else {
         localStorage.removeItem('keepLoggedIn');
@@ -41,7 +53,7 @@ export function Login({ onSwitchToRegister, onSuccess }: LoginProps) {
     } finally {
       setIsLoading(false);
     }
-  }, [email, password, keepLoggedIn, setUser, onSuccess]);
+  }, [setUser, onSuccess]); // Remove state variables to prevent infinite loops
 
   return (
     <div className="w-full max-w-md mx-auto">
