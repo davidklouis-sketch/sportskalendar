@@ -71,7 +71,7 @@ export function Admin() {
   const handleTogglePremium = async (userId: string) => {
     setActionLoading(userId);
     try {
-      const response = await adminApi.togglePremium(userId);
+      await adminApi.togglePremium(userId);
       await loadUsers();
       alert('Premium-Status wurde geändert!');
     } catch (err) {
