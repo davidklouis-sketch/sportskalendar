@@ -23,7 +23,7 @@ export function Admin() {
 
   useEffect(() => {
     loadUsers();
-  }, [loadUsers]);
+  }, []); // Leere Dependencies um Infinite Loops zu vermeiden
 
   const loadUsers = useCallback(async () => {
     setIsLoading(true);
