@@ -1385,11 +1385,16 @@ export function Calendar() {
                   </div>
                   
                   <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
-                    {NFL_TEAMS.map((team) => (
+                    {(() => {
+                      // PERFORMANCE FIX: Create Set for O(1) lookups
+                      const localTeamNames = new Set(localTeams.map(t => t.teamName));
+                      return NFL_TEAMS.map((team) => {
+                        const isSelected = localTeamNames.has(team.name);
+                        return (
                       <button
                         key={team.id}
                         onClick={() => handleAddTeam('nfl', team.name, team.id)}
-                        disabled={localTeams.some(t => t.teamName === team.name)}
+                        disabled={isSelected}
                         className="relative p-4 rounded-xl hover:bg-gray-100 dark:hover:bg-gray-800 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 border border-gray-200 dark:border-gray-700 hover:border-orange-300 dark:hover:border-orange-600 hover:shadow-md group"
                       >
                         <div className="flex flex-col items-center text-center">
@@ -1399,7 +1404,7 @@ export function Calendar() {
                           <span className="text-sm font-medium text-gray-900 dark:text-white leading-tight">{team.name}</span>
                           <span className="text-xs text-gray-500 dark:text-gray-400 mt-1">{team.division}</span>
                         </div>
-                        {localTeams.some(t => t.teamName === team.name) && (
+                        {isSelected && (
                           <div className="absolute top-2 right-2 w-6 h-6 bg-green-500 rounded-full flex items-center justify-center">
                             <svg className="w-3 h-3 text-white" fill="currentColor" viewBox="0 0 20 20">
                               <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
