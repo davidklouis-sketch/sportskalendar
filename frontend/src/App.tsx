@@ -155,7 +155,7 @@ function AppContent() {
         setCurrentPage('calendar');
       }
     }
-  }, [isAuthenticated, user, isInitializing, authView, currentPage]);
+  }, [isAuthenticated, user, isInitializing, authView]); // currentPage entfernt um Infinite Loop zu vermeiden
 
   /**
    * EFFECT: SEO Update
