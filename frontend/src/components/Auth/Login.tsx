@@ -1,6 +1,7 @@
-import { useState } from 'react';
+import { useState, useCallback } from 'react';
 import { authApi } from '../../lib/api';
 import { useAuthStore } from '../../store/useAuthStore';
+import { FormErrorBoundary } from './FormErrorBoundary';
 
 interface LoginProps {
   onSwitchToRegister: () => void;
@@ -15,7 +16,7 @@ export function Login({ onSwitchToRegister, onSuccess }: LoginProps) {
   const [isLoading, setIsLoading] = useState(false);
   const setUser = useAuthStore((state) => state.setUser);
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = useCallback(async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
     setIsLoading(true);
@@ -40,14 +41,15 @@ export function Login({ onSwitchToRegister, onSuccess }: LoginProps) {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [email, password, keepLoggedIn, setUser, onSuccess]);
 
   return (
     <div className="w-full max-w-md mx-auto">
       <div className="card p-8">
         <h2 className="text-2xl font-bold text-center mb-6">Login</h2>
         
-        <form onSubmit={handleSubmit} className="space-y-4">
+        <FormErrorBoundary>
+          <form onSubmit={handleSubmit} className="space-y-4">
           <div>
             <label className="block text-sm font-medium mb-2">Email</label>
             <input
@@ -58,6 +60,11 @@ export function Login({ onSwitchToRegister, onSuccess }: LoginProps) {
               placeholder="deine@email.de"
               required
               autoComplete="email"
+              data-lpignore="false"
+              data-1p-ignore="false"
+              data-bwignore="false"
+              name="email"
+              id="login-email"
             />
           </div>
 
@@ -71,6 +78,11 @@ export function Login({ onSwitchToRegister, onSuccess }: LoginProps) {
               placeholder="••••••••"
               required
               autoComplete="current-password"
+              data-lpignore="false"
+              data-1p-ignore="false"
+              data-bwignore="false"
+              name="password"
+              id="login-password"
             />
           </div>
 
@@ -100,7 +112,8 @@ export function Login({ onSwitchToRegister, onSuccess }: LoginProps) {
           >
             {isLoading ? 'Wird angemeldet...' : 'Anmelden'}
           </button>
-        </form>
+          </form>
+        </FormErrorBoundary>
 
         <div className="mt-6 text-center">
           <p className="text-sm text-gray-600 dark:text-gray-400">

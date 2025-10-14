@@ -1,6 +1,7 @@
-import { useState } from 'react';
+import { useState, useCallback } from 'react';
 import { authApi } from '../../lib/api';
 import { useAuthStore } from '../../store/useAuthStore';
+import { FormErrorBoundary } from './FormErrorBoundary';
 
 interface AuthModalProps {
   onClose: () => void;
@@ -18,7 +19,7 @@ export function AuthModal({ onClose, onSuccess, initialMode = 'login' }: AuthMod
   const [isLoading, setIsLoading] = useState(false);
   const setUser = useAuthStore((state) => state.setUser);
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = useCallback(async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
     setIsLoading(true);
@@ -51,7 +52,7 @@ export function AuthModal({ onClose, onSuccess, initialMode = 'login' }: AuthMod
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [mode, email, password, displayName, keepLoggedIn, setUser, onSuccess, onClose]);
 
   const switchMode = () => {
     setMode(mode === 'login' ? 'register' : 'login');
@@ -96,7 +97,8 @@ export function AuthModal({ onClose, onSuccess, initialMode = 'login' }: AuthMod
 
         {/* Form */}
         <div className="p-6">
-          <form onSubmit={handleSubmit} className="space-y-4">
+          <FormErrorBoundary>
+            <form onSubmit={handleSubmit} className="space-y-4">
             {mode === 'register' && (
               <div>
                 <label className="block text-sm font-medium text-cyan-400 mb-2">
@@ -127,6 +129,11 @@ export function AuthModal({ onClose, onSuccess, initialMode = 'login' }: AuthMod
                 placeholder="deine@email.de"
                 required
                 autoComplete="email"
+                data-lpignore="false"
+                data-1p-ignore="false"
+                data-bwignore="false"
+                name="email"
+                id={`${mode}-email`}
               />
             </div>
 
@@ -143,6 +150,11 @@ export function AuthModal({ onClose, onSuccess, initialMode = 'login' }: AuthMod
                 required
                 minLength={8}
                 autoComplete={mode === 'login' ? 'current-password' : 'new-password'}
+                data-lpignore="false"
+                data-1p-ignore="false"
+                data-bwignore="false"
+                name="password"
+                id={`${mode}-password`}
               />
               {mode === 'register' && (
                 <p className="text-xs text-dark-400 mt-1">
@@ -188,6 +200,7 @@ export function AuthModal({ onClose, onSuccess, initialMode = 'login' }: AuthMod
               )}
             </button>
           </form>
+          </FormErrorBoundary>
 
           {/* Switch mode */}
           <div className="mt-6 text-center">

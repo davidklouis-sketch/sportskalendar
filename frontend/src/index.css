@@ -74,15 +74,27 @@
     @apply bg-gray-100 dark:bg-dark-800 border border-gray-300 dark:border-dark-600;
     @apply text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-dark-400;
     @apply focus:ring-2 focus:ring-cyan-500 focus:border-cyan-400;
-    @apply transition-all duration-200;
+    @apply transition-colors duration-200; /* Nur Farben, keine Transforms */
     @apply hover:border-gray-400 dark:hover:border-dark-500;
     @apply touch-manipulation; /* Better touch handling on mobile */
     @apply min-h-[44px]; /* Minimum touch target size for mobile */
     @apply text-base; /* Prevent zoom on iOS */
+    /* Password Manager Kompatibilität */
+    @apply will-change-auto; /* Verhindert GPU-Beschleunigung Konflikte */
   }
   
   .input:focus {
     @apply bg-white dark:bg-dark-700 shadow-sport;
+    /* Verhindert Layout Shifts durch Password Manager */
+    transform: none !important;
+  }
+  
+  /* Spezielle Styles für Password Manager Kompatibilität */
+  .input[data-lpignore="true"],
+  .input[data-1p-ignore="true"],
+  .input[data-bwignore="true"] {
+    @apply transition-none; /* Keine Transitions für Password Manager Felder */
+    transform: none !important;
   }
   
   /* Logo-inspired Navigation */
