@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { adminApi, stripeApi } from '../../lib/api';
 import { useAuthStore } from '../../store/useAuthStore';
 
@@ -23,9 +23,9 @@ export function Admin() {
 
   useEffect(() => {
     loadUsers();
-  }, []);
+  }, [loadUsers]);
 
-  const loadUsers = async () => {
+  const loadUsers = useCallback(async () => {
     setIsLoading(true);
     try {
       const { data } = await adminApi.getUsers();
@@ -36,7 +36,7 @@ export function Admin() {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, []);
 
   const handlePromoteUser = async (userId: string) => {
     setActionLoading(userId);

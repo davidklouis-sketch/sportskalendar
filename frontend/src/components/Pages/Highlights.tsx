@@ -76,7 +76,7 @@ export function Highlights() {
     } finally {
       setIsLoading(false);
     }
-  }, [selectedSport, user]);
+  }, [selectedSport, user?.selectedTeams]);
 
   // Get team name variations for better matching (same as backend)
   const getTeamVariations = (teamName: string): string[] => {
@@ -131,7 +131,7 @@ export function Highlights() {
     if (selectedSport) {
       loadHighlights();
     }
-  }, [selectedSport]); // Remove loadHighlights from dependencies to prevent loop
+  }, [selectedSport, loadHighlights]); // loadHighlights hinzugefügt für korrekte Funktionalität
 
   const formatViews = (views?: number) => {
     if (!views) return '';
