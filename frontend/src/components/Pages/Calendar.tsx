@@ -79,7 +79,7 @@ export function Calendar() {
   const [nextEvent, setNextEvent] = useState<Event | null>(null);
 
   // Load all events separately for better organization
-  const loadAllEvents = async (teams: Array<{ sport: string; teamName: string; teamId?: string; leagueId?: number }>) => {
+  const loadAllEvents = useCallback(async (teams: Array<{ sport: string; teamName: string; teamId?: string; leagueId?: number }>) => {
     // Prevent multiple simultaneous loads
     if (isLoadingRef.current) {
       return;
@@ -418,7 +418,7 @@ export function Calendar() {
       // Find next upcoming event for countdown
       findNextEvent();
     }
-  };
+  }, []); // Leere Dependencies um Infinite Loops zu vermeiden
 
   // Helper function to filter events by future dates
   const filterFutureEvents = (events: Event[]) => {
@@ -474,7 +474,7 @@ export function Calendar() {
   };
 
   // Find the next upcoming event from all loaded events
-  const findNextEvent = () => {
+  const findNextEvent = useCallback(() => {
     // Only include events from user's selected teams, not all events
     const userSelectedSports = user?.selectedTeams?.map((team: any) => team.sport) || [];
     
@@ -516,10 +516,10 @@ export function Calendar() {
     } else {
       setNextEvent(null);
     }
-  };
+  }, [user?.selectedTeams, footballEvents, f1Events, nflEvents, nbaEvents, nhlEvents, mlbEvents, tennisEvents]);
 
   // Load highlights for selected sport
-  const loadHighlights = async () => {
+  const loadHighlights = useCallback(async () => {
     if (!selectedSport) {
       console.log('[Calendar Highlights] No selectedSport, skipping highlights load');
       return;
@@ -576,7 +576,7 @@ export function Calendar() {
     } finally {
       setIsLoadingHighlights(false);
     }
-  };
+  }, [selectedSport, localTeams]);
 
 
   // Load user teams and events on mount - with ref to prevent loops
@@ -641,7 +641,7 @@ export function Calendar() {
   }, [selectedSportTab]); // Nur selectedSportTab als Dependency um Infinite Loops zu vermeiden
 
   // Load teams from API when modal opens
-  const loadTeamsFromApi = async () => {
+  const loadTeamsFromApi = useCallback(async () => {
     setIsLoadingTeams(true);
     try {
       const [nbaResponse, nhlResponse, mlbResponse] = await Promise.all([
@@ -664,7 +664,7 @@ export function Calendar() {
     } finally {
       setIsLoadingTeams(false);
     }
-  };
+  }, []);
 
   // Load teams when modal opens
   useEffect(() => {
