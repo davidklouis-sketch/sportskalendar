@@ -248,13 +248,13 @@ function AppContent() {
         {/* Main Content Area - Client-Side Routing */}
         <main className="flex-1">
           {/* Calendar Page - Auth Required */}
-          {currentPage === 'calendar' && (user ? <Calendar /> : <LandingPage onShowLogin={() => setAuthView('login')} onShowRegister={() => setAuthView('register')} />)}
+          {currentPage === 'calendar' && (user ? <Calendar /> : <LandingPage onShowLogin={() => setAuthView('login')} onShowRegister={() => setAuthView('register')} onNavigate={setCurrentPage} />)}
           
           {/* Live Page - Auth Required */}
-          {currentPage === 'live' && (user ? <Live /> : <LandingPage onShowLogin={() => setAuthView('login')} onShowRegister={() => setAuthView('register')} />)}
+          {currentPage === 'live' && (user ? <Live /> : <LandingPage onShowLogin={() => setAuthView('login')} onShowRegister={() => setAuthView('register')} onNavigate={setCurrentPage} />)}
           
           {/* Highlights Page - Auth Required */}
-          {currentPage === 'highlights' && (user ? <Highlights /> : <LandingPage onShowLogin={() => setAuthView('login')} onShowRegister={() => setAuthView('register')} />)}
+          {currentPage === 'highlights' && (user ? <Highlights /> : <LandingPage onShowLogin={() => setAuthView('login')} onShowRegister={() => setAuthView('register')} onNavigate={setCurrentPage} />)}
           
           {/* Premium Page - Public */}
           {currentPage === 'premium' && <Premium onNavigate={setCurrentPage} />}

@@ -5,9 +5,10 @@ import { SportsKalendarBanner, SportsKalendarLeaderboard } from '../Ads/AdManage
 interface LandingPageProps {
   onShowLogin: () => void;
   onShowRegister: () => void;
+  onNavigate: (page: 'calendar' | 'live' | 'highlights' | 'premium' | 'admin' | 'settings' | 'calendar-sync' | 'privacy' | 'contact') => void;
 }
 
-export function LandingPage({ onShowLogin, onShowRegister }: LandingPageProps) {
+export function LandingPage({ onShowLogin, onShowRegister, onNavigate }: LandingPageProps) {
   const [showFeatures, setShowFeatures] = useState(false);
 
   const features = [
@@ -100,11 +101,15 @@ export function LandingPage({ onShowLogin, onShowRegister }: LandingPageProps) {
         <div className="mb-6 relative z-10">
           {/* Logo */}
           <div className="flex justify-center mb-6">
-            <div className="relative group shape-sport">
+            <button 
+              onClick={() => onNavigate('calendar')}
+              className="relative group shape-sport cursor-pointer transition-transform hover:scale-105 active:scale-95"
+              title="Zur Kalender-Seite"
+            >
               <div className="absolute -inset-2 bg-sport-gradient rounded-3xl blur opacity-75 group-hover:opacity-100 transition duration-300 animate-sport-pulse"></div>
               <div className="relative w-24 h-24 md:w-32 md:h-32 rounded-3xl overflow-hidden flex items-center justify-center bg-dark-800 shadow-2xl border border-cyan-400/20">
                 <img 
-                  src="/logos/logo-large.svg" 
+                  src="/logo.png" 
                   alt="Sportskalendar Logo" 
                   className="w-full h-full object-contain"
                   onError={(e) => {
@@ -119,7 +124,7 @@ export function LandingPage({ onShowLogin, onShowRegister }: LandingPageProps) {
                   <span className="text-white font-bold text-3xl md:text-4xl">S</span>
                 </div>
               </div>
-            </div>
+            </button>
           </div>
           
           <h1 className="text-4xl md:text-6xl font-bold mb-4 heading-sport">

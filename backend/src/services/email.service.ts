@@ -2,6 +2,7 @@ import nodemailer, { Transporter } from 'nodemailer';
 import crypto from 'crypto';
 import https from 'https';
 import querystring from 'querystring';
+import fetch from 'node-fetch';
 
 export interface EmailVerificationToken {
   token: string;

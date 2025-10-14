@@ -76,7 +76,11 @@ export function Header({ currentPage, onNavigate, onShowLogin, onShowRegister }:
           
           {/* Logo Section */}
           <div className="flex items-center gap-3">
-            <div className="relative group shape-sport">
+            <button 
+              onClick={() => onNavigate('calendar')}
+              className="relative group shape-sport cursor-pointer transition-transform hover:scale-105 active:scale-95"
+              title="Zur Kalender-Seite"
+            >
               {/* Logo-inspired geometric shapes */}
               <div className="absolute -inset-1 bg-sport-gradient rounded-2xl blur opacity-75 group-hover:opacity-100 transition duration-300 animate-sport-pulse"></div>
               <div className="relative w-10 h-10 rounded-2xl overflow-hidden flex items-center justify-center bg-dark-800 shadow-xl border border-cyan-400/20">
@@ -96,7 +100,7 @@ export function Header({ currentPage, onNavigate, onShowLogin, onShowRegister }:
                   <span className="text-white font-bold text-lg">S</span>
                 </div>
               </div>
-            </div>
+            </button>
             <div className="hidden sm:block">
               <h1 className="text-xl font-bold heading-sport">
                 SPORTS KALENDAR
