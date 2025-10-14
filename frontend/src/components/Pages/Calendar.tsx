@@ -82,13 +82,11 @@ export function Calendar() {
   const loadAllEvents = useCallback(async (teams: Array<{ sport: string; teamName: string; teamId?: string; leagueId?: number }>) => {
     // Prevent multiple simultaneous loads
     if (isLoadingRef.current) {
-      console.log('[Calendar] Already loading, skipping duplicate request');
       return;
     }
     
     isLoadingRef.current = true;
     setIsLoading(true);
-    console.log('[Calendar] Starting to load events for teams:', teams.length);
     
     try {
       // Reset all events first
@@ -523,13 +521,9 @@ export function Calendar() {
   // Load highlights for selected sport
   const loadHighlights = useCallback(async () => {
     if (!selectedSport) {
-      console.log('[Calendar Highlights] No selectedSport, skipping highlights load');
       return;
     }
     
-    console.log('[Calendar Highlights] Loading highlights for sport:', selectedSport);
-    console.log('[Calendar Highlights] localTeams:', localTeams);
-    console.log('[Calendar Highlights] user.selectedTeams:', user?.selectedTeams);
     
     setIsLoadingHighlights(true);
     try {
@@ -545,32 +539,22 @@ export function Calendar() {
 
       // Get current values from state
       const currentTeam = localTeams.find(t => t.sport === selectedSport);
-      console.log('[Calendar Highlights] currentTeam from localTeams:', currentTeam);
       
       // If no team found in localTeams, try to get from user.selectedTeams
       const fallbackTeam = !currentTeam && user?.selectedTeams 
         ? user.selectedTeams.find(t => t.sport === selectedSport)
         : currentTeam;
-      console.log('[Calendar Highlights] fallbackTeam:', fallbackTeam);
-      
-      console.log('[Calendar Highlights] Calling API with sport:', sportMapping[selectedSport], 'team:', fallbackTeam?.teamName);
       
       let allHighlights: Highlight[] = [];
       try {
         const response = await highlightsApi.getHighlights(sportMapping[selectedSport], fallbackTeam?.teamName);
-        console.log('[Calendar Highlights] API response received:', response.data);
-        
         allHighlights = response.data.items || [];
-        console.log('[Calendar Highlights] API response items:', allHighlights.length);
       } catch (apiError) {
         console.error('[Calendar Highlights] API call failed:', apiError);
         throw apiError;
       }
       
       // Backend should handle team filtering, so we don't need additional frontend filtering
-      console.log('[Calendar Highlights] No additional filtering - backend handles team filtering');
-      
-      console.log('[Calendar Highlights] Final highlights count:', allHighlights.length);
       setHighlights(allHighlights);
     } catch (error) {
       console.error('[Calendar Highlights] Failed to load highlights:', error);
@@ -625,7 +609,6 @@ export function Calendar() {
 
   // Load highlights when sport selection changes
   useEffect(() => {
-    console.log('[Calendar Highlights] selectedSport changed:', selectedSport);
     if (selectedSport) {
       loadHighlights();
     }
@@ -633,10 +616,8 @@ export function Calendar() {
 
   // Also load highlights when selectedSportTab changes (for UI consistency)
   useEffect(() => {
-    console.log('[Calendar Highlights] selectedSportTab changed:', selectedSportTab);
     if (selectedSportTab && selectedSport !== selectedSportTab) {
       // Update selectedSport to match selectedSportTab for highlights
-      console.log('[Calendar Highlights] Syncing selectedSport to selectedSportTab');
       setSelectedSport(selectedSportTab);
     }
   }, [selectedSportTab, selectedSport]); // Beide Dependencies um korrekte Synchronisation zu gewährleisten

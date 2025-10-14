@@ -81,15 +81,11 @@ api.interceptors.response.use(
       originalRequest._retry = true; // Verhindert Infinite Loop
       
       try {
-        console.log('🔄 Token expired, attempting refresh...');
         await authApi.refresh(); // Refresh Token verwenden
-        console.log('✅ Token refreshed successfully');
         return api(originalRequest); // Original Request wiederholen
       } catch (refreshError) {
-        console.log('❌ Token refresh failed:', refreshError);
         // Nur bei echten Auth-Fehlern ausloggen (NIEMALS bei Rate Limiting!)
         if ((refreshError as any).response?.status === 401 || (refreshError as any).response?.status === 403) {
-          console.log('🔒 Authentication failed, logging out user');
           // Tokens aus localStorage entfernen
           localStorage.removeItem('accessToken');
           localStorage.removeItem('refreshToken');
@@ -232,12 +228,10 @@ function deduplicatedRequest(url: string): Promise<any> {
   
   // Return cached promise if still valid
   if (cached && (now - cached.timestamp) < CACHE_DURATION) {
-    console.log(`🔄 Using cached request for ${url}`);
     return cached.promise;
   }
   
   // Create new request
-  console.log(`🚀 Making new request to ${url}`);
   const promise = api.get(url).catch(error => {
     // Remove from cache on error to allow retry
     requestCache.delete(url);
