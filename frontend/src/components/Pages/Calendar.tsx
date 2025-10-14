@@ -418,7 +418,7 @@ export function Calendar() {
       // Find next upcoming event for countdown
       findNextEvent();
     }
-  }, []);
+  };
 
   // Helper function to filter events by future dates
   const filterFutureEvents = (events: Event[]) => {
