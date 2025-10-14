@@ -260,10 +260,7 @@ if (!validateJwtSecret()) {
  * 
  * Für Docker Health Checks und Monitoring.
  */
-test
-Process completed with exit code 2.
-test
-Type 'Page' is not assignable to type '"admin" | "calendar" | "live" | "highlights" | "premium" | "settings" | "privacy" | "contact"'.app.get('/api/health', (req, res) => {
+app.get('/api/health', (req, res) => {
   res.status(200).json({ 
     status: 'OK', 
     timestamp: new Date().toISOString(),

@@ -330,7 +330,7 @@ authRouter.post('/login', authRateLimit, async (req: Request, res: Response) => 
     }
 
     // Check if email is verified
-    if (!user.emailVerified) {
+    if (!user.email_verified) {
       console.log('❌ Email not verified for user:', user.email);
       return res.status(403).json({ 
         error: 'Email not verified',
