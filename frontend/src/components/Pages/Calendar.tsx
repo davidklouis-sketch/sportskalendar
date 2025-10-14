@@ -1046,21 +1046,25 @@ export function Calendar() {
                           : events.filter(event => new Date(event.startsAt) > now);
                         
                         // Sort events: future events first (by date), then past events (newest first)
-                        const sortedEvents = [...filteredEvents].sort((a, b) => {
-                          const dateA = new Date(a.startsAt);
-                          const dateB = new Date(b.startsAt);
-                          
-                          const isFutureA = dateA > now;
-                          const isFutureB = dateB > now;
+                        // PERFORMANCE FIX: Pre-calculate dates to avoid creating new Date() in every comparison
+                        const eventsWithDates = filteredEvents.map(event => ({
+                          ...event,
+                          parsedDate: new Date(event.startsAt),
+                          isFuture: new Date(event.startsAt) > now
+                        }));
+                        
+                        const sortedEvents = eventsWithDates.sort((a, b) => {
+                          const isFutureA = a.isFuture;
+                          const isFutureB = b.isFuture;
                           
                           // If both are future or both are past, sort by date
                           if (isFutureA === isFutureB) {
                             if (isFutureA) {
                               // Future events: earliest first
-                              return dateA.getTime() - dateB.getTime();
+                              return a.parsedDate.getTime() - b.parsedDate.getTime();
                             } else {
                               // Past events: newest first
-                              return dateB.getTime() - dateA.getTime();
+                              return b.parsedDate.getTime() - a.parsedDate.getTime();
                             }
                           }
                           
