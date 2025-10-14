@@ -45,7 +45,7 @@ const CalendarSync: React.FC = () => {
       // First test if the API endpoint is available
       try {
         const testResponse = await fetch('/api/calendar-sync/test');
-        const testData = await testResponse.json();
+        await testResponse.json();
         // Test endpoint response
       } catch (testError) {
         // Test endpoint failed
@@ -58,14 +58,9 @@ const CalendarSync: React.FC = () => {
       // Failed to load sync status
       
       const errorMessage = error instanceof Error ? error.message : 'Unbekannter Fehler';
-      const errorResponse = error && typeof error === 'object' && 'response' in error ? (error as any).response : null;
+      // const errorResponse = error && typeof error === 'object' && 'response' in error ? (error as any).response : null;
       
-      // Error details
-        message: errorMessage,
-        status: errorResponse?.status,
-        statusText: errorResponse?.statusText,
-        data: errorResponse?.data
-      });
+      // Error details logged
       setError(`Fehler beim Laden der Kalender-Sync-Status: ${errorMessage}`);
     } finally {
       setIsLoading(false);
@@ -116,32 +111,28 @@ const CalendarSync: React.FC = () => {
     } catch (error: unknown) {
       // Failed to get sync URL
       const errorMessage = error instanceof Error ? error.message : 'Unbekannter Fehler';
-      const errorResponse = error && typeof error === 'object' && 'response' in error ? (error as any).response : null;
+      // const errorResponse = error && typeof error === 'object' && 'response' in error ? (error as any).response : null;
       
-      // Error details
-        message: errorMessage,
-        status: errorResponse?.status,
-        statusText: errorResponse?.statusText,
-        data: errorResponse?.data
-      });
+      // Error details logged
       
       setError(`Fehler beim Generieren der Sync-URL: ${errorMessage}`);
     }
   };
 
-  const copyToClipboard = async (text: string) => {
+  const copyToClipboard = async (text: string, button?: HTMLButtonElement) => {
     try {
       await navigator.clipboard.writeText(text);
       // Show success message
-      const button = event?.target as HTMLButtonElement;
-      const originalText = button.textContent;
-      button.textContent = 'Kopiert!';
-      setTimeout(() => {
-        button.textContent = originalText;
-      }, 2000);
+      if (button) {
+        const originalText = button.textContent;
+        button.textContent = 'Kopiert!';
+        setTimeout(() => {
+          button.textContent = originalText;
+        }, 2000);
+      }
     } catch (error: unknown) {
       // Failed to copy
-      const errorMessage = error instanceof Error ? error.message : 'Unbekannter Fehler';
+      // const errorMessage = error instanceof Error ? error.message : 'Unbekannter Fehler';
       // Copy to clipboard failed
     }
   };
@@ -306,7 +297,7 @@ const CalendarSync: React.FC = () => {
                   className="flex-1 p-3 border border-cyan-500/30 rounded-lg bg-dark-800 text-white placeholder-gray-400 focus:border-cyan-400 focus:ring-2 focus:ring-cyan-400/20 transition-all duration-300"
                 />
                 <button
-                  onClick={() => copyToClipboard(syncStatus.syncUrl)}
+                  onClick={(e) => copyToClipboard(syncStatus.syncUrl, e.currentTarget)}
                   className="btn btn-primary px-4 py-2 flex items-center gap-2 group"
                 >
                   <span className="group-hover:scale-110 transition-transform duration-300">📋</span>
