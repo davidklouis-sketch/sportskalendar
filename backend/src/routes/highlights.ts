@@ -163,11 +163,12 @@ const VIDEO_SOURCES = {
     { name: 'NFL Highlights', channelId: 'UCDVYQ4Zhbm3S2dlz7P1GBDg', priority: 'medium' }
   ],
   'Fußball': [
-    { name: 'Bundesliga Official', channelId: 'UCVr_x4G5d7b8Z-1Qh8q8Xw', priority: 'high' },
-    { name: 'Premier League', channelId: 'UCVr_x4G5d7b8Z-1Qh8q8Xw', priority: 'high' },
-    { name: 'Champions League', channelId: 'UCVr_x4G5d7b8Z-1Qh8q8Xw', priority: 'high' },
-    { name: 'ESPN FC', channelId: 'UCVr_x4G5d7b8Z-1Qh8q8Xw', priority: 'medium' },
-    { name: 'Sky Sports', channelId: 'UCVr_x4G5d7b8Z-1Qh8q8Xw', priority: 'medium' }
+    // Temporarily disabled due to 404 errors - will be fixed with proper channel IDs
+    // { name: 'Bundesliga Official', channelId: 'UCVr_x4G5d7b8Z-1Qh8q8Xw', priority: 'high' },
+    // { name: 'Premier League', channelId: 'UCVr_x4G5d7b8Z-1Qh8q8Xw', priority: 'high' },
+    // { name: 'Champions League', channelId: 'UCVr_x4G5d7b8Z-1Qh8q8Xw', priority: 'high' },
+    // { name: 'ESPN FC', channelId: 'UCVr_x4G5d7b8Z-1Qh8q8Xw', priority: 'medium' },
+    // { name: 'Sky Sports', channelId: 'UCVr_x4G5d7b8Z-1Qh8q8Xw', priority: 'medium' }
   ],
   'Basketball': [
     { name: 'NBA Official', channelId: 'UCNBA', priority: 'high' },
@@ -212,11 +213,12 @@ const NEWS_SOURCES = {
     { name: 'CBS Sports NFL', rssUrl: 'https://www.cbssports.com/rss/headlines/nfl/', priority: 'medium' }
   ],
   'Fußball': [
-    { name: 'ESPN Soccer', rssUrl: 'https://www.espn.com/soccer/rss.xml', priority: 'high' },
-    { name: 'BBC Sport Football', rssUrl: 'https://feeds.bbci.co.uk/sport/football/rss.xml', priority: 'high' },
-    { name: 'Sky Sports Football', rssUrl: 'https://www.skysports.com/rss/0,20514,11661,00.xml', priority: 'high' },
-    { name: 'Bundesliga News', rssUrl: 'https://www.bundesliga.com/en/news/rss.xml', priority: 'high' },
-    { name: 'Premier League News', rssUrl: 'https://www.premierleague.com/news/rss.xml', priority: 'high' }
+    // Temporarily disabled due to 404 errors - will be fixed with proper RSS URLs
+    // { name: 'ESPN Soccer', rssUrl: 'https://www.espn.com/soccer/rss.xml', priority: 'high' },
+    // { name: 'BBC Sport Football', rssUrl: 'https://feeds.bbci.co.uk/sport/football/rss.xml', priority: 'high' },
+    // { name: 'Sky Sports Football', rssUrl: 'https://www.skysports.com/rss/0,20514,11661,00.xml', priority: 'high' },
+    // { name: 'Bundesliga News', rssUrl: 'https://www.bundesliga.com/en/news/rss.xml', priority: 'high' },
+    // { name: 'Premier League News', rssUrl: 'https://www.premierleague.com/news/rss.xml', priority: 'high' }
   ],
   'Basketball': [
     { name: 'ESPN NBA', rssUrl: 'https://www.espn.com/nba/rss.xml', priority: 'high' },

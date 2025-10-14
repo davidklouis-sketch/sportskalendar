@@ -32,6 +32,23 @@ import axios from 'axios';
 const THESPORTSDB_API_KEY = process.env.THESPORTSDB_API_KEY || '3';
 const BASE_URL = 'https://www.thesportsdb.com/api/v1/json';
 
+// Rate limiting: 1 Request pro Sekunde (TheSportsDB Limit)
+let lastRequestTime = 0;
+const RATE_LIMIT_DELAY = 2000; // 2 Sekunden für bessere Stabilität
+
+async function delayBetweenRequests() {
+  const now = Date.now();
+  const timeSinceLastRequest = now - lastRequestTime;
+  
+  if (timeSinceLastRequest < RATE_LIMIT_DELAY) {
+    const delay = RATE_LIMIT_DELAY - timeSinceLastRequest;
+    console.log(`[TheSportsDB] Rate limiting: waiting ${delay}ms`);
+    await new Promise(resolve => setTimeout(resolve, delay));
+  }
+  
+  lastRequestTime = Date.now();
+}
+
 /**
  * LEAGUE IDS
  * 
@@ -123,6 +140,9 @@ export class TheSportsDBService {
    */
   async getTeamsByLeague(leagueId: string): Promise<TheSportsDBTeam[]> {
     try {
+      // Rate limiting: Warte zwischen Requests
+      await delayBetweenRequests();
+      
       const response = await axios.get(
         `${this.baseUrl}/lookup_all_teams.php?id=${leagueId}`
       );
@@ -164,6 +184,9 @@ export class TheSportsDBService {
    */
   async getEventsBySeason(leagueId: string, season: string): Promise<TheSportsDBEvent[]> {
     try {
+      // Rate limiting: Warte zwischen Requests
+      await delayBetweenRequests();
+      
       const response = await axios.get(
         `${this.baseUrl}/eventsseason.php?id=${leagueId}&s=${season}`
       );
