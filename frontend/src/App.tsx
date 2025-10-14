@@ -5,7 +5,7 @@
  * Manages routing, authentication, theme and global app states.
  */
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useMemo } from 'react';
 import { useAuthStore } from './store/useAuthStore';
 import { useThemeStore } from './store/useThemeStore';
 // import { userApi } from './lib/api'; // Temporarily disabled to prevent crashes
@@ -163,15 +163,21 @@ function AppContent() {
    * Aktualisiert SEO-Meta-Tags basierend auf aktueller Seite und User-Daten.
    * Dynamische SEO-Optimierung für bessere Suchmaschinen-Rankings.
    */
-  useEffect(() => {
-    const dynamicContent = {
-      teamCount: user?.selectedTeams?.length || 0,
-      sportTypes: user?.selectedTeams?.map((t: any) => t.sport) || [],
+  // PERFORMANCE FIX: Use useMemo to prevent array recreation on every render
+  const dynamicContent = useMemo(() => {
+    const teamCount = user?.selectedTeams?.length || 0;
+    const sportTypes = teamCount > 0 ? user?.selectedTeams?.map((t: any) => t.sport) || [] : [];
+    
+    return {
+      teamCount,
+      sportTypes,
       upcomingEvents: 0 // Could be calculated from actual events
     };
+  }, [user?.selectedTeams?.length]); // Only depend on length to prevent array comparison issues
 
+  useEffect(() => {
     updateSEO(currentPage, user, dynamicContent);
-  }, [currentPage, user, updateSEO]);
+  }, [currentPage, user, dynamicContent, updateSEO]);
 
   /**
    * RENDER: Loading Screen
