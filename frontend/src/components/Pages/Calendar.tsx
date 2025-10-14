@@ -584,7 +584,7 @@ export function Calendar() {
     } finally {
       setIsLoadingHighlights(false);
     }
-  }, [selectedSport, localTeams, user?.selectedTeams]);
+  }, [selectedSport]); // Only selectedSport as dependency to avoid infinite loops
 
 
   // Load user teams and events on mount - with ref to prevent loops
@@ -646,7 +646,7 @@ export function Calendar() {
         setSelectedSportTab(firstSport);
       }
     }
-  }, [user?.selectedTeams, selectedSportTab]);
+  }, [user?.selectedTeams]); // Only user teams as dependency to avoid infinite loop
 
   // Sync selectedSport with selectedSportTab for highlights consistency
   useEffect(() => {
