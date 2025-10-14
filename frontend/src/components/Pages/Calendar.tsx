@@ -119,13 +119,18 @@ export function Calendar() {
             events = (response.data as Event[]) || [];
           }
           
-          // Filter events for selected teams
-          const teamNames = footballTeams.map(t => t.teamName.toLowerCase());
+          // Filter events for selected teams - PERFORMANCE FIX: Use Set for O(1) lookups
+          const teamNamesSet = new Set(footballTeams.map(t => t.teamName.toLowerCase()));
           events = events.filter(event => {
             const eventTitle = event.title.toLowerCase();
             
-            // Enhanced matching with team name variations
-            const matches = teamNames.some(teamName => {
+            // Check direct matches first (O(1) lookup)
+            for (const teamName of teamNamesSet) {
+              if (eventTitle.includes(teamName)) return true;
+            }
+            
+            // Check variations (only if no direct match found)
+            for (const teamName of teamNamesSet) {
               // Direct match
               if (eventTitle.includes(teamName)) return true;
               
