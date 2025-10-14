@@ -137,6 +137,15 @@ jobs:
           export SMTP_PORT="${{ secrets.SMTP_PORT }}"
           export SMTP_USER="${{ secrets.SMTP_USER }}"
           export SMTP_PASS="${{ secrets.SMTP_PASS }}"
+          export SMTP_USE_SSL="${{ secrets.SMTP_USE_SSL }}"
+          
+          # Debug email configuration
+          echo "🔍 Email configuration:"
+          echo "SMTP_HOST: ${SMTP_HOST}"
+          echo "SMTP_PORT: ${SMTP_PORT}"
+          echo "SMTP_USER: ${SMTP_USER}"
+          echo "SMTP_PASS: ${SMTP_PASS:0:4}****"
+          echo "SMTP_USE_SSL: ${SMTP_USE_SSL}"
           
           # Set domain configuration for Traefik SSL certificates
           export BACKEND_HOST="api.sportskalendar.de"
@@ -163,15 +172,21 @@ jobs:
           export STRIPE_WEBHOOK_SECRET="${STRIPE_WEBHOOK_SECRET}"
           export STRIPE_PRICE_ID="${STRIPE_PRICE_ID}"
           export FRONTEND_URL="${FRONTEND_URL}"
+          export SMTP_HOST="${SMTP_HOST}"
+          export SMTP_PORT="${SMTP_PORT}"
+          export SMTP_USER="${SMTP_USER}"
+          export SMTP_PASS="${SMTP_PASS}"
+          export SMTP_USE_SSL="${SMTP_USE_SSL}"
           
           # Verify exports
           echo "🔍 Exported variables in shell:"
           env | grep STRIPE | sed 's/=.*/=***/'
+          env | grep SMTP | sed 's/=.*/=***/'
           
           # Create a docker-compose override file that explicitly sets the environment variables
-          printf 'services:\n  backend:\n    environment:\n      - STRIPE_SECRET_KEY=%s\n      - STRIPE_WEBHOOK_SECRET=%s\n      - STRIPE_PRICE_ID=%s\n      - FRONTEND_URL=%s\n      - SMTP_HOST=%s\n      - SMTP_PORT=%s\n      - SMTP_USER=%s\n      - SMTP_PASS=%s\n' \
+          printf 'services:\n  backend:\n    environment:\n      - STRIPE_SECRET_KEY=%s\n      - STRIPE_WEBHOOK_SECRET=%s\n      - STRIPE_PRICE_ID=%s\n      - FRONTEND_URL=%s\n      - SMTP_HOST=%s\n      - SMTP_PORT=%s\n      - SMTP_USER=%s\n      - SMTP_PASS=%s\n      - SMTP_USE_SSL=%s\n' \
             "${STRIPE_SECRET_KEY}" "${STRIPE_WEBHOOK_SECRET}" "${STRIPE_PRICE_ID}" "${FRONTEND_URL}" \
-            "${SMTP_HOST}" "${SMTP_PORT}" "${SMTP_USER}" "${SMTP_PASS}" \
+            "${SMTP_HOST}" "${SMTP_PORT}" "${SMTP_USER}" "${SMTP_PASS}" "${SMTP_USE_SSL}" \
             > docker-compose.override.yml
           
           echo "🔍 Created docker-compose.override.yml"
