@@ -81,15 +81,7 @@ app.set('trust proxy', 1);
  * - http://localhost:5173 (Vite Dev Server)
  * - http://localhost:3000 (Alternative Dev Port)
  */
-// Base production origins
-const baseOrigins = 'https://sportskalendar.de,https://www.sportskalendar.de,https://sportskalender.dlouis.ddnss.de,https://dlouis.ddnss.de';
-
-// Development origins for local development
-const devOrigins = 'http://localhost:3000,http://localhost:5173,http://localhost:8080';
-
-// Combine environment origins with development origins
-const envOrigins = process.env.CORS_ORIGIN || baseOrigins;
-const configuredOrigins = `${envOrigins},${devOrigins}`
+const configuredOrigins = (process.env.CORS_ORIGIN || 'https://sportskalendar.de,https://www.sportskalendar.de,https://sportskalender.dlouis.ddnss.de,https://dlouis.ddnss.de,http://localhost:3000,http://localhost:5173,http://localhost:8080')
   .split(',')
   .map(s => s.trim())
   .filter(Boolean);
