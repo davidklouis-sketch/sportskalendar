@@ -59,26 +59,31 @@ export class EmailService {
         console.log('📧 Using OAuth2 authentication');
       } else {
         // Use App Password authentication (simpler, no Azure required)
+        // Try port 465 with SSL first, fallback to 587 with STARTTLS
+        const useSSL = process.env.SMTP_PORT === '465' || process.env.SMTP_USE_SSL === 'true';
+        
         emailConfig = {
           host: process.env.SMTP_HOST || 'smtp-mail.outlook.com',
-          port: parseInt(process.env.SMTP_PORT || '587'),
-          secure: false, // STARTTLS
+          port: parseInt(process.env.SMTP_PORT || (useSSL ? '465' : '587')),
+          secure: useSSL, // true for SSL (465), false for STARTTLS (587)
           auth: {
             user: process.env.SMTP_USER || 'sportskalendar@outlook.de',
             pass: process.env.SMTP_PASS // This should be your Outlook App Password
           },
-          tls: {
+          tls: useSSL ? undefined : {
             ciphers: 'SSLv3',
             rejectUnauthorized: false
           },
-          requireTLS: true
+          requireTLS: !useSSL
         };
         console.log('📧 Using App Password authentication');
         console.log('📧 SMTP Config:', {
           host: emailConfig.host,
           port: emailConfig.port,
+          secure: emailConfig.secure,
           user: emailConfig.auth.user,
-          hasPassword: !!emailConfig.auth.pass
+          hasPassword: !!emailConfig.auth.pass,
+          method: useSSL ? 'SSL (port 465)' : 'STARTTLS (port 587)'
         });
       }
 
