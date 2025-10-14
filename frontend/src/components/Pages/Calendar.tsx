@@ -215,7 +215,7 @@ export function Calendar() {
                 events = directData.events || [];
               }
             } catch (sportsError) {
-              console.error('Failed to load NBA events from sports API:', sportsError);
+              // Failed to load NBA events from sports API
             }
           }
           
@@ -228,7 +228,7 @@ export function Calendar() {
           
           setNbaEvents(filteredEvents);
         } catch (error) {
-          console.error('Failed to load NBA events:', error);
+          // Failed to load NBA events
           setNbaEvents([]);
         }
       } else {
@@ -245,13 +245,13 @@ export function Calendar() {
                 events = directData.events || [];
               }
             } catch (sportsError) {
-              console.error('Failed to load NBA events from sports API:', sportsError);
+              // Failed to load NBA events from sports API
             }
           }
           
           setNbaEvents(events);
         } catch (error) {
-          console.error('Failed to load NBA events:', error);
+          // Failed to load NBA events
           setNbaEvents([]);
         }
       }
@@ -269,7 +269,7 @@ export function Calendar() {
               events = directData.events || [];
             }
           } catch (directError) {
-            console.error('Failed to load NHL events from sports API:', directError);
+            // Failed to load NHL events from sports API
           }
           
           // Filter events for selected teams
@@ -281,7 +281,7 @@ export function Calendar() {
           
           setNhlEvents(filteredEvents);
         } catch (error) {
-          console.error('Failed to load NHL events:', error);
+          // Failed to load NHL events
           setNhlEvents([]);
         }
       } else {
@@ -296,12 +296,12 @@ export function Calendar() {
               events = directData.events || [];
             }
           } catch (directError) {
-            console.error('Failed to load NHL events from sports API:', directError);
+            // Failed to load NHL events from sports API
           }
           
           setNhlEvents(events);
         } catch (error) {
-          console.error('Failed to load NHL events:', error);
+          // Failed to load NHL events
           setNhlEvents([]);
         }
       }
@@ -319,7 +319,7 @@ export function Calendar() {
               events = directData.events || [];
             }
           } catch (directError) {
-            console.error('Failed to load MLB events from sports API:', directError);
+            // Failed to load MLB events from sports API
           }
           
           // Filter events for selected teams
@@ -331,7 +331,7 @@ export function Calendar() {
           
           setMlbEvents(filteredEvents);
         } catch (error) {
-          console.error('Failed to load MLB events:', error);
+          // Failed to load MLB events
           setMlbEvents([]);
         }
       } else {
@@ -346,12 +346,12 @@ export function Calendar() {
               events = directData.events || [];
             }
           } catch (directError) {
-            console.error('Failed to load MLB events from sports API:', directError);
+            // Failed to load MLB events from sports API
           }
           
           setMlbEvents(events);
         } catch (error) {
-          console.error('Failed to load MLB events:', error);
+          // Failed to load MLB events
           setMlbEvents([]);
         }
       }
@@ -369,7 +369,7 @@ export function Calendar() {
               events = directData.events || [];
             }
           } catch (directError) {
-            console.error('Failed to load Tennis events from sports API:', directError);
+            // Failed to load Tennis events from sports API
           }
           
           // Filter events for selected tours
@@ -381,7 +381,7 @@ export function Calendar() {
           
           setTennisEvents(filteredEvents);
         } catch (error) {
-          console.error('Failed to load Tennis events:', error);
+          // Failed to load Tennis events
           setTennisEvents([]);
         }
       } else {
@@ -396,18 +396,18 @@ export function Calendar() {
               events = directData.events || [];
             }
           } catch (directError) {
-            console.error('Failed to load Tennis events from sports API:', directError);
+            // Failed to load Tennis events from sports API
           }
           
           setTennisEvents(events);
         } catch (error) {
-          console.error('Failed to load Tennis events:', error);
+          // Failed to load Tennis events
           setTennisEvents([]);
         }
       }
       
     } catch (error) {
-      console.error('❌ Failed to load events:', error);
+      // Failed to load events
     } finally {
       setIsLoading(false);
       isLoadingRef.current = false;
@@ -462,7 +462,7 @@ export function Calendar() {
             daysDiff
           };
         } catch (error) {
-          console.error(`❌ Error parsing date for event "${event.title}":`, event.startsAt, error);
+          // Error parsing date for event
           return null;
         }
       })
@@ -547,14 +547,14 @@ export function Calendar() {
         const response = await highlightsApi.getHighlights(sportMapping[selectedSport], fallbackTeam?.teamName);
         allHighlights = response.data.items || [];
       } catch (apiError) {
-        console.error('[Calendar Highlights] API call failed:', apiError);
+        // Calendar Highlights API call failed
         throw apiError;
       }
       
       // Backend should handle team filtering, so we don't need additional frontend filtering
       setHighlights(allHighlights);
     } catch (error) {
-      console.error('[Calendar Highlights] Failed to load highlights:', error);
+      // Calendar Highlights failed to load
       setHighlights([]);
     } finally {
       setIsLoadingHighlights(false);
@@ -639,7 +639,7 @@ export function Calendar() {
         setMlbTeamsFromApi(mlbResponse.data.teams);
       }
     } catch (error) {
-      console.error('Failed to load teams from API:', error);
+      // Failed to load teams from API
     } finally {
       setIsLoadingTeams(false);
     }
@@ -697,7 +697,7 @@ export function Calendar() {
       setLocalTeams(updatedTeams);
       setShowTeamSelector(false);
     } catch (error: any) {
-      console.error('Failed to add team:', error);
+      // Failed to add team
       
       // Handle specific error cases
       if (error.response?.status === 403) {
@@ -719,7 +719,7 @@ export function Calendar() {
       setUser({ ...user, selectedTeams: updatedTeams });
       setLocalTeams(updatedTeams);
     } catch (error) {
-      console.error('Failed to remove team:', error);
+      // Failed to remove team
     }
   };
 
@@ -727,7 +727,7 @@ export function Calendar() {
     try {
       await calendarApi.exportICS();
     } catch (error) {
-      console.error('Failed to export calendar:', error);
+      // Failed to export calendar
     }
   };
 
