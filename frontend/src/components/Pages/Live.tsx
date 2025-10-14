@@ -71,7 +71,7 @@ export function Live() {
     } finally {
       setIsLoading(false);
     }
-  }, [selectedSport, user]);
+  }, [selectedSport, user?.selectedTeams]);
 
   useEffect(() => {
     // Set initial sport from user's selected teams
@@ -87,7 +87,7 @@ export function Live() {
       const interval = setInterval(loadLiveData, 600000);
       return () => clearInterval(interval);
     }
-  }, [selectedSport, loadLiveData]);
+  }, [selectedSport]); // Entfernt loadLiveData aus Dependencies um Infinite Loop zu vermeiden
 
   if (!user?.selectedTeams?.length) {
     return (

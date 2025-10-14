@@ -127,7 +127,7 @@ function AppContent() {
     };
 
     checkAuth();
-  }, [isInitializing, setLoading, setUser]); // Entfernt isAuthenticated und user aus Dependencies
+  }, [isInitializing]); // Entfernt setLoading und setUser aus Dependencies um Infinite Loops zu vermeiden
 
   /**
    * EFFECT: Navigation nach erfolgreichem Login
