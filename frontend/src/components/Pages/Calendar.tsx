@@ -1071,10 +1071,12 @@ export function Calendar() {
                           <>
                             <div className="max-h-96 overflow-y-auto scrollbar-thin scrollbar-thumb-gray-300 dark:scrollbar-thumb-gray-600 scrollbar-track-transparent">
                               <div className="space-y-3 pr-2">
-                                {sortedEvents.map((event) => {
-                                // Check if event is in the future for styling
-                                const eventDate = new Date(event.startsAt);
-                                const isFuture = eventDate > new Date();
+                                {(() => {
+                                  const now = new Date(); // Create once outside map to prevent infinite loops
+                                  return sortedEvents.map((event) => {
+                                  // Check if event is in the future for styling
+                                  const eventDate = new Date(event.startsAt);
+                                  const isFuture = eventDate > now;
                                 
                                 // Check if we have score data
                                 const hasScore = event.homeScore !== null && event.homeScore !== undefined && 
@@ -1141,7 +1143,8 @@ export function Calendar() {
                                   </div>
                                 </div>
                                 );
-                              })}
+                              });
+                                })()}
                             </div>
                           </div>
                           
