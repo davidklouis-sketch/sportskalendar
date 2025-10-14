@@ -161,7 +161,6 @@ export function Calendar() {
           
           setFootballEvents(events);
         } catch (error) {
-          console.error('Failed to load football events:', error);
           setFootballEvents([]);
         }
       }
@@ -176,7 +175,6 @@ export function Calendar() {
           // Show ALL upcoming races when any driver is selected (don't filter by driver)
           setF1Events(events);
         } catch (error) {
-          console.error('Failed to load F1 events:', error);
           setF1Events([]);
         }
       }
@@ -197,7 +195,6 @@ export function Calendar() {
           
           setNflEvents(events);
         } catch (error) {
-          console.error('Failed to load NFL events:', error);
           setNflEvents([]);
         }
       }
