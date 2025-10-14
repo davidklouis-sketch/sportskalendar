@@ -43,7 +43,7 @@ services:
       - DB_USER=sportskalendar
       - DB_PASSWORD=dev_password_change_me
       - JWT_SECRET=dev_secret_change_in_production_minimum_32_characters
-      - CORS_ORIGIN=http://localhost:5173,http://localhost:3000
+      - CORS_ORIGIN=http://localhost:5173,http://localhost:3000,http://localhost:8080
       - FOOTBALL_DATA_KEY=${FOOTBALL_DATA_KEY:-}
       - API_FOOTBALL_KEY=${API_FOOTBALL_KEY:-}
       - STRIPE_SECRET_KEY=${STRIPE_SECRET_KEY:-}
