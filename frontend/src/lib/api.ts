@@ -93,10 +93,11 @@ api.interceptors.response.use(
           // Tokens aus localStorage entfernen
           localStorage.removeItem('accessToken');
           localStorage.removeItem('refreshToken');
-          // User über Auth Store ausloggen
+          // User über Auth Store ausloggen - SYNCHRON um Infinite Loops zu vermeiden
           const { useAuthStore } = await import('../store/useAuthStore');
           useAuthStore.getState().logout();
         }
+        // WICHTIG: Original Request NICHT wiederholen nach fehlgeschlagenem Refresh
         return Promise.reject(refreshError);
       }
     }

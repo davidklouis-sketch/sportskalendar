@@ -102,6 +102,14 @@ function AppContent() {
     const checkAuth = async () => {
       // Nur beim ersten Laden prüfen, nicht bei jedem User-Update
       if (isInitializing && isAuthenticated && user) {
+        // TEMPORARY FIX: Skip profile loading to prevent browser crashes
+        // The login response already contains all necessary user data
+        console.log('🔧 TEMPORARY FIX: Skipping profile loading to prevent crashes');
+        setLoading(false);
+        setIsInitializing(false);
+        return;
+        
+        /* ORIGINAL CODE - COMMENTED OUT TO PREVENT CRASHES
         try {
           // Aktuelles Profil vom Backend laden (inkl. isPremium, selectedTeams)
           const { data } = await userApi.getProfile();
@@ -117,6 +125,7 @@ function AppContent() {
             }
           }
         }
+        */
       }
       setLoading(false);
       setIsInitializing(false);
