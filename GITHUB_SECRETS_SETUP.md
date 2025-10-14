@@ -86,6 +86,30 @@ Value: 9901880755
 ### Frontend Dockerfile Integration:
 Die Secrets werden als Build-Argumente an das Frontend-Docker-Image übergeben und zur Build-Zeit in die JavaScript-Bundle eingebettet.
 
+## 📧 Email-Verifikation Secrets:
+
+Für die Email-Verifikation müssen zusätzlich diese Secrets gesetzt werden:
+
+```bash
+Name: SMTP_HOST
+Value: smtp-mail.outlook.com
+```
+
+```bash
+Name: SMTP_PORT
+Value: 587
+```
+
+```bash
+Name: SMTP_USER
+Value: sportskalendar@outlook.de
+```
+
+```bash
+Name: SMTP_PASS
+Value: o%5yl8XBw5b39o!Q
+```
+
 ## 🚀 Nach der Konfiguration:
 
 1. **Automatisches Deployment**: Bei jedem Push auf `main` wird automatisch deployed

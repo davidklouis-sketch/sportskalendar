@@ -5,6 +5,7 @@ import jwt from 'jsonwebtoken';
 import { Request, Response } from 'express';
 import { UserRepository } from '../database/repositories/userRepository';
 import { authRateLimit, validatePassword, validateJwtSecret, SessionManager } from '../middleware/security-enhanced';
+import { emailService } from '../services/email.service';
 
 // Helper function to get user from PostgreSQL
 async function getUserByEmail(email: string) {
@@ -179,7 +180,7 @@ authRouter.post('/register', authRateLimit, async (req, res) => {
     const passwordHash = await bcrypt.hash(password, 12);
     console.log('✅ Password hashed successfully');
     
-    // Create user ONLY in PostgreSQL
+    // Create user ONLY in PostgreSQL (email_verified defaults to false)
     console.log('📝 Creating user in PostgreSQL...');
     const user = await UserRepository.create({
       email,
@@ -190,10 +191,34 @@ authRouter.post('/register', authRateLimit, async (req, res) => {
     
     console.log(`✅ User created in PostgreSQL: ${user.email}`);
     
+    // Generate email verification token
+    const verificationToken = jwt.sign({
+      userId: user.id,
+      email: user.email,
+      type: 'email_verification'
+    }, process.env.JWT_SECRET!, {
+      expiresIn: '24h', // Token expires in 24 hours
+      issuer: 'sportskalendar',
+      audience: 'sportskalendar-users'
+    });
+
+    // Send verification email
+    console.log('📧 Sending verification email...');
+    const emailSent = await emailService.sendVerificationEmail(email, displayName, verificationToken);
+    
+    if (!emailSent) {
+      console.warn('⚠️ Failed to send verification email, but user was created');
+      // Don't fail registration if email fails - user can request resend later
+    } else {
+      console.log('✅ Verification email sent successfully');
+    }
+    
     // Don't return sensitive data
     return res.status(201).json({ 
       success: true,
-      message: 'User registered successfully' 
+      message: 'User registered successfully. Please check your email to verify your account.',
+      emailSent: emailSent,
+      requiresVerification: true
     });
   } catch (error) {
     console.error('❌ Registration error:', error);
@@ -301,6 +326,17 @@ authRouter.post('/login', authRateLimit, async (req: Request, res: Response) => 
       return res.status(401).json({ 
         error: 'Invalid credentials',
         message: 'Email or password is incorrect' 
+      });
+    }
+
+    // Check if email is verified
+    if (!user.emailVerified) {
+      console.log('❌ Email not verified for user:', user.email);
+      return res.status(403).json({ 
+        error: 'Email not verified',
+        message: 'Please verify your email address before logging in. Check your inbox for a verification email.',
+        requiresVerification: true,
+        email: user.email
       });
     }
     

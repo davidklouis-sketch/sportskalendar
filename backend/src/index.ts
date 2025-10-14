@@ -36,6 +36,7 @@ import dotenv from 'dotenv';
 
 // Router imports
 import { authRouter } from './routes/auth';
+import { emailVerificationRouter } from './routes/email-verification';
 import { scoresRouter } from './routes/scores';
 import { highlightsRouter } from './routes/highlights';
 import { calendarRouter } from './routes/calendar';
@@ -259,7 +260,10 @@ if (!validateJwtSecret()) {
  * 
  * Für Docker Health Checks und Monitoring.
  */
-app.get('/api/health', (req, res) => {
+test
+Process completed with exit code 2.
+test
+Type 'Page' is not assignable to type '"admin" | "calendar" | "live" | "highlights" | "premium" | "settings" | "privacy" | "contact"'.app.get('/api/health', (req, res) => {
   res.status(200).json({ 
     status: 'OK', 
     timestamp: new Date().toISOString(),
@@ -349,6 +353,7 @@ app.get('/api/debug/users', async (_req, res) => {
  * - /api/sports: TheSportsDB API (NBA, NHL, MLB, Tennis)
  */
 app.use('/api/auth', authRouter);
+app.use('/api/email-verification', emailVerificationRouter);
 app.use('/api/scores', scoresRouter);
 app.use('/api/highlights', highlightsRouter);
 app.use('/api/calendar', calendarRouter);

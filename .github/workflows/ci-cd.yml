@@ -36,6 +36,9 @@ jobs:
     
     - name: Test backend
       run: cd backend && npm run build
+    
+    - name: Install backend email dependencies
+      run: cd backend && npm install nodemailer @types/nodemailer
 
   build-and-push:
     needs: test
@@ -87,6 +90,8 @@ jobs:
         context: ./backend
         push: true
         tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}/backend:${{ github.sha }}
+        build-args: |
+          NODE_ENV=production
 
   deploy:
     needs: build-and-push
@@ -130,6 +135,12 @@ jobs:
           export STRIPE_PRICE_ID="${{ secrets.STRIPE_PRICE_ID }}"
           export FRONTEND_URL="https://sportskalendar.de"
           
+          # Email configuration
+          export SMTP_HOST="${{ secrets.SMTP_HOST }}"
+          export SMTP_PORT="${{ secrets.SMTP_PORT }}"
+          export SMTP_USER="${{ secrets.SMTP_USER }}"
+          export SMTP_PASS="${{ secrets.SMTP_PASS }}"
+          
           # Set domain configuration for Traefik SSL certificates
           export BACKEND_HOST="api.sportskalendar.de"
           export FRONTEND_HOST="sportskalendar.de"
@@ -161,15 +172,24 @@ jobs:
           env | grep STRIPE | sed 's/=.*/=***/'
           
           # Create a docker-compose override file that explicitly sets the environment variables
-          printf 'services:\n  backend:\n    environment:\n      - STRIPE_SECRET_KEY=%s\n      - STRIPE_WEBHOOK_SECRET=%s\n      - STRIPE_PRICE_ID=%s\n      - FRONTEND_URL=%s\n' \
+          printf 'services:\n  backend:\n    environment:\n      - STRIPE_SECRET_KEY=%s\n      - STRIPE_WEBHOOK_SECRET=%s\n      - STRIPE_PRICE_ID=%s\n      - FRONTEND_URL=%s\n      - SMTP_HOST=%s\n      - SMTP_PORT=%s\n      - SMTP_USER=%s\n      - SMTP_PASS=%s\n' \
             "${STRIPE_SECRET_KEY}" "${STRIPE_WEBHOOK_SECRET}" "${STRIPE_PRICE_ID}" "${FRONTEND_URL}" \
+            "${SMTP_HOST}" "${SMTP_PORT}" "${SMTP_USER}" "${SMTP_PASS}" \
             > docker-compose.override.yml
           
           echo "🔍 Created docker-compose.override.yml"
-          cat docker-compose.override.yml | sed 's/STRIPE_[^=]*=.*/STRIPE_***=***/' | sed 's/FRONTEND_URL=.*/FRONTEND_URL=***/'
+          cat docker-compose.override.yml | sed 's/STRIPE_[^=]*=.*/STRIPE_***=***/' | sed 's/FRONTEND_URL=.*/FRONTEND_URL=***/' | sed 's/SMTP_[^=]*=.*/SMTP_***=***/'
           
           # Start services with base config, .env.production, AND override
           docker compose -f docker-compose.traefik.yml -f docker-compose.override.yml --env-file .env.production up -d --force-recreate
+          
+          # Wait for backend to be ready
+          echo "⏳ Waiting for backend to be ready..."
+          sleep 30
+          
+          # Run email verification migration for existing users
+          echo "📧 Running email verification migration..."
+          docker exec sportskalendar-backend npm run migrate-email-verification || echo "⚠️ Migration failed or no users to migrate"
           
           # Verify the backend container has the environment variables
           echo "🔍 Checking backend container environment:"

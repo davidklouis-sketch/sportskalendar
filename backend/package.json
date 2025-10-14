@@ -8,7 +8,8 @@
     "dev": "ts-node-dev --respawn --transpile-only src/index.ts",
     "build": "tsc",
     "start": "node dist/index.js",
-    "migrate-users": "node dist/scripts/migrateInMemoryUsers.js"
+    "migrate-users": "node dist/scripts/migrateInMemoryUsers.js",
+    "migrate-email-verification": "ts-node src/scripts/migrateExistingUsers.ts"
   },
   "keywords": [],
   "author": "",
@@ -24,6 +25,7 @@
     "express-rate-limit": "^8.1.0",
     "helmet": "^8.1.0",
     "jsonwebtoken": "^9.0.2",
+    "nodemailer": "^6.9.8",
     "pg": "^8.16.3",
     "stripe": "^19.1.0",
     "xml2js": "^0.6.2",
@@ -35,6 +37,7 @@
     "@types/express": "^5.0.3",
     "@types/jsonwebtoken": "^9.0.10",
     "@types/node": "^24.6.1",
+    "@types/nodemailer": "^6.4.14",
     "@types/xml2js": "^0.4.14",
     "ts-node-dev": "^2.0.0",
     "typescript": "^5.9.3"
