@@ -1038,6 +1038,9 @@ export function Calendar() {
                           isFuture: new Date(event.startsAt) > now
                         }));
                         
+                        // Pre-calculate hasPastEvents for Premium hint
+                        const hasPastEvents = events.some(e => new Date(e.startsAt) <= now);
+                        
                         const sortedEvents = eventsWithDates.sort((a, b) => {
                           const isFutureA = a.isFuture;
                           const isFutureB = b.isFuture;
@@ -1063,7 +1066,6 @@ export function Calendar() {
                               <div className="space-y-3 pr-2">
                                 {(() => {
                                   const now = new Date(); // Create once outside map to prevent infinite loops
-                                  const hasPastEvents = events.some(e => new Date(e.startsAt) <= now);
                                   return sortedEvents.map((event) => {
                                   // Check if event is in the future for styling
                                   const eventDate = new Date(event.startsAt);
