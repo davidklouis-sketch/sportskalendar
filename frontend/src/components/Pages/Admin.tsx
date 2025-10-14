@@ -21,10 +21,6 @@ export function Admin() {
   const [isLoading, setIsLoading] = useState(true);
   const [actionLoading, setActionLoading] = useState<string | null>(null);
 
-  useEffect(() => {
-    loadUsers();
-  }, []); // Leere Dependencies um Infinite Loops zu vermeiden
-
   const loadUsers = useCallback(async () => {
     setIsLoading(true);
     try {
@@ -37,6 +33,10 @@ export function Admin() {
       setIsLoading(false);
     }
   }, []);
+
+  useEffect(() => {
+    loadUsers();
+  }, [loadUsers]); // loadUsers als Dependency hinzugefügt
 
   const handlePromoteUser = async (userId: string) => {
     setActionLoading(userId);
