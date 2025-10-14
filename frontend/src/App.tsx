@@ -8,7 +8,7 @@
 import { useEffect, useState } from 'react';
 import { useAuthStore } from './store/useAuthStore';
 import { useThemeStore } from './store/useThemeStore';
-import { userApi } from './lib/api';
+// import { userApi } from './lib/api'; // Temporarily disabled to prevent crashes
 
 // Authentication Components
 import { AuthModal } from './components/Auth/AuthModal';
@@ -47,7 +47,7 @@ type Page = 'calendar' | 'live' | 'highlights' | 'premium' | 'admin' | 'settings
 
 function AppContent() {
   // Global State Management
-  const { user, isAuthenticated, setUser, setLoading } = useAuthStore(); // Authentifizierungs-State aus Zustand Store
+  const { user, isAuthenticated, setLoading } = useAuthStore(); // Authentifizierungs-State aus Zustand Store
   const { setTheme } = useThemeStore(); // Theme (Dark/Light Mode) aus Zustand Store
   const { updateSEO } = useSEO(); // SEO Hook für dynamische Meta-Tags
   
