@@ -1478,18 +1478,22 @@ export function Calendar() {
                     </div>
                   ) : (
                     <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
-                      {(nbaTeamsFromApi.length > 0 ? nbaTeamsFromApi : NBA_TEAMS).map((team) => {
-                        const teamName = team.name;
-                        const teamId = team.id;
-                        const teamBadge = 'badge' in team ? team.badge : undefined;
-                        const teamLogo = 'logo' in team ? team.logo : undefined;
-                        const teamDivision = team.division;
-                        
-                        return (
-                          <button
-                            key={teamId}
-                            onClick={() => handleAddTeam('nba', teamName, teamId)}
-                            disabled={localTeams.some(t => t.teamName === teamName)}
+                      {(() => {
+                        // PERFORMANCE FIX: Create Set for O(1) lookups
+                        const localTeamNames = new Set(localTeams.map(t => t.teamName));
+                        return (nbaTeamsFromApi.length > 0 ? nbaTeamsFromApi : NBA_TEAMS).map((team) => {
+                          const teamName = team.name;
+                          const teamId = team.id;
+                          const teamBadge = 'badge' in team ? team.badge : undefined;
+                          const teamLogo = 'logo' in team ? team.logo : undefined;
+                          const teamDivision = team.division;
+                          const isSelected = localTeamNames.has(teamName);
+                          
+                          return (
+                            <button
+                              key={teamId}
+                              onClick={() => handleAddTeam('nba', teamName, teamId)}
+                              disabled={isSelected}
                             className="relative p-4 rounded-xl hover:bg-gray-100 dark:hover:bg-gray-800 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 border border-gray-200 dark:border-gray-700 hover:border-orange-300 dark:hover:border-orange-600 hover:shadow-md group"
                           >
                             <div className="flex flex-col items-center text-center">
@@ -1516,7 +1520,7 @@ export function Calendar() {
                                 <span className="text-xs text-gray-500 dark:text-gray-400 mt-1">{teamDivision}</span>
                               )}
                             </div>
-                            {localTeams.some(t => t.teamName === teamName) && (
+                            {isSelected && (
                               <div className="absolute top-2 right-2 w-6 h-6 bg-green-500 rounded-full flex items-center justify-center">
                                 <svg className="w-3 h-3 text-white" fill="currentColor" viewBox="0 0 20 20">
                                   <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
@@ -1525,7 +1529,8 @@ export function Calendar() {
                             )}
                           </button>
                         );
-                      })}
+                      });
+                    })()}
                     </div>
                   )}
                 </div>
@@ -1548,18 +1553,22 @@ export function Calendar() {
                     </div>
                   ) : (
                     <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
-                      {(nhlTeamsFromApi.length > 0 ? nhlTeamsFromApi : NHL_TEAMS).map((team) => {
-                        const teamName = team.name;
-                        const teamId = team.id;
-                        const teamBadge = 'badge' in team ? team.badge : undefined;
-                        const teamLogo = 'logo' in team ? team.logo : undefined;
-                        const teamDivision = team.division;
-                        
-                        return (
-                          <button
-                            key={teamId}
-                            onClick={() => handleAddTeam('nhl', teamName, teamId)}
-                            disabled={localTeams.some(t => t.teamName === teamName)}
+                      {(() => {
+                        // PERFORMANCE FIX: Create Set for O(1) lookups
+                        const localTeamNames = new Set(localTeams.map(t => t.teamName));
+                        return (nhlTeamsFromApi.length > 0 ? nhlTeamsFromApi : NHL_TEAMS).map((team) => {
+                          const teamName = team.name;
+                          const teamId = team.id;
+                          const teamBadge = 'badge' in team ? team.badge : undefined;
+                          const teamLogo = 'logo' in team ? team.logo : undefined;
+                          const teamDivision = team.division;
+                          const isSelected = localTeamNames.has(teamName);
+                          
+                          return (
+                            <button
+                              key={teamId}
+                              onClick={() => handleAddTeam('nhl', teamName, teamId)}
+                              disabled={isSelected}
                             className="relative p-4 rounded-xl hover:bg-gray-100 dark:hover:bg-gray-800 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 border border-gray-200 dark:border-gray-700 hover:border-blue-300 dark:hover:border-blue-600 hover:shadow-md group"
                           >
                             <div className="flex flex-col items-center text-center">
@@ -1586,7 +1595,7 @@ export function Calendar() {
                                 <span className="text-xs text-gray-500 dark:text-gray-400 mt-1">{teamDivision}</span>
                               )}
                             </div>
-                            {localTeams.some(t => t.teamName === teamName) && (
+                            {isSelected && (
                               <div className="absolute top-2 right-2 w-6 h-6 bg-green-500 rounded-full flex items-center justify-center">
                                 <svg className="w-3 h-3 text-white" fill="currentColor" viewBox="0 0 20 20">
                                   <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
@@ -1595,7 +1604,8 @@ export function Calendar() {
                             )}
                           </button>
                         );
-                      })}
+                      });
+                    })()}
                     </div>
                   )}
                 </div>
@@ -1618,18 +1628,22 @@ export function Calendar() {
                     </div>
                   ) : (
                     <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
-                      {(mlbTeamsFromApi.length > 0 ? mlbTeamsFromApi : MLB_TEAMS).map((team) => {
-                        const teamName = team.name;
-                        const teamId = team.id;
-                        const teamBadge = 'badge' in team ? team.badge : undefined;
-                        const teamLogo = 'logo' in team ? team.logo : undefined;
-                        const teamDivision = 'division' in team ? team.division : undefined;
-                        
-                        return (
-                          <button
-                            key={teamId}
-                            onClick={() => handleAddTeam('mlb', teamName, teamId)}
-                            disabled={localTeams.some(t => t.teamName === teamName)}
+                      {(() => {
+                        // PERFORMANCE FIX: Create Set for O(1) lookups
+                        const localTeamNames = new Set(localTeams.map(t => t.teamName));
+                        return (mlbTeamsFromApi.length > 0 ? mlbTeamsFromApi : MLB_TEAMS).map((team) => {
+                          const teamName = team.name;
+                          const teamId = team.id;
+                          const teamBadge = 'badge' in team ? team.badge : undefined;
+                          const teamLogo = 'logo' in team ? team.logo : undefined;
+                          const teamDivision = 'division' in team ? team.division : undefined;
+                          const isSelected = localTeamNames.has(teamName);
+                          
+                          return (
+                            <button
+                              key={teamId}
+                              onClick={() => handleAddTeam('mlb', teamName, teamId)}
+                              disabled={isSelected}
                             className="relative p-4 rounded-xl hover:bg-gray-100 dark:hover:bg-gray-800 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 border border-gray-200 dark:border-gray-700 hover:border-blue-300 dark:hover:border-blue-600 hover:shadow-md group"
                           >
                             <div className="flex flex-col items-center text-center">
@@ -1656,7 +1670,7 @@ export function Calendar() {
                                 <span className="text-xs text-gray-500 dark:text-gray-400 mt-1">{teamDivision}</span>
                               )}
                             </div>
-                            {localTeams.some(t => t.teamName === teamName) && (
+                            {isSelected && (
                               <div className="absolute top-2 right-2 w-6 h-6 bg-green-500 rounded-full flex items-center justify-center">
                                 <svg className="w-3 h-3 text-white" fill="currentColor" viewBox="0 0 20 20">
                                   <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
@@ -1665,7 +1679,8 @@ export function Calendar() {
                             )}
                           </button>
                         );
-                      })}
+                      });
+                    })()}
                     </div>
                   )}
                 </div>
@@ -1682,15 +1697,21 @@ export function Calendar() {
                   </div>
                   
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                    {[
-                      { id: 'atp', name: 'ATP Tour', description: 'Männliche Profis', icon: '🎾' },
-                      { id: 'wta', name: 'WTA Tour', description: 'Weibliche Profis', icon: '🎾' },
-                      { id: 'grandslams', name: 'Grand Slams', description: 'Australian Open, French Open, Wimbledon, US Open', icon: '🏆' }
-                    ].map((tour) => (
-                      <button
-                        key={tour.id}
-                        onClick={() => handleAddTeam('tennis', tour.name, tour.id)}
-                        disabled={localTeams.some(t => t.teamName === tour.name)}
+                    {(() => {
+                      // PERFORMANCE FIX: Create Set for O(1) lookups
+                      const localTeamNames = new Set(localTeams.map(t => t.teamName));
+                      return [
+                        { id: 'atp', name: 'ATP Tour', description: 'Männliche Profis', icon: '🎾' },
+                        { id: 'wta', name: 'WTA Tour', description: 'Weibliche Profis', icon: '🎾' },
+                        { id: 'grandslams', name: 'Grand Slams', description: 'Australian Open, French Open, Wimbledon, US Open', icon: '🏆' }
+                      ].map((tour) => {
+                        const isSelected = localTeamNames.has(tour.name);
+                        
+                        return (
+                          <button
+                            key={tour.id}
+                            onClick={() => handleAddTeam('tennis', tour.name, tour.id)}
+                            disabled={isSelected}
                         className="relative p-6 rounded-2xl hover:bg-gray-100 dark:hover:bg-gray-800 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 border border-gray-200 dark:border-gray-700 hover:border-green-300 dark:hover:border-green-600 hover:shadow-lg group"
                       >
                         <div className="flex flex-col items-center text-center">
@@ -1700,7 +1721,7 @@ export function Calendar() {
                           <h4 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">{tour.name}</h4>
                           <p className="text-sm text-gray-600 dark:text-gray-400">{tour.description}</p>
                         </div>
-                        {localTeams.some(t => t.teamName === tour.name) && (
+                        {isSelected && (
                           <div className="absolute top-4 right-4 w-8 h-8 bg-green-500 rounded-full flex items-center justify-center">
                             <svg className="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 20 20">
                               <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
@@ -1708,7 +1729,9 @@ export function Calendar() {
                           </div>
                         )}
                       </button>
-                    ))}
+                        );
+                      });
+                    })()}
                   </div>
                 </div>
               )}
