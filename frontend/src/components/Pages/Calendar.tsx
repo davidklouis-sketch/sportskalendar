@@ -582,13 +582,14 @@ export function Calendar() {
 
 
   // Load user teams and events on mount - with ref to prevent loops
-  const lastTeamsRef = useRef<string>('');
+  const lastTeamsLengthRef = useRef<number>(0);
   
   useEffect(() => {
     const teams = user?.selectedTeams || [];
-    const teamsString = JSON.stringify(teams.sort((a, b) => a.teamName.localeCompare(b.teamName)));
+    // PERFORMANCE FIX: Use simple length check instead of JSON.stringify
+    const teamsLength = teams.length;
     
-    if (teams.length > 0) {
+    if (teamsLength > 0) {
       // Always update local teams state
       setLocalTeams(teams);
       
@@ -596,8 +597,8 @@ export function Calendar() {
       const hasEvents = footballEvents.length > 0 || f1Events.length > 0 || nbaEvents.length > 0 || 
                        nflEvents.length > 0 || nhlEvents.length > 0 || mlbEvents.length > 0 || tennisEvents.length > 0;
       
-      if (lastTeamsRef.current !== teamsString || !hasEvents) {
-        lastTeamsRef.current = teamsString;
+      if (lastTeamsLengthRef.current !== teamsLength || !hasEvents) {
+        lastTeamsLengthRef.current = teamsLength;
         
         // Auto-select first sport if not selected
         if (!selectedSport) {
@@ -1348,16 +1349,21 @@ export function Calendar() {
                           </span>
                         </h4>
                         <div className="grid grid-cols-1 gap-2">
-                          {FOOTBALL_TEAMS[league.id]?.map((team: any) => (
+                          {(() => {
+                            // PERFORMANCE FIX: Create Set for O(1) lookups instead of O(n) .some() calls
+                            const localTeamNames = new Set(localTeams.map(t => t.teamName));
+                            return FOOTBALL_TEAMS[league.id]?.map((team: any) => {
+                              const isSelected = localTeamNames.has(team.name);
+                              return (
                             <button
                               key={team.id}
                               onClick={() => handleAddTeam('football', team.name, team.id, league.id)}
-                              disabled={localTeams.some(t => t.teamName === team.name)}
+                              disabled={isSelected}
                               className="w-full text-left px-4 py-3 text-sm rounded-xl hover:bg-white dark:hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 border border-transparent hover:border-indigo-200 dark:hover:border-indigo-800 hover:shadow-sm"
                             >
                               <div className="flex items-center justify-between">
                                 <span className="font-medium text-gray-900 dark:text-white">{team.name}</span>
-                                {localTeams.some(t => t.teamName === team.name) && (
+                                {isSelected && (
                                   <div className="flex items-center text-green-600 dark:text-green-400">
                                     <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
                                       <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
@@ -1366,7 +1372,9 @@ export function Calendar() {
                                 )}
                               </div>
                             </button>
-                          ))}
+                              );
+                            });
+                          })()}
                         </div>
                       </div>
                     ))}
