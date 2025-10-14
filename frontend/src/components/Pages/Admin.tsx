@@ -36,7 +36,7 @@ export function Admin() {
 
   useEffect(() => {
     loadUsers();
-  }, [loadUsers]); // loadUsers als Dependency hinzugefügt
+  }, []); // loadUsers entfernt um Infinite Loop zu vermeiden
 
   const handlePromoteUser = async (userId: string) => {
     setActionLoading(userId);

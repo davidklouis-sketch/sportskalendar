@@ -76,7 +76,7 @@ const CalendarSync: React.FC = () => {
     if (user?.id) {
       loadSyncStatus();
     }
-  }, [user?.id, loadSyncStatus]); // Include loadSyncStatus as dependency
+  }, [user?.id]); // loadSyncStatus entfernt um Infinite Loop zu vermeiden
 
   const handleExport = async (format: 'ics' | 'json' | 'csv') => {
     try {

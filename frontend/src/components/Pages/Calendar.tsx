@@ -633,14 +633,12 @@ export function Calendar() {
   // Also load highlights when selectedSportTab changes (for UI consistency)
   useEffect(() => {
     console.log('[Calendar Highlights] selectedSportTab changed:', selectedSportTab);
-    if (selectedSportTab) {
+    if (selectedSportTab && selectedSport !== selectedSportTab) {
       // Update selectedSport to match selectedSportTab for highlights
-      if (selectedSport !== selectedSportTab) {
-        console.log('[Calendar Highlights] Syncing selectedSport to selectedSportTab');
-        setSelectedSport(selectedSportTab);
-      }
+      console.log('[Calendar Highlights] Syncing selectedSport to selectedSportTab');
+      setSelectedSport(selectedSportTab);
     }
-  }, [selectedSportTab]); // Nur selectedSportTab als Dependency um Infinite Loops zu vermeiden
+  }, [selectedSportTab, selectedSport]); // Beide Dependencies um korrekte Synchronisation zu gewährleisten
 
   // Load teams from API when modal opens
   const loadTeamsFromApi = useCallback(async () => {

@@ -131,7 +131,7 @@ export function Highlights() {
     if (selectedSport) {
       loadHighlights();
     }
-  }, [selectedSport, loadHighlights]); // loadHighlights hinzugefügt für korrekte Funktionalität
+  }, [selectedSport]); // loadHighlights entfernt um Infinite Loop zu vermeiden
 
   const formatViews = (views?: number) => {
     if (!views) return '';
