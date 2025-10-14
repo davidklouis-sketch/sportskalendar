@@ -25,7 +25,8 @@ const requestCache = new Map<string, { promise: Promise<any>; timestamp: number 
 const CACHE_DURATION = 30000; // 30 seconds cache for live API calls
 
 // API Base URL aus Environment Variable oder Production Default
-const API_URL = import.meta.env.VITE_API_URL || 'https://api.sportskalendar.de/api';
+// TEMPORARY FIX: Hardcode API URL to fix CORS issues
+const API_URL = 'https://api.sportskalendar.de/api';
 
 /**
  * Axios Instance
