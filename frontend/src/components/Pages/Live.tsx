@@ -87,7 +87,7 @@ export function Live() {
       const interval = setInterval(loadLiveData, 600000);
       return () => clearInterval(interval);
     }
-  }, [selectedSport, loadLiveData]); // loadLiveData muss in Dependencies sein!
+  }, [selectedSport]); // loadLiveData entfernt um Infinite Loop zu vermeiden
 
   if (!user?.selectedTeams?.length) {
     return (
