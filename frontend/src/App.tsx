@@ -1,16 +1,8 @@
 /**
  * SPORTSKALENDAR - MAIN APP COMPONENT
  * 
- * Hauptkomponente der Sportskalendar-Anwendung.
- * Verwaltet Routing, Authentifizierung, Theme und globale App-Zustände.
- * 
- * Features:
- * - Single Page Application (SPA) mit client-side routing
- * - Authentifizierung mit JWT und Refresh Tokens
- * - Dark/Light Theme Support mit System-Präferenz
- * - SEO-optimiert mit dynamischen Meta-Tags
- * - Ad-Management für Premium/Standard Nutzer
- * - Responsive Design mit Tailwind CSS
+ * Main component of the Sportskalendar application.
+ * Manages routing, authentication, theme and global app states.
  */
 
 import { useEffect, useState } from 'react';

@@ -71,17 +71,12 @@ export function Admin() {
   const handleTogglePremium = async (userId: string) => {
     setActionLoading(userId);
     try {
-      console.log('🔍 Admin attempting to toggle premium for user:', userId);
-      console.log('🔍 Current admin user:', currentUser);
       const response = await adminApi.togglePremium(userId);
-      console.log('✅ Toggle premium response:', response);
       await loadUsers();
       alert('Premium-Status wurde geändert!');
     } catch (err) {
       const error = err as { response?: { data?: { message?: string }; status?: number } };
-      console.error('❌ Failed to toggle premium:', err);
-      console.error('❌ Error response:', error.response?.data);
-      console.error('❌ Error status:', error.response?.status);
+      console.error('Failed to toggle premium:', err);
       alert('Fehler: ' + (error.response?.data?.message || 'Konnte Premium-Status nicht ändern'));
     } finally {
       setActionLoading(null);
