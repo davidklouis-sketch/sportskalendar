@@ -61,11 +61,13 @@ export interface UpdateUserData {
     leagueId?: number;
   }>;
   emailVerified?: boolean;
+  email_verified?: boolean;
   twoFactorEnabled?: boolean;
   twoFactorSecret?: string;
   lastLogin?: Date;
   loginAttempts?: number;
   lockedUntil?: Date;
+  passwordHash?: string;
 }
 
 export class UserRepository {

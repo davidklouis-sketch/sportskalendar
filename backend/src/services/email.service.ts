@@ -14,7 +14,7 @@ export interface EmailTemplate {
 }
 
 export class EmailService {
-  private transporter: Transporter;
+  private transporter!: Transporter;
   private isConfigured: boolean = false;
 
   constructor() {
@@ -43,7 +43,7 @@ export class EmailService {
         return;
       }
 
-      this.transporter = nodemailer.createTransporter(emailConfig);
+      this.transporter = nodemailer.createTransport(emailConfig);
       
       // Verify connection configuration
       this.transporter.verify((error: any, success: any) => {

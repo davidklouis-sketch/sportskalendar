@@ -114,7 +114,7 @@ emailVerificationRouter.post('/verify', authRateLimit, async (req: Request, res:
       }
 
       // Check if email is already verified
-      if (user.emailVerified) {
+      if (user.email_verified) {
         console.log('✅ Email already verified for user:', payload.email);
         return res.status(200).json({ 
           success: true,
@@ -125,7 +125,7 @@ emailVerificationRouter.post('/verify', authRateLimit, async (req: Request, res:
 
       // Update user email verification status
       await UserRepository.updateByEmail(payload.email, {
-        emailVerified: true
+        email_verified: true
       });
 
       console.log('✅ Email verified successfully for user:', payload.email);
@@ -206,7 +206,7 @@ emailVerificationRouter.post('/resend', authRateLimit, async (req: Request, res:
     }
 
     // Check if email is already verified
-    if (user.emailVerified) {
+    if (user.email_verified) {
       console.log('✅ Email already verified for user:', email);
       return res.status(200).json({ 
         success: true,

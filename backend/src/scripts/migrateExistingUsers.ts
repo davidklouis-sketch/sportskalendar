@@ -40,7 +40,7 @@ async function migrateExistingUsers() {
         console.log(`🔍 Processing user: ${user.email}`);
         
         // Check if user is already verified
-        if (user.emailVerified) {
+        if (user.email_verified) {
           console.log(`✅ User ${user.email} is already verified`);
           alreadyVerifiedCount++;
           continue;
@@ -48,7 +48,7 @@ async function migrateExistingUsers() {
 
         // Mark user as verified
         await UserRepository.updateByEmail(user.email, {
-          emailVerified: true
+          email_verified: true
         });
 
         console.log(`✅ Migrated user: ${user.email}`);
