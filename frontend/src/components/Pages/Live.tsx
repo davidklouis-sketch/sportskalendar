@@ -32,7 +32,7 @@ export function Live() {
   const [isLoading, setIsLoading] = useState(true);
   const [selectedSport, setSelectedSport] = useState<'football' | 'nfl' | 'f1' | 'nba' | 'nhl' | 'mlb' | 'tennis' | null>(null);
 
-  const loadLiveData = useCallback(async () => {
+  const loadLiveData = async () => {
     if (!selectedSport) return;
 
     setIsLoading(true);
@@ -71,7 +71,7 @@ export function Live() {
     } finally {
       setIsLoading(false);
     }
-  }, [selectedSport, user?.selectedTeams]); // selectedTeams nötig für Filter-Logik
+  };
 
   useEffect(() => {
     // Set initial sport from user's selected teams

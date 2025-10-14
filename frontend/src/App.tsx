@@ -129,7 +129,7 @@ function AppContent() {
     if (isInitializing) {
       checkAuth();
     }
-  }, [isInitializing, isAuthenticated, user]); // Sichere Dependencies ohne setUser/setLoading
+  }, [isInitializing]); // Nur isInitializing als Dependency um Infinite Loops zu vermeiden
 
   /**
    * EFFECT: Navigation nach erfolgreichem Login

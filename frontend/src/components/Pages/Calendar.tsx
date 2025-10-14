@@ -79,7 +79,7 @@ export function Calendar() {
   const [nextEvent, setNextEvent] = useState<Event | null>(null);
 
   // Load all events separately for better organization
-  const loadAllEvents = useCallback(async (teams: Array<{ sport: string; teamName: string; teamId?: string; leagueId?: number }>) => {
+  const loadAllEvents = async (teams: Array<{ sport: string; teamName: string; teamId?: string; leagueId?: number }>) => {
     // Prevent multiple simultaneous loads
     if (isLoadingRef.current) {
       return;
@@ -474,7 +474,7 @@ export function Calendar() {
   };
 
   // Find the next upcoming event from all loaded events
-  const findNextEvent = useCallback(() => {
+  const findNextEvent = () => {
     // Only include events from user's selected teams, not all events
     const userSelectedSports = user?.selectedTeams?.map((team: any) => team.sport) || [];
     
@@ -516,10 +516,10 @@ export function Calendar() {
     } else {
       setNextEvent(null);
     }
-  }, [user?.selectedTeams, footballEvents, f1Events, nflEvents, nbaEvents, nhlEvents, mlbEvents, tennisEvents]);
+  };
 
   // Load highlights for selected sport
-  const loadHighlights = useCallback(async () => {
+  const loadHighlights = async () => {
     if (!selectedSport) {
       console.log('[Calendar Highlights] No selectedSport, skipping highlights load');
       return;
@@ -576,7 +576,7 @@ export function Calendar() {
     } finally {
       setIsLoadingHighlights(false);
     }
-  }, [selectedSport, localTeams]);
+  };
 
 
   // Load user teams and events on mount - with ref to prevent loops
@@ -618,7 +618,7 @@ export function Calendar() {
       setMlbEvents([]);
       setTennisEvents([]);
     }
-  }, [user?.selectedTeams]); // loadAllEvents wird innerhalb aufgerufen, muss nicht in Dependencies sein
+  }, [user?.selectedTeams?.length]); // Nur Länge der Teams als Dependency um Infinite Loops zu vermeiden
 
   // Load highlights when sport selection changes
   useEffect(() => {
@@ -626,7 +626,7 @@ export function Calendar() {
     if (selectedSport) {
       loadHighlights();
     }
-  }, [selectedSport]); // loadHighlights wird innerhalb aufgerufen, muss nicht in Dependencies sein
+  }, [selectedSport]); // selectedSport als einzige Dependency um Infinite Loops zu vermeiden
 
   // Also load highlights when selectedSportTab changes (for UI consistency)
   useEffect(() => {
@@ -638,10 +638,10 @@ export function Calendar() {
         setSelectedSport(selectedSportTab);
       }
     }
-  }, [selectedSportTab, selectedSport]); // selectedSport nötig für Vergleich
+  }, [selectedSportTab]); // Nur selectedSportTab als Dependency um Infinite Loops zu vermeiden
 
   // Load teams from API when modal opens
-  const loadTeamsFromApi = useCallback(async () => {
+  const loadTeamsFromApi = async () => {
     setIsLoadingTeams(true);
     try {
       const [nbaResponse, nhlResponse, mlbResponse] = await Promise.all([
@@ -664,21 +664,21 @@ export function Calendar() {
     } finally {
       setIsLoadingTeams(false);
     }
-  }, []);
+  };
 
   // Load teams when modal opens
   useEffect(() => {
     if (showTeamSelector && (nbaTeamsFromApi.length === 0 || nhlTeamsFromApi.length === 0 || mlbTeamsFromApi.length === 0)) {
       loadTeamsFromApi();
     }
-  }, [showTeamSelector, nbaTeamsFromApi.length, nhlTeamsFromApi.length, mlbTeamsFromApi.length]); // loadTeamsFromApi wird innerhalb aufgerufen, muss nicht in Dependencies sein
+  }, [showTeamSelector]); // Nur showTeamSelector als Dependency um Infinite Loops zu vermeiden
 
   // Update next event when events change or user teams change
   useEffect(() => {
     if (!isLoading) {
       findNextEvent();
     }
-  }, [footballEvents, f1Events, nflEvents, nbaEvents, nhlEvents, mlbEvents, tennisEvents, isLoading, user?.selectedTeams]); // findNextEvent wird innerhalb aufgerufen, muss nicht in Dependencies sein
+  }, [footballEvents.length, f1Events.length, nflEvents.length, nbaEvents.length, nhlEvents.length, mlbEvents.length, tennisEvents.length, isLoading]); // Nur Längen als Dependencies um Infinite Loops zu vermeiden
 
   // Force load events if we have teams but no events after 2 seconds
   useEffect(() => {
@@ -694,7 +694,7 @@ export function Calendar() {
         return () => clearTimeout(timer);
       }
     }
-  }, [localTeams, footballEvents, f1Events, nbaEvents, nflEvents, nhlEvents, mlbEvents, tennisEvents, isLoading]); // loadAllEvents wird innerhalb aufgerufen, muss nicht in Dependencies sein
+  }, [localTeams.length, footballEvents.length, f1Events.length, nbaEvents.length, nflEvents.length, nhlEvents.length, mlbEvents.length, tennisEvents.length, isLoading]); // Nur Längen als Dependencies um Infinite Loops zu vermeiden
 
   const handleAddTeam = async (sport: string, teamName: string, teamId?: string, leagueId?: number) => {
     if (!user) return;
