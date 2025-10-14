@@ -21,17 +21,20 @@ import { CookieBanner } from './components/Layout/CookieBanner';
 // SEO Components
 import { SEOProvider, useSEO } from './components/SEO/SEOProvider';
 
-// Page Components
-import { Calendar } from './components/Pages/Calendar';
-import { Live } from './components/Pages/Live';
-import { Highlights } from './components/Pages/Highlights';
-import { Premium } from './components/Pages/Premium';
-import { Admin } from './components/Pages/Admin';
-import { Settings } from './components/Pages/Settings';
-import CalendarSync from './components/Pages/CalendarSync';
+// Page Components - Lazy loaded for better performance
+import { lazy, Suspense } from 'react';
 import { LandingPage } from './components/Pages/LandingPage';
-import Privacy from './components/Pages/Privacy';
-import Contact from './components/Pages/Contact';
+
+// Lazy load heavy components
+const Calendar = lazy(() => import('./components/Pages/Calendar').then(m => ({ default: m.Calendar })));
+const Live = lazy(() => import('./components/Pages/Live').then(m => ({ default: m.Live })));
+const Highlights = lazy(() => import('./components/Pages/Highlights').then(m => ({ default: m.Highlights })));
+const Premium = lazy(() => import('./components/Pages/Premium').then(m => ({ default: m.Premium })));
+const Admin = lazy(() => import('./components/Pages/Admin').then(m => ({ default: m.Admin })));
+const Settings = lazy(() => import('./components/Pages/Settings').then(m => ({ default: m.Settings })));
+const CalendarSync = lazy(() => import('./components/Pages/CalendarSync'));
+const Privacy = lazy(() => import('./components/Pages/Privacy'));
+const Contact = lazy(() => import('./components/Pages/Contact'));
 
 // SEO & Ads
 import { PageSEO } from './components/SEO/PageSEO';
@@ -240,89 +243,95 @@ function AppContent() {
         
         {/* Main Content Area - Client-Side Routing */}
         <main className="flex-1">
-          {/* Calendar Page - Auth Required */}
-          {currentPage === 'calendar' && (user ? <Calendar /> : <LandingPage onShowLogin={() => setAuthView('login')} onShowRegister={() => setAuthView('register')} onNavigate={setCurrentPage} />)}
-          
-          {/* Live Page - Auth Required */}
-          {currentPage === 'live' && (user ? <Live /> : <LandingPage onShowLogin={() => setAuthView('login')} onShowRegister={() => setAuthView('register')} onNavigate={setCurrentPage} />)}
-          
-          {/* Highlights Page - Auth Required */}
-          {currentPage === 'highlights' && (user ? <Highlights /> : <LandingPage onShowLogin={() => setAuthView('login')} onShowRegister={() => setAuthView('register')} onNavigate={setCurrentPage} />)}
-          
-          {/* Premium Page - Public */}
-          {currentPage === 'premium' && <Premium onNavigate={setCurrentPage} />}
-          
-          {/* Admin Page - Admin Role Required */}
-          {currentPage === 'admin' && user?.role === 'admin' ? (
-            <Admin />
-          ) : currentPage === 'admin' ? (
-            <div className="card p-12 text-center">
-              <h2 className="text-2xl font-bold mb-4">🔒 Zugriff verweigert</h2>
-              <p className="text-gray-600 dark:text-gray-400 mb-6">
-                Nur Administratoren können auf diese Seite zugreifen.
-              </p>
-              <button 
-                onClick={() => setCurrentPage('calendar')}
-                className="btn btn-primary"
-              >
-                Zurück zum Kalender
-              </button>
+          <Suspense fallback={
+            <div className="flex items-center justify-center min-h-[400px]">
+              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
             </div>
-          ) : null}
-          
-          {/* Settings Page - Auth Required */}
-          {currentPage === 'settings' && user ? <Settings /> : currentPage === 'settings' ? (
-            <div className="card p-12 text-center">
-              <h2 className="text-2xl font-bold mb-4">🔒 Anmeldung erforderlich</h2>
-              <p className="text-gray-600 dark:text-gray-400 mb-6">
-                Bitte melden Sie sich an, um auf die Einstellungen zuzugreifen.
-              </p>
-              <div className="flex gap-3 justify-center">
-                <button 
-                  onClick={() => setAuthView('login')}
-                  className="btn btn-primary"
-                >
-                  Anmelden
-                </button>
+          }>
+            {/* Calendar Page - Auth Required */}
+            {currentPage === 'calendar' && (user ? <Calendar /> : <LandingPage onShowLogin={() => setAuthView('login')} onShowRegister={() => setAuthView('register')} onNavigate={setCurrentPage} />)}
+            
+            {/* Live Page - Auth Required */}
+            {currentPage === 'live' && (user ? <Live /> : <LandingPage onShowLogin={() => setAuthView('login')} onShowRegister={() => setAuthView('register')} onNavigate={setCurrentPage} />)}
+            
+            {/* Highlights Page - Auth Required */}
+            {currentPage === 'highlights' && (user ? <Highlights /> : <LandingPage onShowLogin={() => setAuthView('login')} onShowRegister={() => setAuthView('register')} onNavigate={setCurrentPage} />)}
+            
+            {/* Premium Page - Public */}
+            {currentPage === 'premium' && <Premium onNavigate={setCurrentPage} />}
+            
+            {/* Admin Page - Admin Role Required */}
+            {currentPage === 'admin' && user?.role === 'admin' ? (
+              <Admin />
+            ) : currentPage === 'admin' ? (
+              <div className="card p-12 text-center">
+                <h2 className="text-2xl font-bold mb-4">🔒 Zugriff verweigert</h2>
+                <p className="text-gray-600 dark:text-gray-400 mb-6">
+                  Nur Administratoren können auf diese Seite zugreifen.
+                </p>
                 <button 
                   onClick={() => setCurrentPage('calendar')}
-                  className="btn btn-secondary"
+                  className="btn btn-primary"
                 >
                   Zurück zum Kalender
                 </button>
               </div>
-            </div>
-          ) : null}
-          
-          {/* Calendar Sync Page - Premium Required */}
-          {currentPage === 'calendar-sync' && user ? <CalendarSync /> : currentPage === 'calendar-sync' ? (
-            <div className="card p-12 text-center">
-              <h2 className="text-2xl font-bold mb-4">🔒 Anmeldung erforderlich</h2>
-              <p className="text-gray-600 dark:text-gray-400 mb-6">
-                Bitte melden Sie sich an, um auf die Kalender-Sync-Funktion zuzugreifen.
-              </p>
-              <div className="flex gap-3 justify-center">
-                <button 
-                  onClick={() => setAuthView('login')}
-                  className="btn btn-primary"
-                >
-                  Anmelden
-                </button>
-                <button 
-                  onClick={() => setCurrentPage('calendar')}
-                  className="btn btn-secondary"
-                >
-                  Zurück zum Kalender
-                </button>
+            ) : null}
+            
+            {/* Settings Page - Auth Required */}
+            {currentPage === 'settings' && user ? <Settings /> : currentPage === 'settings' ? (
+              <div className="card p-12 text-center">
+                <h2 className="text-2xl font-bold mb-4">🔒 Anmeldung erforderlich</h2>
+                <p className="text-gray-600 dark:text-gray-400 mb-6">
+                  Bitte melden Sie sich an, um auf die Einstellungen zuzugreifen.
+                </p>
+                <div className="flex gap-3 justify-center">
+                  <button 
+                    onClick={() => setAuthView('login')}
+                    className="btn btn-primary"
+                  >
+                    Anmelden
+                  </button>
+                  <button 
+                    onClick={() => setCurrentPage('calendar')}
+                    className="btn btn-secondary"
+                  >
+                    Zurück zum Kalender
+                  </button>
+                </div>
               </div>
-            </div>
-          ) : null}
-          
-          {/* Privacy Page - Public */}
-          {currentPage === 'privacy' && <Privacy />}
-          
-          {/* Contact Page - Public */}
-          {currentPage === 'contact' && <Contact />}
+            ) : null}
+            
+            {/* Calendar Sync Page - Premium Required */}
+            {currentPage === 'calendar-sync' && user ? <CalendarSync /> : currentPage === 'calendar-sync' ? (
+              <div className="card p-12 text-center">
+                <h2 className="text-2xl font-bold mb-4">🔒 Anmeldung erforderlich</h2>
+                <p className="text-gray-600 dark:text-gray-400 mb-6">
+                  Bitte melden Sie sich an, um auf die Kalender-Sync-Funktion zuzugreifen.
+                </p>
+                <div className="flex gap-3 justify-center">
+                  <button 
+                    onClick={() => setAuthView('login')}
+                    className="btn btn-primary"
+                  >
+                    Anmelden
+                  </button>
+                  <button 
+                    onClick={() => setCurrentPage('calendar')}
+                    className="btn btn-secondary"
+                  >
+                    Zurück zum Kalender
+                  </button>
+                </div>
+              </div>
+            ) : null}
+            
+            {/* Privacy Page - Public */}
+            {currentPage === 'privacy' && <Privacy />}
+            
+            {/* Contact Page - Public */}
+            {currentPage === 'contact' && <Contact />}
+          </Suspense>
         </main>
 
         {/* Footer mit Links zu Privacy, Contact, etc. */}
