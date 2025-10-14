@@ -609,7 +609,7 @@ export function Calendar() {
         loadAllEvents(teams);
       }
     } else {
-      lastTeamsRef.current = '';
+      lastTeamsLengthRef.current = 0;
       setLocalTeams([]);
       // No teams = stop loading immediately
       setIsLoading(false);
