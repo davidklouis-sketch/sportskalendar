@@ -39,6 +39,7 @@ const Contact = lazy(() => import('./components/Pages/Contact'));
 // SEO & Ads
 import { PageSEO } from './components/SEO/PageSEO';
 import { AdManager, useAdTrigger, SportsKalendarInterstitial } from './components/Ads/AdManager';
+import { ErrorBoundary } from './components/ErrorBoundary';
 
 // Type Definitions
 type AuthView = 'login' | 'register' | null; // Auth Modal Ansicht (Login, Register oder geschlossen)
@@ -228,26 +229,27 @@ function AppContent() {
    * - Premium, Privacy, Contact: Für alle zugänglich
    */
   return (
-    <AdManager>
-      <div className="min-h-screen flex flex-col">
-        {/* Dynamische SEO Meta-Tags für aktuelle Seite */}
-        <PageSEO page={currentPage} user={user} />
-        
-        {/* Header mit Navigation und Auth-Buttons */}
-        <Header 
-          currentPage={currentPage as any} 
-          onNavigate={setCurrentPage as any}
-          onShowLogin={() => setAuthView('login')}
-          onShowRegister={() => setAuthView('register')}
-        />
-        
-        {/* Main Content Area - Client-Side Routing */}
-        <main className="flex-1">
-          <Suspense fallback={
-            <div className="flex items-center justify-center min-h-[400px]">
-              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
-            </div>
-          }>
+    <ErrorBoundary>
+      <AdManager>
+        <div className="min-h-screen flex flex-col">
+          {/* Dynamische SEO Meta-Tags für aktuelle Seite */}
+          <PageSEO page={currentPage} user={user} />
+          
+          {/* Header mit Navigation und Auth-Buttons */}
+          <Header 
+            currentPage={currentPage as any} 
+            onNavigate={setCurrentPage as any}
+            onShowLogin={() => setAuthView('login')}
+            onShowRegister={() => setAuthView('register')}
+          />
+          
+          {/* Main Content Area - Client-Side Routing */}
+          <main className="flex-1">
+            <Suspense fallback={
+              <div className="flex items-center justify-center min-h-[400px]">
+                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+              </div>
+            }>
             {/* Calendar Page - Auth Required */}
             {currentPage === 'calendar' && (user ? <Calendar /> : <LandingPage onShowLogin={() => setAuthView('login')} onShowRegister={() => setAuthView('register')} onNavigate={setCurrentPage} />)}
             
@@ -340,10 +342,11 @@ function AppContent() {
         {/* Cookie Banner für DSGVO-Compliance */}
         <CookieBanner onNavigate={setCurrentPage} />
         
-        {/* Interstitial Ad (Vollbild-Werbung) - Nur für Standard-Nutzer */}
-        <SportsKalendarInterstitial trigger={interstitialTrigger} />
-      </div>
-    </AdManager>
+          {/* Interstitial Ad (Vollbild-Werbung) - Nur für Standard-Nutzer */}
+          <SportsKalendarInterstitial trigger={interstitialTrigger} />
+        </div>
+      </AdManager>
+    </ErrorBoundary>
   );
 }
 

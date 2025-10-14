@@ -82,11 +82,13 @@ export function Calendar() {
   const loadAllEvents = useCallback(async (teams: Array<{ sport: string; teamName: string; teamId?: string; leagueId?: number }>) => {
     // Prevent multiple simultaneous loads
     if (isLoadingRef.current) {
+      console.log('[Calendar] Already loading, skipping duplicate request');
       return;
     }
     
     isLoadingRef.current = true;
     setIsLoading(true);
+    console.log('[Calendar] Starting to load events for teams:', teams.length);
     
     try {
       // Reset all events first
@@ -694,7 +696,7 @@ export function Calendar() {
         return () => clearTimeout(timer);
       }
     }
-  }, [localTeams.length, footballEvents.length, f1Events.length, nbaEvents.length, nflEvents.length, nhlEvents.length, mlbEvents.length, tennisEvents.length, isLoading]); // Nur Längen als Dependencies um Infinite Loops zu vermeiden
+  }, [localTeams.length, isLoading]); // Reduzierte Dependencies um Infinite Loops zu vermeiden
 
   const handleAddTeam = async (sport: string, teamName: string, teamId?: string, leagueId?: number) => {
     if (!user) return;
