@@ -14,9 +14,9 @@ docker compose -f docker-compose.traefik.yml down --remove-orphans 2>/dev/null |
 echo "🗑️  Removing unused images..."
 docker image prune -f 2>/dev/null || true
 
-# Remove unused volumes (be careful with this in production!)
-echo "💾 Removing unused volumes..."
-docker volume prune -f 2>/dev/null || true
+# Remove unused volumes (SKIPPED in production to protect database!)
+echo "💾 Skipping volume cleanup to protect database data..."
+echo "⚠️  WARNING: Volume cleanup skipped to prevent data loss"
 
 # Remove unused networks
 echo "🌐 Removing unused networks..."
