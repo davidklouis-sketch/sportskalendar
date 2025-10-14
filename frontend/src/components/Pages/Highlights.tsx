@@ -43,7 +43,7 @@ export function Highlights() {
       };
 
       const currentTeam = user?.selectedTeams?.find(t => t.sport === selectedSport);
-      console.log(`[Highlights Frontend] Loading highlights for ${selectedSport} (${sportMapping[selectedSport]})${currentTeam ? ` for team "${currentTeam.teamName}"` : ''}`);
+      // Loading highlights
       
       // Add timeout to prevent hanging
       const timeoutPromise = new Promise<never>((_, reject) => {
@@ -54,7 +54,7 @@ export function Highlights() {
       const response = await Promise.race([fetchPromise, timeoutPromise]);
       
       let allHighlights = response.data.items || [];
-      console.log(`[Highlights Frontend] Got ${allHighlights.length} highlights from API`);
+      // Got highlights from API
       
       // Additional frontend filtering if needed (backend should handle most filtering now)
       if (currentTeam?.teamName && allHighlights.length > 0) {
@@ -66,12 +66,12 @@ export function Highlights() {
           const teamVariations = getTeamVariations(currentTeam.teamName);
           return teamVariations.some(variation => searchText.includes(variation));
         });
-        console.log(`[Highlights Frontend] Additional filtering: ${beforeFilter} -> ${allHighlights.length} highlights for team "${currentTeam.teamName}"`);
+        // Additional filtering applied
       }
       
       setHighlights(allHighlights);
     } catch (error) {
-      console.error('Failed to load highlights:', error);
+      // Failed to load highlights
       setHighlights([]);
     } finally {
       setIsLoading(false);

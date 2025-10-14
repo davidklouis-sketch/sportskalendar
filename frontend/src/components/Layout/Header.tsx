@@ -23,7 +23,7 @@ export function Header({ currentPage, onNavigate, onShowLogin, onShowRegister }:
     try {
       await authApi.logout();
     } catch (error) {
-      console.error('Logout error:', error);
+      // Logout error
     }
     logout();
   };

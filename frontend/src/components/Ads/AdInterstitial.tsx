@@ -39,7 +39,7 @@ export function AdInterstitial({ slotId, trigger = false, onAdLoaded, onAdFailed
           // Hier können wir zusätzliche Logik hinzufügen
           onAdLoaded?.();
         } catch (error) {
-          console.error('Fehler beim Laden des Interstitial Ads:', error);
+          // Fehler beim Laden des Interstitial Ads
           onAdFailed?.(error);
         }
       };

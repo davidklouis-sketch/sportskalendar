@@ -40,27 +40,27 @@ const CalendarSync: React.FC = () => {
   const loadSyncStatus = useCallback(async () => {
     try {
       setIsLoading(true);
-      console.log('[Calendar Sync Frontend] Loading sync status...');
+      // Loading sync status
       
       // First test if the API endpoint is available
       try {
         const testResponse = await fetch('/api/calendar-sync/test');
         const testData = await testResponse.json();
-        console.log('[Calendar Sync Frontend] Test endpoint response:', testData);
+        // Test endpoint response
       } catch (testError) {
-        console.error('[Calendar Sync Frontend] Test endpoint failed:', testError);
+        // Test endpoint failed
       }
       
       const response = await calendarSyncApi.getSyncStatus();
-      console.log('[Calendar Sync Frontend] Sync status response:', response.data);
+      // Sync status response
       setSyncStatus(response.data);
     } catch (error: unknown) {
-      console.error('[Calendar Sync Frontend] Failed to load sync status:', error);
+      // Failed to load sync status
       
       const errorMessage = error instanceof Error ? error.message : 'Unbekannter Fehler';
       const errorResponse = error && typeof error === 'object' && 'response' in error ? (error as any).response : null;
       
-      console.error('[Calendar Sync Frontend] Error details:', {
+      // Error details
         message: errorMessage,
         status: errorResponse?.status,
         statusText: errorResponse?.statusText,
@@ -96,7 +96,7 @@ const CalendarSync: React.FC = () => {
       document.body.removeChild(link);
       window.URL.revokeObjectURL(url);
     } catch (error: unknown) {
-      console.error('Export failed:', error);
+      // Export failed
       const errorMessage = error instanceof Error ? error.message : 'Unbekannter Fehler';
       setError(`Export fehlgeschlagen: ${errorMessage}`);
     }
@@ -104,21 +104,21 @@ const CalendarSync: React.FC = () => {
 
   const handleGetSyncUrl = async () => {
     try {
-      console.log('[Calendar Sync Frontend] Starting sync URL generation...');
+      // Starting sync URL generation
       const response = await calendarSyncApi.getSyncUrl();
-      console.log('[Calendar Sync Frontend] Sync URL response:', response.data);
+      // Sync URL response
       
       setInstructions(response.data.instructions);
       setSyncStatus(prev => prev ? { ...prev, syncUrl: response.data.syncUrl } : null);
       setShowInstructions(true);
       
-      console.log('[Calendar Sync Frontend] Sync URL generated successfully:', response.data.syncUrl);
+      // Sync URL generated successfully
     } catch (error: unknown) {
-      console.error('[Calendar Sync Frontend] Failed to get sync URL:', error);
+      // Failed to get sync URL
       const errorMessage = error instanceof Error ? error.message : 'Unbekannter Fehler';
       const errorResponse = error && typeof error === 'object' && 'response' in error ? (error as any).response : null;
       
-      console.error('[Calendar Sync Frontend] Error details:', {
+      // Error details
         message: errorMessage,
         status: errorResponse?.status,
         statusText: errorResponse?.statusText,
@@ -140,9 +140,9 @@ const CalendarSync: React.FC = () => {
         button.textContent = originalText;
       }, 2000);
     } catch (error: unknown) {
-      console.error('Failed to copy:', error);
+      // Failed to copy
       const errorMessage = error instanceof Error ? error.message : 'Unbekannter Fehler';
-      console.warn('Copy to clipboard failed:', errorMessage);
+      // Copy to clipboard failed
     }
   };
 

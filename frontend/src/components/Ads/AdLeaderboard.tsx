@@ -21,7 +21,7 @@ export function AdLeaderboard({ slotId, style, className }: AdLeaderboardProps) 
         ((window as any).adsbygoogle = (window as any).adsbygoogle || []).push({});
       }
     } catch (error) {
-      console.error('AdSense initialization error:', error);
+      // AdSense initialization error
     }
   }, []);
 

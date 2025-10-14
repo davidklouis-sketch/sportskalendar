@@ -27,7 +27,7 @@ export function Admin() {
       const { data } = await adminApi.getUsers();
       setUsers(data.users || []);
     } catch (error) {
-      console.error('Failed to load users:', error);
+      // Failed to load users
       alert('Fehler beim Laden der User-Liste');
     } finally {
       setIsLoading(false);
@@ -46,7 +46,7 @@ export function Admin() {
       alert('User wurde zum Admin befördert!');
     } catch (err) {
       const error = err as { response?: { data?: { message?: string } } };
-      console.error('Failed to promote user:', err);
+      // Failed to promote user
       alert('Fehler: ' + (error.response?.data?.message || 'Konnte User nicht befördern'));
     } finally {
       setActionLoading(null);
@@ -61,7 +61,7 @@ export function Admin() {
       alert('Admin wurde zum User zurückgestuft!');
     } catch (err) {
       const error = err as { response?: { data?: { message?: string } } };
-      console.error('Failed to demote user:', err);
+      // Failed to demote user
       alert('Fehler: ' + (error.response?.data?.message || 'Konnte User nicht zurückstufen'));
     } finally {
       setActionLoading(null);
@@ -76,7 +76,7 @@ export function Admin() {
       alert('Premium-Status wurde geändert!');
     } catch (err) {
       const error = err as { response?: { data?: { message?: string }; status?: number } };
-      console.error('Failed to toggle premium:', err);
+      // Failed to toggle premium
       alert('Fehler: ' + (error.response?.data?.message || 'Konnte Premium-Status nicht ändern'));
     } finally {
       setActionLoading(null);
@@ -91,7 +91,7 @@ export function Admin() {
       alert(`User ${userEmail} wurde über Stripe zu Premium upgraded!`);
     } catch (err) {
       const error = err as { response?: { data?: { message?: string } } };
-      console.error('Failed to upgrade user via Stripe:', err);
+      // Failed to upgrade user via Stripe
       alert('Fehler: ' + (error.response?.data?.message || 'Konnte User nicht über Stripe upgraden'));
     } finally {
       setActionLoading(null);
@@ -106,7 +106,7 @@ export function Admin() {
       alert(`User ${userEmail} wurde über Stripe von Premium downgraded!`);
     } catch (err) {
       const error = err as { response?: { data?: { message?: string } } };
-      console.error('Failed to downgrade user via Stripe:', err);
+      // Failed to downgrade user via Stripe
       alert('Fehler: ' + (error.response?.data?.message || 'Konnte User nicht über Stripe downgraden'));
     } finally {
       setActionLoading(null);

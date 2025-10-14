@@ -39,7 +39,7 @@ export function Settings() {
       setNewPassword('');
       setConfirmPassword('');
     } catch (error: unknown) {
-      console.error('Failed to change password:', error);
+      // Failed to change password
       const errorMessage = (error as { response?: { data?: { error?: string } } })?.response?.data?.error === 'Invalid current password'
         ? 'Das aktuelle Passwort ist falsch'
         : 'Fehler beim Ändern des Passworts';

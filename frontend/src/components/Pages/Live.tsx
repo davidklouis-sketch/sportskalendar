@@ -66,7 +66,7 @@ export function Live() {
       
       setLiveData(liveDataResult);
     } catch (error) {
-      console.error('Failed to load live data:', error);
+      // Failed to load live data
       setLiveData({ entries: [], error: 'Fehler beim Laden der Live-Daten' });
     } finally {
       setIsLoading(false);

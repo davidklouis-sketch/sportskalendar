@@ -513,7 +513,7 @@ export function Calendar() {
     } else {
       setNextEvent(null);
     }
-  }, [user?.selectedTeams, footballEvents, f1Events, nflEvents, nbaEvents, nhlEvents, mlbEvents, tennisEvents]);
+  }, []); // Leere Dependencies um Infinite Loops zu vermeiden - wird manuell aufgerufen
 
   // Load highlights for selected sport
   const loadHighlights = useCallback(async () => {
@@ -559,7 +559,7 @@ export function Calendar() {
     } finally {
       setIsLoadingHighlights(false);
     }
-  }, [selectedSport, localTeams]);
+  }, [selectedSport, localTeams, user?.selectedTeams]);
 
 
   // Load user teams and events on mount - with ref to prevent loops
@@ -609,7 +609,7 @@ export function Calendar() {
     if (selectedSport) {
       loadHighlights();
     }
-  }, [selectedSport]); // selectedSport als einzige Dependency um Infinite Loops zu vermeiden
+  }, [selectedSport]); // Nur selectedSport als Dependency um Infinite Loops zu vermeiden
 
   // Also load highlights when selectedSportTab changes (for UI consistency)
   useEffect(() => {
@@ -657,7 +657,7 @@ export function Calendar() {
     if (!isLoading) {
       findNextEvent();
     }
-  }, [footballEvents.length, f1Events.length, nflEvents.length, nbaEvents.length, nhlEvents.length, mlbEvents.length, tennisEvents.length, isLoading]); // Nur Längen als Dependencies um Infinite Loops zu vermeiden
+  }, [isLoading]); // Nur isLoading als Dependency um Infinite Loops zu vermeiden
 
   // Force load events if we have teams but no events after 2 seconds
   useEffect(() => {

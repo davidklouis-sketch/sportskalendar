@@ -104,7 +104,7 @@ function AppContent() {
       if (isInitializing && isAuthenticated && user) {
         // TEMPORARY FIX: Skip profile loading to prevent browser crashes
         // The login response already contains all necessary user data
-        console.log('🔧 TEMPORARY FIX: Skipping profile loading to prevent crashes');
+        // TEMPORARY FIX: Skipping profile loading to prevent crashes
         setLoading(false);
         setIsInitializing(false);
         return;
@@ -115,7 +115,7 @@ function AppContent() {
           const { data } = await userApi.getProfile();
           setUser(data.user);
         } catch (error) {
-          console.error('Failed to load user profile:', error);
+          // Failed to load user profile
           // Profil konnte nicht geladen werden, aber User bleibt eingeloggt
           // Nur bei echten Auth-Fehlern (401/403) ausloggen, nicht bei Netzwerk-Fehlern
           if (error && typeof error === 'object' && 'response' in error) {

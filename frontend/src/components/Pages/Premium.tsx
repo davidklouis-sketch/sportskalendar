@@ -16,7 +16,7 @@ export function Premium({ }: PremiumProps) {
   useLanguage(); // Trigger re-render on language change
 
   const handleUpgrade = async () => {
-    console.log('🔍 Premium upgrade attempt:', { isAuthenticated, user });
+    // Premium upgrade attempt
     
     if (!isAuthenticated) {
       setError(getCurrentLanguage() === 'de' 
@@ -30,9 +30,9 @@ export function Premium({ }: PremiumProps) {
     setError(null);
 
     try {
-      console.log('🚀 Creating checkout session...');
+      // Creating checkout session
       const response = await stripeApi.createCheckoutSession();
-      console.log('✅ Checkout session response:', response);
+      // Checkout session response
       
       if (response.data?.url) {
         window.location.href = response.data.url;
@@ -43,8 +43,7 @@ export function Premium({ }: PremiumProps) {
         );
       }
     } catch (error: any) {
-      console.error('❌ Premium upgrade error:', error);
-      console.error('❌ Error response:', error.response?.data);
+      // Premium upgrade error
       setError(error.response?.data?.message || (getCurrentLanguage() === 'de' 
         ? 'Fehler beim Upgrade zu Premium'
         : 'Error upgrading to Premium'

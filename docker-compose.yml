@@ -9,7 +9,7 @@ services:
       - NODE_ENV=production
       - PORT=4000
       - FORCE_HTTPS=true
-      - JWT_SECRET=${JWT_SECRET:-your-super-secret-jwt-key-here}
+      - JWT_SECRET=${JWT_SECRET}
       - FOOTBALL_DATA_KEY=${FOOTBALL_DATA_KEY}
       - API_FOOTBALL_KEY=${API_FOOTBALL_KEY}
       - STRIPE_SECRET_KEY=${STRIPE_SECRET_KEY}

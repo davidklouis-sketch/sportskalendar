@@ -81,7 +81,7 @@ export const SEO_CONFIGS: Record<string, SEOConfig> = {
       '@type': 'WebPage',
       'name': 'Sportkalender - Spieltermine',
       'description': 'Übersichtliche Darstellung aller Spieltermine deiner Lieblingsteams',
-      'url': 'https://sportskalendar.de/calendar',
+        'url': 'http://localhost:5173/calendar',
       'mainEntity': {
         '@type': 'ItemList',
         'name': 'Sportveranstaltungen',
@@ -95,13 +95,13 @@ export const SEO_CONFIGS: Record<string, SEOConfig> = {
             '@type': 'ListItem',
             'position': 1,
             'name': 'Home',
-            'item': 'https://sportskalendar.de/'
+            'item': 'http://localhost:5173/'
           },
           {
             '@type': 'ListItem',
             'position': 2,
             'name': 'Kalender',
-            'item': 'https://sportskalendar.de/calendar'
+            'item': 'http://localhost:5173/calendar'
           }
         ]
       }
@@ -122,7 +122,7 @@ export const SEO_CONFIGS: Record<string, SEOConfig> = {
       '@type': 'WebPage',
       'name': 'Live-Ticker - Sport Live',
       'description': 'Live-Verfolgung aller Sportveranstaltungen',
-      'url': 'https://sportskalendar.de/live',
+        'url': 'http://localhost:5173/live',
       'mainEntity': {
         '@type': 'LiveBlogPosting',
         'name': 'Sport Live-Ticker',
@@ -145,7 +145,7 @@ export const SEO_CONFIGS: Record<string, SEOConfig> = {
       '@type': 'WebPage',
       'name': 'Sport Highlights',
       'description': 'Die besten Sportmomente und Highlights',
-      'url': 'https://sportskalendar.de/highlights',
+        'url': 'http://localhost:5173/highlights',
       'mainEntity': {
         '@type': 'VideoObject',
         'name': 'Sport Highlights Sammlung',
@@ -211,7 +211,7 @@ export const SEO_CONFIGS: Record<string, SEOConfig> = {
       '@type': 'WebPage',
       'name': 'Datenschutzerklärung',
       'description': 'Informationen zum Datenschutz bei Sportskalendar',
-      'url': 'https://sportskalendar.de/privacy',
+        'url': 'http://localhost:5173/privacy',
       'mainEntity': {
         '@type': 'Article',
         'headline': 'Datenschutzerklärung',
@@ -239,7 +239,7 @@ export const SEO_CONFIGS: Record<string, SEOConfig> = {
       '@type': 'ContactPage',
       'name': 'Kontakt - Sportskalendar',
       'description': 'Kontaktmöglichkeiten für Support und Feedback',
-      'url': 'https://sportskalendar.de/contact',
+        'url': 'http://localhost:5173/contact',
       'mainEntity': {
         '@type': 'Organization',
         'name': 'Sportskalendar Support',

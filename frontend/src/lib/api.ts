@@ -69,7 +69,7 @@ api.interceptors.response.use(
     
     // NIEMALS bei Rate Limiting (429) abmelden
     if (error.response?.status === 429) {
-      console.warn('⚠️ Rate limit reached, but NOT logging out user');
+      // Rate limit reached, but NOT logging out user
       return Promise.reject(error);
     }
     
