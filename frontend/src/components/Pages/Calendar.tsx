@@ -1409,7 +1409,9 @@ export function Calendar() {
                           </div>
                         )}
                       </button>
-                    ))}
+                        );
+                      });
+                    })()}
                   </div>
                 </div>
               )}
@@ -1452,7 +1454,9 @@ export function Calendar() {
                           </div>
                         )}
                       </button>
-                    ))}
+                        );
+                      });
+                    })()}
                   </div>
                 </div>
               )}
