@@ -15,6 +15,14 @@ import { createRoot } from 'react-dom/client';
 import './index.css'; // Tailwind CSS + Custom Styles
 import App from './App.tsx';
 
+// Chrome Extension Error Handler - Suppress runtime.lastError warnings
+window.addEventListener('error', (event) => {
+  if (event.message && event.message.includes('runtime.lastError')) {
+    event.preventDefault();
+    return false;
+  }
+});
+
 // React App im DOM mounten
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
