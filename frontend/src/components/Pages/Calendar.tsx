@@ -119,18 +119,13 @@ export function Calendar() {
             events = (response.data as Event[]) || [];
           }
           
-          // Filter events for selected teams - PERFORMANCE FIX: Use Set for O(1) lookups
-          const teamNamesSet = new Set(footballTeams.map(t => t.teamName.toLowerCase()));
+          // Filter events for selected teams
+          const teamNames = footballTeams.map(t => t.teamName.toLowerCase());
           events = events.filter(event => {
             const eventTitle = event.title.toLowerCase();
             
-            // Check direct matches first (O(1) lookup)
-            for (const teamName of teamNamesSet) {
-              if (eventTitle.includes(teamName)) return true;
-            }
-            
-            // Check variations (only if no direct match found)
-            for (const teamName of teamNamesSet) {
+            // Enhanced matching with team name variations
+            const matches = teamNames.some(teamName => {
               // Direct match
               if (eventTitle.includes(teamName)) return true;
               
@@ -1041,7 +1036,14 @@ export function Calendar() {
                         }));
                         
                         // Pre-calculate hasPastEvents for Premium hint
-                        const hasPastEvents = events.some(e => new Date(e.startsAt) <= now);
+                        // PERFORMANCE FIX: Use for loop instead of .some() to avoid render loop issues
+                        let hasPastEvents = false;
+                        for (const e of events) {
+                          if (new Date(e.startsAt) <= now) {
+                            hasPastEvents = true;
+                            break;
+                          }
+                        }
                         
                         const sortedEvents = eventsWithDates.sort((a, b) => {
                           const isFutureA = a.isFuture;

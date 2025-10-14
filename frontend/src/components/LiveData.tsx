@@ -73,10 +73,15 @@ export function LiveData({ className = '' }: LiveDataProps) {
           
           // Filter entries by all team names for this sport
           if (sportLiveData.entries) {
-            const filteredEntries = sportLiveData.entries.filter((entry: LiveEntry) => 
-              teamNames.some(teamName => 
-                entry.name.toLowerCase().includes(teamName.toLowerCase())
-              )
+            const filteredEntries = sportLiveData.entries.filter((entry: LiveEntry) => {
+              // PERFORMANCE FIX: Use for loop instead of .some()
+              for (const teamName of teamNames) {
+                if (entry.name.toLowerCase().includes(teamName.toLowerCase())) {
+                  return true;
+                }
+              }
+              return false;
+            }
             );
             
             if (filteredEntries.length > 0) {

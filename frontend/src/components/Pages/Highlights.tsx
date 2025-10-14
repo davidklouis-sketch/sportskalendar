@@ -62,9 +62,12 @@ export function Highlights() {
         allHighlights = allHighlights.filter((highlight: Highlight) => {
           const searchText = (highlight.title + ' ' + (highlight.description || '')).toLowerCase();
           
-          // Use the same team variations as backend
+          // Use the same team variations as backend - PERFORMANCE FIX: Use for loop instead of .some()
           const teamVariations = getTeamVariations(currentTeam.teamName);
-          return teamVariations.some(variation => searchText.includes(variation));
+          for (const variation of teamVariations) {
+            if (searchText.includes(variation)) return true;
+          }
+          return false;
         });
         // Additional filtering applied
       }
