@@ -626,7 +626,7 @@ export function Calendar() {
     if (selectedSport) {
       loadHighlights();
     }
-  }, [selectedSport]); // loadHighlights entfernt um Infinite Loop zu vermeiden
+  }, [selectedSport, loadHighlights]); // loadHighlights hinzugefügt für korrekte Funktionalität
 
   // Also load highlights when selectedSportTab changes (for UI consistency)
   useEffect(() => {
@@ -638,7 +638,7 @@ export function Calendar() {
         setSelectedSport(selectedSportTab);
       }
     }
-  }, [selectedSportTab]); // selectedSport entfernt um Infinite Loop zu vermeiden
+  }, [selectedSportTab, selectedSport]); // selectedSport wieder hinzugefügt für korrekte Funktionalität
 
   // Load teams from API when modal opens
   const loadTeamsFromApi = useCallback(async () => {
@@ -671,14 +671,14 @@ export function Calendar() {
     if (showTeamSelector && (nbaTeamsFromApi.length === 0 || nhlTeamsFromApi.length === 0 || mlbTeamsFromApi.length === 0)) {
       loadTeamsFromApi();
     }
-  }, [showTeamSelector]); // Vereinfacht um Infinite Loops zu vermeiden
+  }, [showTeamSelector, loadTeamsFromApi, nbaTeamsFromApi.length, nhlTeamsFromApi.length, mlbTeamsFromApi.length]); // Dependencies wiederhergestellt für korrekte Funktionalität
 
   // Update next event when events change or user teams change
   useEffect(() => {
     if (!isLoading) {
       findNextEvent();
     }
-  }, [footballEvents, f1Events, nflEvents, nbaEvents, nhlEvents, mlbEvents, tennisEvents, isLoading, user?.selectedTeams]); // findNextEvent entfernt um Infinite Loop zu vermeiden
+  }, [footballEvents, f1Events, nflEvents, nbaEvents, nhlEvents, mlbEvents, tennisEvents, isLoading, user?.selectedTeams, findNextEvent]); // findNextEvent wieder hinzugefügt für korrekte Funktionalität
 
   // Force load events if we have teams but no events after 2 seconds
   useEffect(() => {
@@ -694,7 +694,7 @@ export function Calendar() {
         return () => clearTimeout(timer);
       }
     }
-  }, [localTeams, footballEvents, f1Events, nbaEvents, nflEvents, nhlEvents, mlbEvents, tennisEvents, isLoading]); // loadAllEvents entfernt um Infinite Loop zu vermeiden
+  }, [localTeams, footballEvents, f1Events, nbaEvents, nflEvents, nhlEvents, mlbEvents, tennisEvents, isLoading, loadAllEvents]); // loadAllEvents wieder hinzugefügt für korrekte Funktionalität
 
   const handleAddTeam = async (sport: string, teamName: string, teamId?: string, leagueId?: number) => {
     if (!user) return;

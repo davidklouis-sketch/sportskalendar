@@ -71,7 +71,7 @@ export function Live() {
     } finally {
       setIsLoading(false);
     }
-  }, [selectedSport, user]); // selectedTeams zu user vereinfacht
+  }, [selectedSport, user?.selectedTeams]); // selectedTeams wieder hinzugefügt für korrekte Funktionalität
 
   useEffect(() => {
     // Set initial sport from user's selected teams
@@ -87,7 +87,7 @@ export function Live() {
       const interval = setInterval(loadLiveData, 600000);
       return () => clearInterval(interval);
     }
-  }, [selectedSport]); // Entfernt loadLiveData aus Dependencies um Infinite Loop zu vermeiden
+  }, [selectedSport, loadLiveData]); // loadLiveData wieder hinzugefügt für korrekte Funktionalität
 
   if (!user?.selectedTeams?.length) {
     return (

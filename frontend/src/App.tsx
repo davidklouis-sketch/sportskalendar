@@ -126,8 +126,10 @@ function AppContent() {
       setIsInitializing(false);
     };
 
-    checkAuth();
-  }, [isInitializing, isAuthenticated, user, setLoading, setUser]); // Dependencies wiederhergestellt für korrekte Funktionalität
+    if (isInitializing) {
+      checkAuth();
+    }
+  }, [isInitializing, isAuthenticated, user]); // Sichere Dependencies ohne setUser/setLoading
 
   /**
    * EFFECT: Navigation nach erfolgreichem Login
