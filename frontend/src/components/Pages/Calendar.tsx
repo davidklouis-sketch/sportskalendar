@@ -295,14 +295,14 @@ export const Calendar = memo(function Calendar({ onNavigate }: CalendarProps = {
             )}
             
             {/* Live Events */}
-            <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700">
+            <div className="bg-gradient-to-br from-red-500 to-pink-600 rounded-xl shadow-sm border border-red-600">
               <div className="p-5">
                 <div className="flex items-center gap-2 mb-4">
-                  <div className="w-2 h-2 bg-red-500 rounded-full animate-pulse"></div>
-                  <h2 className="text-lg font-semibold text-gray-900 dark:text-white">{t('live')} Events</h2>
+                  <div className="w-2 h-2 bg-white rounded-full animate-pulse"></div>
+                  <h2 className="text-sm font-semibold text-white">{t('live')} Events</h2>
                 </div>
                 <LiveData />
-                <p className="text-xs text-gray-500 dark:text-gray-400 mt-3">
+                <p className="text-xs text-red-100 mt-3">
                   {t('automaticUpdate')}
                 </p>
               </div>
@@ -314,18 +314,18 @@ export const Calendar = memo(function Calendar({ onNavigate }: CalendarProps = {
             </div>
 
             {/* My Teams */}
-            <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700">
+            <div className="bg-gradient-to-br from-blue-500 to-indigo-600 rounded-xl shadow-sm border border-blue-600">
               <div className="p-5">
                 <div className="flex items-center justify-between mb-4">
                   <div className="flex items-center gap-2">
-                    <svg className="w-5 h-5 text-blue-600 dark:text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
                     </svg>
-                    <h2 className="text-lg font-semibold text-gray-900 dark:text-white">{t('myTeams')}</h2>
+                    <h2 className="text-sm font-semibold text-white">{t('myTeams')}</h2>
                   </div>
                   <button
                     onClick={exportCalendar}
-                    className="p-2 bg-blue-600 hover:bg-blue-700 rounded-lg text-white transition-colors"
+                    className="p-2 bg-white/20 hover:bg-white/30 rounded-lg text-white transition-colors backdrop-blur-sm"
                     title="Export Calendar"
                   >
                     <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -336,10 +336,10 @@ export const Calendar = memo(function Calendar({ onNavigate }: CalendarProps = {
 
                 {localTeams.length === 0 ? (
                   <div className="text-center py-6">
-                    <p className="text-gray-500 dark:text-gray-400 text-sm mb-3">{t('noTeamsAdded')}</p>
+                    <p className="text-blue-100 text-sm mb-3">{t('noTeamsAdded')}</p>
                     <button
                       onClick={() => setShowTeamSelector(true)}
-                      className="bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-lg transition-colors text-sm"
+                      className="bg-white/20 hover:bg-white/30 text-white font-medium py-2 px-4 rounded-lg transition-colors text-sm backdrop-blur-sm"
                     >
                       + {t('addTeam')}
                     </button>
@@ -347,17 +347,17 @@ export const Calendar = memo(function Calendar({ onNavigate }: CalendarProps = {
                 ) : (
                   <div className="space-y-2">
                     {localTeams.map((team, index) => (
-                      <div key={index} className="group/team flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-700/50 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors">
+                      <div key={index} className="group/team flex items-center justify-between p-3 bg-white/20 backdrop-blur-sm rounded-lg hover:bg-white/30 transition-colors">
                         <div className="flex items-center gap-3">
                           <span className="text-lg">{getSportIcon(team.sport)}</span>
                           <div>
-                            <p className="font-medium text-gray-900 dark:text-white text-sm">{team.teamName}</p>
-                            <p className="text-xs text-gray-500 dark:text-gray-400 capitalize">{team.sport}</p>
+                            <p className="font-medium text-white text-sm">{team.teamName}</p>
+                            <p className="text-xs text-blue-100 capitalize">{team.sport}</p>
                           </div>
                         </div>
                         <button
                           onClick={() => handleRemoveTeam(index)}
-                          className="opacity-0 group-hover/team:opacity-100 p-1 text-red-500 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300 transition-opacity"
+                          className="opacity-0 group-hover/team:opacity-100 p-1 text-white hover:text-red-200 transition-opacity"
                         >
                           <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -368,7 +368,7 @@ export const Calendar = memo(function Calendar({ onNavigate }: CalendarProps = {
 
                     <button
                       onClick={() => setShowTeamSelector(true)}
-                      className="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-lg transition-colors text-sm"
+                      className="w-full bg-white/20 hover:bg-white/30 text-white font-medium py-2 px-4 rounded-lg transition-colors text-sm backdrop-blur-sm"
                     >
                       + {t('addTeam')}
                     </button>
@@ -396,15 +396,15 @@ export const Calendar = memo(function Calendar({ onNavigate }: CalendarProps = {
 
             {/* Events Section */}
             {selectedSport && (
-              <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700">
+              <div className={`bg-gradient-to-br ${getSportColor(selectedSport)} rounded-xl shadow-sm border ${getSportColor(selectedSport).replace('from-', 'border-').split(' ')[0].replace('to-', '')}`}>
                 <div className="p-5">
                   <div className="flex items-center gap-3 mb-5">
                     <span className="text-2xl">{getSportIcon(selectedSport)}</span>
                     <div>
-                      <h2 className="text-xl font-semibold text-gray-900 dark:text-white">
+                      <h2 className="text-lg font-semibold text-white">
                         {getSportName(selectedSport)} Events
                       </h2>
-                      <p className="text-sm text-gray-600 dark:text-gray-400">
+                      <p className="text-sm text-white/80">
                         {getEventsBySport().length} {getEventsBySport().length === 1 ? 'Event' : 'Events'}
                       </p>
                     </div>
@@ -424,26 +424,26 @@ export const Calendar = memo(function Calendar({ onNavigate }: CalendarProps = {
 
             {/* Highlights Section */}
             {selectedSport && (
-              <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700">
+              <div className="bg-gradient-to-br from-purple-500 to-pink-600 rounded-xl shadow-sm border border-purple-600">
                 <div className="p-5">
                   <div className="flex items-center gap-3 mb-5">
-                    <svg className="w-6 h-6 text-purple-600 dark:text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
                     </svg>
                     <div>
-                      <h2 className="text-xl font-semibold text-gray-900 dark:text-white">{t('highlightsNews')}</h2>
-                      <p className="text-sm text-gray-600 dark:text-gray-400">{t('currentHighlights')}</p>
+                      <h2 className="text-lg font-semibold text-white">{t('highlightsNews')}</h2>
+                      <p className="text-sm text-purple-100">{t('currentHighlights')}</p>
                     </div>
                   </div>
                     
                   {isLoadingHighlights ? (
                     <div className="text-center py-8">
-                      <div className="inline-block animate-spin rounded-full h-10 w-10 border-b-2 border-purple-600"></div>
-                      <p className="mt-3 text-gray-500 dark:text-gray-400 text-sm">{t('loading')}</p>
+                      <div className="inline-block animate-spin rounded-full h-10 w-10 border-b-2 border-white"></div>
+                      <p className="mt-3 text-purple-100 text-sm">{t('loading')}</p>
                     </div>
                   ) : highlights.length === 0 ? (
                     <div className="text-center py-8">
-                      <p className="text-gray-500 dark:text-gray-400 text-sm">{t('noEventsAvailable')}</p>
+                      <p className="text-purple-100 text-sm">{t('noEventsAvailable')}</p>
                     </div>
                   ) : (
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -453,7 +453,7 @@ export const Calendar = memo(function Calendar({ onNavigate }: CalendarProps = {
                           href={highlight.url}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="group/highlight block p-4 bg-gray-50 dark:bg-gray-700/50 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+                          className="group/highlight block p-4 bg-white/20 backdrop-blur-sm rounded-lg hover:bg-white/30 transition-colors"
                         >
                           {highlight.thumbnail && (
                             <div className="aspect-video bg-gray-200 dark:bg-gray-600 rounded-lg mb-3 overflow-hidden">
@@ -464,22 +464,22 @@ export const Calendar = memo(function Calendar({ onNavigate }: CalendarProps = {
                               />
                             </div>
                           )}
-                          <h3 className="font-medium text-gray-900 dark:text-white mb-1 line-clamp-2 text-sm">
+                          <h3 className="font-medium text-white mb-1 line-clamp-2 text-sm">
                             {highlight.title}
                           </h3>
                           {highlight.description && (
-                            <p className="text-xs text-gray-600 dark:text-gray-400 mb-2 line-clamp-2">
+                            <p className="text-xs text-purple-100 mb-2 line-clamp-2">
                               {highlight.description}
                             </p>
                           )}
-                          <div className="flex items-center justify-between text-xs text-gray-500 dark:text-gray-400">
+                          <div className="flex items-center justify-between text-xs text-purple-100">
                             <span>{format(new Date(highlight.createdAt), 'dd.MM.yyyy')}</span>
                             {highlight.views && (
                               <span>{highlight.views >= 1000000 ? `${(highlight.views / 1000000).toFixed(1)}M` :
                                highlight.views >= 1000 ? `${(highlight.views / 1000).toFixed(1)}K` :
                                highlight.views.toString()} views</span>
                             )}
-                        </div>
+                          </div>
                         </a>
                       ))}
                     </div>
@@ -490,21 +490,21 @@ export const Calendar = memo(function Calendar({ onNavigate }: CalendarProps = {
 
             {/* News Section Link */}
             {localTeams.length > 0 && (
-              <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700">
+              <div className="bg-gradient-to-br from-cyan-500 to-blue-600 rounded-xl shadow-sm border border-cyan-600">
                 <div className="p-5">
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2">
-                      <svg className="w-5 h-5 text-blue-600 dark:text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9a2 2 0 00-2-2h-2m-4-3H9M7 16h6M7 8h6v4H7V8z" />
                       </svg>
                       <div>
-                        <h2 className="text-lg font-semibold text-gray-900 dark:text-white">Aktuelle News</h2>
-                        <p className="text-xs text-gray-500 dark:text-gray-400">Für deine Teams</p>
+                        <h2 className="text-sm font-semibold text-white">Aktuelle News</h2>
+                        <p className="text-xs text-cyan-100">Für deine Teams</p>
                       </div>
                     </div>
                     <button
                       onClick={() => onNavigate && onNavigate('news')}
-                      className="bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-lg transition-colors text-sm"
+                      className="bg-white/20 hover:bg-white/30 text-white font-medium py-2 px-4 rounded-lg transition-colors text-sm backdrop-blur-sm"
                     >
                       Alle anzeigen →
                     </button>
