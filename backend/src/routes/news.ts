@@ -47,7 +47,10 @@ newsRouter.get('/', requireAuth, async (req, res) => {
     const user = (req as any).user as { id: string; email: string };
     const { selectedTeams } = req.query;
 
+    console.log(`[News API] User: ${user.email}, SelectedTeams:`, selectedTeams);
+
     if (!selectedTeams || !Array.isArray(selectedTeams) || selectedTeams.length === 0) {
+      console.log('[News API] No teams selected, returning 400');
       return res.status(400).json({
         error: 'No teams selected',
         message: 'Please select teams to get news'
@@ -55,6 +58,7 @@ newsRouter.get('/', requireAuth, async (req, res) => {
     }
 
     // Check if NewsAPI key is configured
+    console.log(`[News API] NEWS_API_KEY configured: ${NEWS_API_KEY ? 'YES' : 'NO'}`);
     if (!NEWS_API_KEY) {
       console.warn('NEWS_API_KEY not configured, returning empty news array');
       return res.json({
@@ -100,6 +104,7 @@ newsRouter.get('/', requireAuth, async (req, res) => {
     newsApiUrl.searchParams.set('apiKey', NEWS_API_KEY);
 
     // Fetch news from NewsAPI
+    console.log(`[News API] Making request to: ${newsApiUrl.toString().replace(NEWS_API_KEY, '***')}`);
     const response = await fetch(newsApiUrl.toString());
     
     if (!response.ok) {
@@ -120,6 +125,7 @@ newsRouter.get('/', requireAuth, async (req, res) => {
     }
 
     const newsData = await response.json();
+    console.log(`[News API] Received ${newsData.articles?.length || 0} articles from NewsAPI`);
 
     // Filter and format news articles
     const formattedNews = (newsData.articles || [])
