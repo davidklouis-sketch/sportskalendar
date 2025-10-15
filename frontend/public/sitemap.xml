@@ -9,7 +9,7 @@
   <!-- Homepage -->
   <url>
     <loc>https://sportskalendar.de/</loc>
-    <lastmod>2025-01-01T00:00:00+00:00</lastmod>
+    <lastmod>2024-10-15T00:00:00+00:00</lastmod>
     <changefreq>daily</changefreq>
     <priority>1.0</priority>
     <mobile:mobile/>
@@ -18,7 +18,7 @@
   <!-- Calendar Page -->
   <url>
     <loc>https://sportskalendar.de/calendar</loc>
-    <lastmod>2025-01-01T00:00:00+00:00</lastmod>
+    <lastmod>2024-10-15T00:00:00+00:00</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.9</priority>
     <mobile:mobile/>
@@ -27,7 +27,16 @@
   <!-- Live Page -->
   <url>
     <loc>https://sportskalendar.de/live</loc>
-    <lastmod>2025-01-01T00:00:00+00:00</lastmod>
+    <lastmod>2024-10-15T00:00:00+00:00</lastmod>
+    <changefreq>hourly</changefreq>
+    <priority>0.9</priority>
+    <mobile:mobile/>
+  </url>
+  
+  <!-- News Page -->
+  <url>
+    <loc>https://sportskalendar.de/news</loc>
+    <lastmod>2024-10-15T00:00:00+00:00</lastmod>
     <changefreq>hourly</changefreq>
     <priority>0.9</priority>
     <mobile:mobile/>
@@ -36,7 +45,7 @@
   <!-- Highlights Page -->
   <url>
     <loc>https://sportskalendar.de/highlights</loc>
-    <lastmod>2025-01-01T00:00:00+00:00</lastmod>
+    <lastmod>2024-10-15T00:00:00+00:00</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.8</priority>
     <mobile:mobile/>
@@ -45,7 +54,7 @@
   <!-- Premium Page -->
   <url>
     <loc>https://sportskalendar.de/premium</loc>
-    <lastmod>2025-01-01T00:00:00+00:00</lastmod>
+    <lastmod>2024-10-15T00:00:00+00:00</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
     <mobile:mobile/>
@@ -54,7 +63,7 @@
   <!-- Privacy Page -->
   <url>
     <loc>https://sportskalendar.de/privacy</loc>
-    <lastmod>2025-01-01T00:00:00+00:00</lastmod>
+    <lastmod>2024-10-15T00:00:00+00:00</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.5</priority>
     <mobile:mobile/>
@@ -63,7 +72,7 @@
   <!-- Contact Page -->
   <url>
     <loc>https://sportskalendar.de/contact</loc>
-    <lastmod>2025-01-01T00:00:00+00:00</lastmod>
+    <lastmod>2024-10-15T00:00:00+00:00</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.5</priority>
     <mobile:mobile/>
