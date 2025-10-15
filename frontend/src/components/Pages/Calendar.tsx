@@ -590,11 +590,14 @@ export function Calendar() {
 
   // Load user teams and events on mount - with ref to prevent loops
   const lastTeamsLengthRef = useRef<number>(0);
+  const lastTeamsHashRef = useRef<string>('');
   
   useEffect(() => {
     const teams = user?.selectedTeams || [];
-    // PERFORMANCE FIX: Use simple length check instead of JSON.stringify
     const teamsLength = teams.length;
+    
+    // Create a simple hash of teams to detect actual changes
+    const teamsHash = teams.map(t => `${t.sport}-${t.teamName}`).join(',');
     
     if (teamsLength > 0) {
       // Always update local teams state
@@ -604,8 +607,11 @@ export function Calendar() {
       const hasEvents = footballEvents.length > 0 || f1Events.length > 0 || nbaEvents.length > 0 || 
                        nflEvents.length > 0 || nhlEvents.length > 0 || mlbEvents.length > 0 || tennisEvents.length > 0;
       
-      if (lastTeamsLengthRef.current !== teamsLength || !hasEvents) {
+      const teamsChanged = lastTeamsLengthRef.current !== teamsLength || lastTeamsHashRef.current !== teamsHash;
+      
+      if (teamsChanged || !hasEvents) {
         lastTeamsLengthRef.current = teamsLength;
+        lastTeamsHashRef.current = teamsHash;
         
         // Auto-select first sport if not selected
         if (!selectedSport) {
@@ -619,6 +625,7 @@ export function Calendar() {
       }
     } else {
       lastTeamsLengthRef.current = 0;
+      lastTeamsHashRef.current = '';
       setLocalTeams([]);
       // No teams = stop loading immediately
       setIsLoading(false);
@@ -630,16 +637,16 @@ export function Calendar() {
       setMlbEvents([]);
       setTennisEvents([]);
     }
-  }, [user?.selectedTeams?.length]); // Nur Länge der Teams als Dependency um Infinite Loops zu vermeiden
+  }, [user?.selectedTeams?.length, user?.selectedTeams]); // Include both length and content for proper change detection
 
-  // Load highlights when sport selection changes
+  // Load highlights when sport selection changes - but only if we have teams
   useEffect(() => {
-    if (selectedSport) {
+    if (selectedSport && localTeams.length > 0) {
       loadHighlights();
     }
-  }, [selectedSport]); // Nur selectedSport als Dependency um Infinite Loops zu vermeiden
+  }, [selectedSport, localTeams.length]); // Only load if sport changes AND we have teams
 
-  // Initialize selectedSportTab based on user's first team
+  // Initialize selectedSportTab based on user's first team - but only once
   useEffect(() => {
     if (user?.selectedTeams?.length && selectedSportTab === 'football') {
       const firstSport = user.selectedTeams[0].sport as 'football' | 'nfl' | 'f1' | 'nba' | 'nhl' | 'mlb' | 'tennis';
@@ -647,15 +654,11 @@ export function Calendar() {
         setSelectedSportTab(firstSport);
       }
     }
-  }, [user?.selectedTeams]); // Only user teams as dependency to avoid infinite loop
+  }, [user?.selectedTeams?.length]); // Only trigger when teams count changes, not content
 
-  // Sync selectedSport with selectedSportTab for highlights consistency
-  useEffect(() => {
-    if (selectedSportTab && selectedSport !== selectedSportTab) {
-      // Update selectedSport to match selectedSportTab for highlights
-      setSelectedSport(selectedSportTab);
-    }
-  }, [selectedSportTab]); // Only selectedSportTab as dependency to avoid infinite loops
+  // PERFORMANCE FIX: Removed this useEffect to prevent infinite loops
+  // selectedSport and selectedSportTab are now managed independently
+  // This was causing the hanging issue
 
   // Load teams from API when modal opens
   const loadTeamsFromApi = useCallback(async () => {
@@ -690,28 +693,12 @@ export function Calendar() {
     }
   }, [showTeamSelector]); // Nur showTeamSelector als Dependency um Infinite Loops zu vermeiden
 
-  // Update next event when events change or user teams change
-  useEffect(() => {
-    if (!isLoading) {
-      findNextEvent();
-    }
-  }, [isLoading]); // Nur isLoading als Dependency um Infinite Loops zu vermeiden
+  // PERFORMANCE FIX: findNextEvent is now called directly in loadAllEvents
+  // No need for separate useEffect that could cause infinite loops
 
-  // Force load events if we have teams but no events after 2 seconds
-  useEffect(() => {
-    if (localTeams.length > 0) {
-      const hasEvents = footballEvents.length > 0 || f1Events.length > 0 || nbaEvents.length > 0 || 
-                       nflEvents.length > 0 || nhlEvents.length > 0 || mlbEvents.length > 0 || tennisEvents.length > 0;
-      
-      if (!hasEvents && !isLoading) {
-        const timer = setTimeout(() => {
-          loadAllEvents(localTeams);
-        }, 2000); // Wait 2 seconds then force load
-        
-        return () => clearTimeout(timer);
-      }
-    }
-  }, [localTeams.length, isLoading]); // Reduzierte Dependencies um Infinite Loops zu vermeiden
+  // CRITICAL FIX: Remove this useEffect to prevent infinite loops
+  // The main useEffect already handles loading events when teams change
+  // This was causing the hanging issue
 
   const handleAddTeam = async (sport: string, teamName: string, teamId?: string, leagueId?: number) => {
     if (!user) return;
