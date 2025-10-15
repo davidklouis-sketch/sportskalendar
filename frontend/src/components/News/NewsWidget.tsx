@@ -5,7 +5,7 @@
  * Shows a preview of the latest sports news for selected teams.
  */
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useAuthStore } from '../../store/useAuthStore';
 import { newsApi } from '../../lib/api';
 
@@ -36,37 +36,88 @@ export function NewsWidget({
   const { user } = useAuthStore();
   const [news, setNews] = useState<NewsArticle[]>([]);
   const [isLoading, setIsLoading] = useState(false);
+  const lastLoadTime = useRef<number>(0);
+  const retryTimeoutRef = useRef<number | null>(null);
 
-  // Load news when component mounts
+  // Load news function
+  const loadNews = async () => {
+    if (!user?.selectedTeams || user.selectedTeams.length === 0) {
+      return;
+    }
+
+    // Prevent too frequent requests (minimum 30 seconds between requests)
+    const now = Date.now();
+    if (now - lastLoadTime.current < 30000) {
+      console.log('[News Widget] Skipping load - too frequent requests');
+      return;
+    }
+
+    setIsLoading(true);
+    lastLoadTime.current = now;
+
+    try {
+      // Add timeout to prevent hanging
+      const timeoutPromise = new Promise((_, reject) => {
+        setTimeout(() => reject(new Error('News request timeout')), 8000);
+      });
+      
+      const response = await Promise.race([
+        newsApi.getNews(user.selectedTeams),
+        timeoutPromise
+      ]) as any;
+      const newsData = response.data.news || [];
+      setNews(newsData.slice(0, maxArticles));
+    } catch (error) {
+      console.error('Failed to load news widget:', error);
+      
+      // Handle rate limiting gracefully
+      if ((error as any).response?.status === 429) {
+        console.log('[News Widget] Rate limit exceeded, will retry later');
+      }
+      
+      setNews([]);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // Load news when component mounts or teams change
   useEffect(() => {
-    const loadNews = async () => {
-      if (!user?.selectedTeams || user.selectedTeams.length === 0) {
-        return;
-      }
+    loadNews();
+  }, [user?.selectedTeams, maxArticles]);
 
-      setIsLoading(true);
+  // Set up retry mechanism only once
+  useEffect(() => {
+    if (!user?.selectedTeams || user.selectedTeams.length === 0) {
+      return;
+    }
 
-      try {
-        // Add timeout to prevent hanging
-        const timeoutPromise = new Promise((_, reject) => {
-          setTimeout(() => reject(new Error('News request timeout')), 8000);
+    // Clear any existing timeout
+    if (retryTimeoutRef.current) {
+      clearTimeout(retryTimeoutRef.current);
+    }
+
+    // Set up retry after 5 minutes if no news
+    const scheduleRetry = () => {
+      retryTimeoutRef.current = setTimeout(() => {
+        setNews(currentNews => {
+          if (currentNews.length === 0 && !isLoading) {
+            console.log('[News Widget] Retrying news load after timeout...');
+            loadNews();
+          }
+          return currentNews;
         });
-        
-        const response = await Promise.race([
-          newsApi.getNews(user.selectedTeams),
-          timeoutPromise
-        ]) as any;
-        const newsData = response.data.news || [];
-        setNews(newsData.slice(0, maxArticles));
-      } catch (error) {
-        console.error('Failed to load news widget:', error);
-        setNews([]);
-      } finally {
-        setIsLoading(false);
-      }
+        scheduleRetry(); // Schedule next retry
+      }, 5 * 60 * 1000); // 5 minutes
     };
 
-    loadNews();
+    scheduleRetry();
+
+    return () => {
+      if (retryTimeoutRef.current) {
+        clearTimeout(retryTimeoutRef.current);
+      }
+    };
   }, [user?.selectedTeams, maxArticles]);
 
   // Format published date
@@ -101,21 +152,26 @@ export function NewsWidget({
   return (
     <div className={`bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 ${className}`}>
       {/* Header */}
-      <div className="p-4 border-b border-gray-200 dark:border-gray-700">
+      <div className="p-6 border-b border-gray-200 dark:border-gray-700">
         <div className="flex items-center justify-between">
           <div className="flex items-center">
-            <div className="p-1.5 bg-blue-100 dark:bg-blue-900/30 rounded-lg">
-              <span className="text-lg">📰</span>
+            <div className="p-2 bg-gradient-to-br from-blue-500 to-purple-600 rounded-xl">
+              <span className="text-lg text-white">📰</span>
             </div>
-            <h3 className="text-lg font-semibold text-gray-900 dark:text-white ml-2">
-              Aktuelle News
-            </h3>
+            <div className="ml-3">
+              <h3 className="text-lg font-bold text-gray-900 dark:text-white">
+                Aktuelle News
+              </h3>
+              <p className="text-xs text-gray-500 dark:text-gray-400">
+                Für deine Teams
+              </p>
+            </div>
           </div>
           
           {showViewAll && onViewAll && (
             <button
               onClick={onViewAll}
-              className="text-sm text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 font-medium"
+              className="text-sm text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 font-medium transition-colors"
             >
               Alle anzeigen
             </button>
@@ -124,7 +180,7 @@ export function NewsWidget({
       </div>
 
       {/* Content */}
-      <div className="p-4">
+      <div className="p-6">
         {isLoading && (
           <div className="flex items-center justify-center py-8">
             <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600"></div>
@@ -133,24 +189,32 @@ export function NewsWidget({
         )}
 
         {!isLoading && news.length === 0 && (
-          <div className="text-center py-6">
-            <div className="text-3xl mb-2">📰</div>
-            <p className="text-sm text-gray-600 dark:text-gray-400">
+          <div className="text-center py-8">
+            <div className="w-16 h-16 mx-auto mb-4 bg-gradient-to-br from-blue-500 to-purple-600 rounded-2xl flex items-center justify-center">
+              <span className="text-2xl text-white">📰</span>
+            </div>
+            <h4 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">
               Keine aktuellen Nachrichten
+            </h4>
+            <p className="text-sm text-gray-600 dark:text-gray-400 mb-3">
+              Es sind momentan keine neuen Nachrichten für deine Teams verfügbar.
+            </p>
+            <p className="text-xs text-gray-500 dark:text-gray-500">
+              Die News werden regelmäßig aktualisiert
             </p>
           </div>
         )}
 
         {!isLoading && news.length > 0 && (
-          <div className="space-y-3">
+          <div className="space-y-4">
             {news.map((article) => (
               <article
                 key={article.id}
-                className="group cursor-pointer flex gap-3 p-2 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors"
+                className="group cursor-pointer flex gap-4 p-4 rounded-xl bg-gray-50 dark:bg-gray-700/30 hover:bg-gray-100 dark:hover:bg-gray-700/50 transition-all duration-200 hover:shadow-md"
                 onClick={() => handleArticleClick(article.url)}
               >
                 {/* Article Image */}
-                <div className="flex-shrink-0 w-16 h-16 bg-gray-200 dark:bg-gray-600 rounded-lg overflow-hidden">
+                <div className="flex-shrink-0 w-20 h-20 bg-gradient-to-br from-blue-500 to-purple-600 rounded-xl overflow-hidden">
                   {article.imageUrl ? (
                     <img
                       src={article.imageUrl}
@@ -163,21 +227,23 @@ export function NewsWidget({
                     />
                   ) : (
                     <div className="w-full h-full flex items-center justify-center">
-                      <span className="text-lg text-gray-400 dark:text-gray-500">📰</span>
+                      <span className="text-2xl text-white">📰</span>
                     </div>
                   )}
                 </div>
 
                 {/* Article Content */}
                 <div className="flex-1 min-w-0">
-                  <h4 className="font-medium text-gray-900 dark:text-white text-sm line-clamp-2 mb-1 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
+                  <h4 className="font-semibold text-gray-900 dark:text-white text-sm line-clamp-2 mb-2 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
                     {article.title}
                   </h4>
                   
                   <div className="flex items-center gap-2 text-xs text-gray-500 dark:text-gray-400">
-                    <span>{formatPublishedDate(article.publishedAt)}</span>
+                    <span className="bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 px-2 py-1 rounded-full font-medium">
+                      {article.source}
+                    </span>
                     <span>•</span>
-                    <span className="truncate">{article.source}</span>
+                    <span>{formatPublishedDate(article.publishedAt)}</span>
                   </div>
                 </div>
               </article>

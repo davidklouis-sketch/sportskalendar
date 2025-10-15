@@ -148,8 +148,8 @@ export function News({ className = '' }: NewsPageProps) {
       <div className="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
         <div className="max-w-7xl mx-auto px-4 py-8">
           <div className="flex items-center mb-6">
-            <div className="p-3 bg-blue-100 dark:bg-blue-900/30 rounded-2xl">
-              <span className="text-3xl">📰</span>
+            <div className="p-4 bg-gradient-to-br from-blue-500 to-purple-600 rounded-3xl">
+              <span className="text-3xl text-white">📰</span>
             </div>
             <div className="ml-4">
               <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
@@ -227,16 +227,28 @@ export function News({ className = '' }: NewsPageProps) {
 
         {!isLoading && !error && filteredNews.length === 0 && (
           <div className="text-center py-16">
-            <div className="text-6xl mb-4">🔍</div>
+            <div className="w-32 h-32 mx-auto mb-6 bg-gradient-to-br from-blue-500 to-purple-600 rounded-3xl flex items-center justify-center">
+              <span className="text-6xl text-white">
+                {searchTerm || selectedSource !== 'all' ? '🔍' : '📰'}
+              </span>
+            </div>
             <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">
               {searchTerm || selectedSource !== 'all' ? 'Keine Ergebnisse' : 'Keine aktuellen Nachrichten'}
             </h2>
-            <p className="text-gray-600 dark:text-gray-400">
+            <p className="text-gray-600 dark:text-gray-400 mb-6 max-w-md mx-auto">
               {searchTerm || selectedSource !== 'all' 
                 ? 'Versuche andere Suchbegriffe oder Filter.'
                 : 'Es sind momentan keine neuen Nachrichten für deine Teams verfügbar.'
               }
             </p>
+            <div className="bg-blue-50 dark:bg-blue-900/20 rounded-xl p-4 max-w-md mx-auto">
+              <p className="text-sm text-blue-700 dark:text-blue-300">
+                💡 {searchTerm || selectedSource !== 'all' 
+                  ? 'Verwende allgemeinere Suchbegriffe oder entferne Filter.'
+                  : 'Die News werden regelmäßig aktualisiert. Versuche es später erneut.'
+                }
+              </p>
+            </div>
           </div>
         )}
 
