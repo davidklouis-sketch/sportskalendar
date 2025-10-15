@@ -176,7 +176,7 @@ function AppContent() {
       sportTypes,
       upcomingEvents: 0 // Could be calculated from actual events
     };
-  }, [user?.selectedTeams?.length]); // Only depend on length to prevent array comparison issues
+  }, [user?.selectedTeams]); // Use full array to match React Compiler expectations
 
   useEffect(() => {
     updateSEO(currentPage, user, dynamicContent);
