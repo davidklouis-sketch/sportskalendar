@@ -1,7 +1,7 @@
 import { SEOHead } from './SEOHead';
 
 interface PageSEOProps {
-  page: 'calendar' | 'live' | 'highlights' | 'settings' | 'premium' | 'privacy' | 'contact' | 'admin' | 'calendar-sync';
+  page: 'calendar' | 'live' | 'highlights' | 'news' | 'settings' | 'premium' | 'privacy' | 'contact' | 'admin' | 'calendar-sync';
   user?: any;
 }
 
@@ -58,6 +58,24 @@ export function PageSEO({ page, user }: PageSEOProps) {
           '@type': 'VideoObject',
           'name': 'Sport Highlights',
           'description': 'Sammlung der besten Sportmomente und Highlights'
+        }
+      }
+    },
+    news: {
+      title: 'Sport-Nachrichten - Sportskalendar | Aktuelle News',
+      description: 'Bleib auf dem Laufenden mit aktuellen Sport-Nachrichten. News zu deinen Teams aus Bundesliga, NFL, F1 und mehr - alles an einem Ort!',
+      keywords: 'Sport News, Bundesliga News, NFL News, F1 News, Sport Nachrichten, Fußball News, Live News',
+      canonical: 'https://sportskalendar.de/news',
+      structuredData: {
+        '@context': 'https://schema.org',
+        '@type': 'WebPage',
+        'name': 'Sport-Nachrichten',
+        'description': 'Aktuelle Nachrichten aus der Sportwelt',
+        'url': 'https://sportskalendar.de/news',
+        'mainEntity': {
+          '@type': 'NewsArticle',
+          'name': 'Sport News',
+          'description': 'Sammlung aktueller Sportnachrichten'
         }
       }
     },

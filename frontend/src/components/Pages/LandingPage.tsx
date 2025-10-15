@@ -5,7 +5,7 @@ import { SportsKalendarBanner, SportsKalendarLeaderboard } from '../Ads/AdManage
 interface LandingPageProps {
   onShowLogin: () => void;
   onShowRegister: () => void;
-  onNavigate: (page: 'calendar' | 'live' | 'highlights' | 'premium' | 'admin' | 'settings' | 'calendar-sync' | 'privacy' | 'contact') => void;
+  onNavigate: (page: 'calendar' | 'live' | 'highlights' | 'news' | 'premium' | 'admin' | 'settings' | 'calendar-sync' | 'privacy' | 'contact') => void;
 }
 
 export function LandingPage({ onShowLogin, onShowRegister, onNavigate }: LandingPageProps) {

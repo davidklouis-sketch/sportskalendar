@@ -6,7 +6,7 @@ import { t, getCurrentLanguage } from '../../lib/i18n';
 import { useLanguage } from '../../hooks/useLanguage';
 
 interface PremiumProps {
-  onNavigate: (page: 'calendar' | 'live' | 'highlights' | 'premium' | 'admin' | 'settings' | 'privacy' | 'contact') => void;
+  onNavigate: (page: 'calendar' | 'live' | 'highlights' | 'news' | 'premium' | 'admin' | 'settings' | 'calendar-sync' | 'privacy' | 'contact') => void;
 }
 
 export function Premium({ }: PremiumProps) {
