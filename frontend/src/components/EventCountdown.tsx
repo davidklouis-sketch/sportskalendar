@@ -131,100 +131,93 @@ export function EventCountdown({ eventTitle, eventDate, sport, compact = false }
   }
 
   return (
-    <div className="relative group">
-      <div className={`absolute -inset-1 bg-gradient-to-r ${getSportColor(sport)} rounded-3xl blur opacity-75 group-hover:opacity-100 transition duration-1000`}></div>
-      <div className="relative bg-white dark:bg-gray-800 rounded-3xl shadow-2xl overflow-hidden">
-        <div className="p-6">
-          {/* Header */}
-          <div className="flex items-center justify-between mb-6">
-            <div className="flex items-center space-x-3">
-              <div className={`w-12 h-12 bg-gradient-to-r ${getSportColor(sport)} rounded-2xl flex items-center justify-center`}>
-                <span className="text-2xl">{getSportIcon(sport)}</span>
-              </div>
-              <div>
-                <h3 className="text-lg font-bold text-gray-900 dark:text-white">Nächstes Event</h3>
-                <p className="text-sm text-gray-500 dark:text-gray-400">
-                  {format(new Date(eventDate), 'dd. MMM yyyy, HH:mm', { locale: de })} Uhr
-                </p>
-              </div>
-            </div>
-            {timeRemaining.isLive && (
-              <div className="flex items-center space-x-2 text-red-500 animate-pulse">
-                <div className="w-3 h-3 bg-red-500 rounded-full"></div>
-                <span className="text-sm font-bold">LIVE</span>
-              </div>
-            )}
+    <div className="bg-gradient-to-br from-emerald-500 to-green-600 rounded-xl shadow-sm border border-emerald-600">
+      <div className="p-5">
+        {/* Header */}
+        <div className="flex items-center gap-2 mb-4">
+          <span className="text-2xl">{getSportIcon(sport)}</span>
+          <div className="flex-1">
+            <h3 className="text-sm font-semibold text-white">Nächstes Event</h3>
+            <p className="text-xs text-emerald-100">
+              {format(new Date(eventDate), 'dd. MMM yyyy, HH:mm', { locale: de })} Uhr
+            </p>
           </div>
-
-          {/* Event Title */}
-          <div className="mb-6">
-            <h4 className="text-xl font-semibold text-gray-900 dark:text-white line-clamp-2">
-              {eventTitle}
-            </h4>
-          </div>
-
-          {/* Countdown */}
-          {!timeRemaining.isLive && !timeRemaining.isPast && (
-            <div className="grid grid-cols-4 gap-3">
-              {/* Days */}
-              <div className="bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-700 dark:to-gray-600 rounded-xl p-4 text-center flex flex-col justify-center items-center min-h-[80px]">
-                <div className="text-3xl font-bold text-gray-900 dark:text-white mb-2 leading-none">
-                  {String(timeRemaining.days).padStart(2, '0')}
-                </div>
-                <div className="text-xs text-gray-500 dark:text-gray-400 uppercase font-semibold tracking-wide">
-                  Tage
-                </div>
-              </div>
-
-              {/* Hours */}
-              <div className="bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-700 dark:to-gray-600 rounded-xl p-4 text-center flex flex-col justify-center items-center min-h-[80px]">
-                <div className="text-3xl font-bold text-gray-900 dark:text-white mb-2 leading-none">
-                  {String(timeRemaining.hours).padStart(2, '0')}
-                </div>
-                <div className="text-xs text-gray-500 dark:text-gray-400 uppercase font-semibold tracking-wide">
-                  Stunden
-                </div>
-              </div>
-
-              {/* Minutes */}
-              <div className="bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-700 dark:to-gray-600 rounded-xl p-4 text-center flex flex-col justify-center items-center min-h-[80px]">
-                <div className="text-3xl font-bold text-gray-900 dark:text-white mb-2 leading-none">
-                  {String(timeRemaining.minutes).padStart(2, '0')}
-                </div>
-                <div className="text-xs text-gray-500 dark:text-gray-400 uppercase font-semibold tracking-wide">
-                  Minuten
-                </div>
-              </div>
-
-              {/* Seconds */}
-              <div className="bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-700 dark:to-gray-600 rounded-xl p-4 text-center flex flex-col justify-center items-center min-h-[80px]">
-                <div className="text-3xl font-bold text-gray-900 dark:text-white mb-2 leading-none">
-                  {String(timeRemaining.seconds).padStart(2, '0')}
-                </div>
-                <div className="text-xs text-gray-500 dark:text-gray-400 uppercase font-semibold tracking-wide">
-                  Sekunden
-                </div>
-              </div>
-            </div>
-          )}
-
-          {/* Live Status */}
           {timeRemaining.isLive && (
-            <div className="text-center py-8">
-              <div className="inline-flex items-center space-x-3 px-6 py-3 bg-red-500 rounded-2xl">
-                <div className="w-3 h-3 bg-white rounded-full animate-pulse"></div>
-                <span className="text-white font-bold text-lg">EVENT LÄUFT JETZT!</span>
-              </div>
-            </div>
-          )}
-
-          {/* Past Status */}
-          {timeRemaining.isPast && (
-            <div className="text-center py-4 text-gray-500 dark:text-gray-400">
-              Event ist vorbei
+            <div className="flex items-center gap-1 text-white">
+              <div className="w-2 h-2 bg-white rounded-full animate-pulse"></div>
+              <span className="text-xs font-bold">LIVE</span>
             </div>
           )}
         </div>
+
+        {/* Event Title */}
+        <div className="mb-4">
+          <h4 className="text-base font-semibold text-white line-clamp-2">
+            {eventTitle}
+          </h4>
+        </div>
+
+        {/* Countdown */}
+        {!timeRemaining.isLive && !timeRemaining.isPast && (
+          <div className="grid grid-cols-4 gap-2">
+            {/* Days */}
+            <div className="bg-white/20 backdrop-blur-sm rounded-lg p-3 text-center">
+              <div className="text-2xl font-bold text-white mb-1">
+                {String(timeRemaining.days).padStart(2, '0')}
+              </div>
+              <div className="text-[10px] text-emerald-100 uppercase font-medium">
+                Tage
+              </div>
+            </div>
+
+            {/* Hours */}
+            <div className="bg-white/20 backdrop-blur-sm rounded-lg p-3 text-center">
+              <div className="text-2xl font-bold text-white mb-1">
+                {String(timeRemaining.hours).padStart(2, '0')}
+              </div>
+              <div className="text-[10px] text-emerald-100 uppercase font-medium">
+                Stunden
+              </div>
+            </div>
+
+            {/* Minutes */}
+            <div className="bg-white/20 backdrop-blur-sm rounded-lg p-3 text-center">
+              <div className="text-2xl font-bold text-white mb-1">
+                {String(timeRemaining.minutes).padStart(2, '0')}
+              </div>
+              <div className="text-[10px] text-emerald-100 uppercase font-medium">
+                Minuten
+              </div>
+            </div>
+
+            {/* Seconds */}
+            <div className="bg-white/20 backdrop-blur-sm rounded-lg p-3 text-center">
+              <div className="text-2xl font-bold text-white mb-1">
+                {String(timeRemaining.seconds).padStart(2, '0')}
+              </div>
+              <div className="text-[10px] text-emerald-100 uppercase font-medium">
+                Sekunden
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Live Status */}
+        {timeRemaining.isLive && (
+          <div className="text-center py-4">
+            <div className="inline-flex items-center gap-2 px-4 py-2 bg-white/20 backdrop-blur-sm rounded-lg">
+              <div className="w-2 h-2 bg-white rounded-full animate-pulse"></div>
+              <span className="text-white font-bold text-sm">EVENT LÄUFT JETZT!</span>
+            </div>
+          </div>
+        )}
+
+        {/* Past Status */}
+        {timeRemaining.isPast && (
+          <div className="text-center py-3 text-emerald-100 text-sm">
+            Event ist vorbei
+          </div>
+        )}
       </div>
     </div>
   );
