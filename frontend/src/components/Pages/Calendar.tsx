@@ -603,7 +603,7 @@ export function Calendar() {
   // Load user teams and events on mount - with ref to prevent loops
   const lastTeamsLengthRef = useRef<number>(0);
   const lastTeamsHashRef = useRef<string>('');
-  const debounceTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const debounceTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   
   useEffect(() => {
     const teams = user?.selectedTeams || [];

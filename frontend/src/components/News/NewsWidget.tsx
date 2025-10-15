@@ -55,7 +55,7 @@ export function NewsWidget({
         const response = await Promise.race([
           newsApi.getNews(user.selectedTeams),
           timeoutPromise
-        ]);
+        ]) as any;
         const newsData = response.data.news || [];
         setNews(newsData.slice(0, maxArticles));
       } catch (error) {
