@@ -130,49 +130,57 @@ export const WithCustomClass: Story = {
 };
 
 export const LoadingState: Story = {
-  render: () => {
-    // Mock loading state - use require for synchronous access
-    const { newsApi } = require('../lib/api');
-    vi.mocked(newsApi.getNews).mockImplementation(
-      () => new Promise(() => {}) // Never resolves to simulate loading
-    );
-    
-    return <NewsWidget />;
-  }
+  decorators: [
+    (Story) => {
+      // Mock loading state before rendering
+      const api = require('../lib/api');
+      vi.mocked(api.newsApi.getNews).mockImplementation(
+        () => new Promise(() => {}) // Never resolves to simulate loading
+      );
+      return <Story />;
+    }
+  ],
+  args: {}
 };
 
 export const ErrorState: Story = {
-  render: () => {
-    // Mock error state - use require for synchronous access
-    const { newsApi } = require('../lib/api');
-    vi.mocked(newsApi.getNews).mockRejectedValue(
-      new Error('API Error')
-    );
-    
-    return <NewsWidget />;
-  }
+  decorators: [
+    (Story) => {
+      // Mock error state before rendering
+      const api = require('../lib/api');
+      vi.mocked(api.newsApi.getNews).mockRejectedValue(
+        new Error('API Error')
+      );
+      return <Story />;
+    }
+  ],
+  args: {}
 };
 
 export const NoUser: Story = {
-  render: () => {
-    // Mock no user state - use require for synchronous access
-    const { useAuthStore } = require('../store/useAuthStore');
-    vi.mocked(useAuthStore).mockReturnValue({
-      user: null
-    });
-    
-    return <NewsWidget />;
-  }
+  decorators: [
+    (Story) => {
+      // Mock no user state before rendering
+      const store = require('../store/useAuthStore');
+      vi.mocked(store.useAuthStore).mockReturnValue({
+        user: null
+      });
+      return <Story />;
+    }
+  ],
+  args: {}
 };
 
 export const NoTeams: Story = {
-  render: () => {
-    // Mock user with no teams - use require for synchronous access
-    const { useAuthStore } = require('../store/useAuthStore');
-    vi.mocked(useAuthStore).mockReturnValue({
-      user: { ...mockUser, selectedTeams: [] }
-    });
-    
-    return <NewsWidget />;
-  }
+  decorators: [
+    (Story) => {
+      // Mock user with no teams before rendering
+      const store = require('../store/useAuthStore');
+      vi.mocked(store.useAuthStore).mockReturnValue({
+        user: { ...mockUser, selectedTeams: [] }
+      });
+      return <Story />;
+    }
+  ],
+  args: {}
 };
