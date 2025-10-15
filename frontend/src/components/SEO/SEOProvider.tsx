@@ -48,7 +48,10 @@ export function SEOProvider({ children }: SEOProviderProps) {
     });
 
     if (configHash !== lastConfigHash) {
-      setLastConfigHash(configHash);
+      // Use setTimeout to avoid synchronous setState in effect
+      setTimeout(() => {
+        setLastConfigHash(configHash);
+      }, 0);
     }
   }, [currentConfig, lastConfigHash]);
 
