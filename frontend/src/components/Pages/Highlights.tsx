@@ -45,9 +45,9 @@ export function Highlights() {
       const currentTeam = user?.selectedTeams?.find(t => t.sport === selectedSport);
       // Loading highlights
       
-      // Add timeout to prevent hanging
+      // PERFORMANCE FIX: Reduce timeout to 5 seconds
       const timeoutPromise = new Promise<never>((_, reject) => {
-        setTimeout(() => reject(new Error('Request timeout')), 15000); // 15 second timeout
+        setTimeout(() => reject(new Error('Request timeout')), 5000); // 5 second timeout
       });
       
       const fetchPromise = highlightsApi.getHighlights(sportMapping[selectedSport], currentTeam?.teamName);

@@ -81,7 +81,7 @@ export function Calendar() {
 
   // Load all events separately for better organization
   const loadAllEvents = useCallback(async (teams: Array<{ sport: string; teamName: string; teamId?: string; leagueId?: number }>) => {
-    // Prevent multiple simultaneous loads
+    // PERFORMANCE FIX: Prevent multiple simultaneous loads
     if (isLoadingRef.current) {
       console.log('[Calendar] Already loading, skipping duplicate request');
       return;
@@ -90,6 +90,13 @@ export function Calendar() {
     isLoadingRef.current = true;
     setIsLoading(true);
     console.log('[Calendar] Starting to load events for teams:', teams.length);
+    
+    // PERFORMANCE FIX: Add global timeout to prevent hanging
+    const globalTimeout = setTimeout(() => {
+      console.log('[Calendar] Global timeout reached, stopping load');
+      isLoadingRef.current = false;
+      setIsLoading(false);
+    }, 15000); // 15 second global timeout
     
     try {
       // Reset all events first
@@ -101,8 +108,8 @@ export function Calendar() {
       setMlbEvents([]);
       setTennisEvents([]);
       
-      // PERFORMANCE FIX: Load events sequentially instead of parallel to prevent API overload
-      console.log('[Calendar] Loading events sequentially for better performance...');
+      // PERFORMANCE FIX: Load all events but with proper error handling and timeouts
+      console.log('[Calendar] Loading events for all teams with optimized performance...');
       
       // Load Football Events
       const footballTeams = teams.filter(t => t.sport === 'football');
@@ -116,7 +123,7 @@ export function Calendar() {
           try {
             const leaguesParam = leagues.join(',');
             const controller = new AbortController();
-            const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 second timeout
+            const timeoutId = setTimeout(() => controller.abort(), 2000); // 2 second timeout
             
             const directResponse = await fetch(`/api/sports/football/events?leagues=${leaguesParam}`, {
               signal: controller.signal
@@ -445,8 +452,12 @@ export function Calendar() {
       }
       
     } catch (error) {
+      console.error('[Calendar] Error loading events:', error);
       // Failed to load events
     } finally {
+      // PERFORMANCE FIX: Clear global timeout
+      clearTimeout(globalTimeout);
+      
       setIsLoading(false);
       isLoadingRef.current = false;
       
