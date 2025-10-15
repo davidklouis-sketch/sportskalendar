@@ -5,7 +5,7 @@ import { format } from 'date-fns';
 import { FOOTBALL_LEAGUES, FOOTBALL_TEAMS, F1_DRIVERS, NFL_TEAMS, NBA_TEAMS, NHL_TEAMS, MLB_TEAMS } from '../../data/teams';
 import { LiveData } from '../LiveData';
 import { SportsKalendarBanner, SportsKalendarSquare } from '../Ads/AdManager';
-import { t, getCurrentLanguage } from '../../lib/i18n';
+import { t } from '../../lib/i18n';
 import { useLanguage } from '../../hooks/useLanguage';
 import { EventCountdown } from '../EventCountdown';
 import { NewsWidget } from '../News/NewsWidget';
@@ -474,8 +474,8 @@ export const Calendar = memo(function Calendar({ onNavigate }: CalendarProps = {
                                 alt={highlight.title}
                                 className="w-full h-full object-cover"
                               />
-                              </div>
-                            )}
+                            </div>
+                          )}
                           <h3 className="font-medium text-gray-900 dark:text-white mb-1 line-clamp-2 text-sm">
                             {highlight.title}
                           </h3>
@@ -491,12 +491,11 @@ export const Calendar = memo(function Calendar({ onNavigate }: CalendarProps = {
                                highlight.views >= 1000 ? `${(highlight.views / 1000).toFixed(1)}K` :
                                highlight.views.toString()} views</span>
                             )}
-                          </div>
-                          </a>
-                        ))}
-                      </div>
-                    )}
-                  </div>
+                        </div>
+                        </a>
+                      ))}
+                    </div>
+                  )}
                 </div>
               </div>
             )}
