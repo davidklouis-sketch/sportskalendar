@@ -132,6 +132,9 @@ jobs:
           export STRIPE_PRICE_ID="${{ secrets.STRIPE_PRICE_ID }}"
           export FRONTEND_URL="https://sportskalendar.de"
           
+          # News API configuration
+          export NEWS_API_KEY="${{ secrets.NEWS_API_KEY }}"
+          
           # Email configuration
           export SMTP_HOST="${{ secrets.SMTP_HOST }}"
           export SMTP_PORT="${{ secrets.SMTP_PORT }}"
@@ -156,6 +159,7 @@ jobs:
           echo "STRIPE_SECRET_KEY: ${STRIPE_SECRET_KEY:0:10}..."
           echo "STRIPE_WEBHOOK_SECRET: ${STRIPE_WEBHOOK_SECRET:0:10}..."
           echo "STRIPE_PRICE_ID: ${STRIPE_PRICE_ID}"
+          echo "NEWS_API_KEY: ${NEWS_API_KEY:0:10}..."
           echo "BACKEND_HOST: ${BACKEND_HOST}"
           echo "FRONTEND_HOST: ${FRONTEND_HOST}"
           echo "FRONTEND_URL: ${FRONTEND_URL}"
@@ -163,6 +167,7 @@ jobs:
           if [ -z "$STRIPE_SECRET_KEY" ]; then echo "❌ STRIPE_SECRET_KEY is empty!"; else echo "✅ STRIPE_SECRET_KEY is set"; fi
           if [ -z "$STRIPE_WEBHOOK_SECRET" ]; then echo "❌ STRIPE_WEBHOOK_SECRET is empty!"; else echo "✅ STRIPE_WEBHOOK_SECRET is set"; fi
           if [ -z "$STRIPE_PRICE_ID" ]; then echo "❌ STRIPE_PRICE_ID is empty!"; else echo "✅ STRIPE_PRICE_ID is set"; fi
+          if [ -z "$NEWS_API_KEY" ]; then echo "⚠️ NEWS_API_KEY is empty (news portal will show 'API not configured')"; else echo "✅ NEWS_API_KEY is set"; fi
           
           # Direct environment variable injection
           echo "🔍 Starting services with direct environment variable injection..."
@@ -172,6 +177,7 @@ jobs:
           export STRIPE_WEBHOOK_SECRET="${STRIPE_WEBHOOK_SECRET}"
           export STRIPE_PRICE_ID="${STRIPE_PRICE_ID}"
           export FRONTEND_URL="${FRONTEND_URL}"
+          export NEWS_API_KEY="${NEWS_API_KEY}"
           export SMTP_HOST="${SMTP_HOST}"
           export SMTP_PORT="${SMTP_PORT}"
           export SMTP_USER="${SMTP_USER}"
@@ -181,16 +187,17 @@ jobs:
           # Verify exports
           echo "🔍 Exported variables in shell:"
           env | grep STRIPE | sed 's/=.*/=***/'
+          env | grep NEWS_API_KEY | sed 's/=.*/=***/'
           env | grep SMTP | sed 's/=.*/=***/'
           
           # Create a docker-compose override file that explicitly sets the environment variables
-          printf 'services:\n  backend:\n    environment:\n      - STRIPE_SECRET_KEY=%s\n      - STRIPE_WEBHOOK_SECRET=%s\n      - STRIPE_PRICE_ID=%s\n      - FRONTEND_URL=%s\n      - SMTP_HOST=%s\n      - SMTP_PORT=%s\n      - SMTP_USER=%s\n      - SMTP_PASS=%s\n      - SMTP_USE_SSL=%s\n' \
-            "${STRIPE_SECRET_KEY}" "${STRIPE_WEBHOOK_SECRET}" "${STRIPE_PRICE_ID}" "${FRONTEND_URL}" \
+          printf 'services:\n  backend:\n    environment:\n      - STRIPE_SECRET_KEY=%s\n      - STRIPE_WEBHOOK_SECRET=%s\n      - STRIPE_PRICE_ID=%s\n      - FRONTEND_URL=%s\n      - NEWS_API_KEY=%s\n      - SMTP_HOST=%s\n      - SMTP_PORT=%s\n      - SMTP_USER=%s\n      - SMTP_PASS=%s\n      - SMTP_USE_SSL=%s\n' \
+            "${STRIPE_SECRET_KEY}" "${STRIPE_WEBHOOK_SECRET}" "${STRIPE_PRICE_ID}" "${FRONTEND_URL}" "${NEWS_API_KEY}" \
             "${SMTP_HOST}" "${SMTP_PORT}" "${SMTP_USER}" "${SMTP_PASS}" "${SMTP_USE_SSL}" \
             > docker-compose.override.yml
           
           echo "🔍 Created docker-compose.override.yml"
-          cat docker-compose.override.yml | sed 's/STRIPE_[^=]*=.*/STRIPE_***=***/' | sed 's/FRONTEND_URL=.*/FRONTEND_URL=***/' | sed 's/SMTP_[^=]*=.*/SMTP_***=***/'
+          cat docker-compose.override.yml | sed 's/STRIPE_[^=]*=.*/STRIPE_***=***/' | sed 's/NEWS_API_KEY=.*/NEWS_API_KEY=***/' | sed 's/FRONTEND_URL=.*/FRONTEND_URL=***/' | sed 's/SMTP_[^=]*=.*/SMTP_***=***/'
           
           # Start services with base config, .env.production, AND override
           docker compose -f docker-compose.traefik.yml -f docker-compose.override.yml --env-file .env.production up -d --force-recreate

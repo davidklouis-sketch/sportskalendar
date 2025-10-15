@@ -8,6 +8,7 @@ import { SportsKalendarBanner, SportsKalendarSquare } from '../Ads/AdManager';
 import { t, getCurrentLanguage } from '../../lib/i18n';
 import { useLanguage } from '../../hooks/useLanguage';
 import { EventCountdown } from '../EventCountdown';
+import { NewsWidget } from '../News/NewsWidget';
 
 interface Event {
   id: string;
@@ -939,6 +940,17 @@ export function Calendar() {
                 </div>
               </div>
             </div>
+
+            {/* News Widget */}
+            <NewsWidget 
+              className="mt-6"
+              maxArticles={3}
+              showViewAll={true}
+              onViewAll={() => {
+                // TODO: Navigate to full news page when implemented
+                console.log('Navigate to full news page');
+              }}
+            />
             </div>
 
           {/* Main Content */}

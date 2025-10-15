@@ -362,3 +362,22 @@ export const sportsApi = {
   // MLB Teams abrufen
   getMLBTeams: () => api.get('/sports/mlb/teams'),
 };
+
+/**
+ * NEWS API
+ * 
+ * Sport-Nachrichten Endpoints basierend auf ausgewählten Teams.
+ */
+export const newsApi = {
+  // News für ausgewählte Teams abrufen
+  getNews: (selectedTeams: Array<{ sport: string; teamName: string; teamId?: string; leagueId?: number }>) => {
+    const params = new URLSearchParams();
+    selectedTeams.forEach(team => {
+      params.append('selectedTeams', JSON.stringify(team));
+    });
+    return api.get(`/news?${params.toString()}`);
+  },
+  
+  // Verfügbare News-Quellen abrufen
+  getSources: () => api.get('/news/sources'),
+};

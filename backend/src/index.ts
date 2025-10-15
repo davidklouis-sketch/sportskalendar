@@ -47,6 +47,7 @@ import { liveRouter } from './routes/live';
 import { stripeRouter, handleStripeWebhook } from './routes/stripe';
 import sportsRouter from './routes/sports';
 import { calendarSyncRouter } from './routes/calendar-sync';
+import { newsRouter } from './routes/news';
 
 // Middleware imports
 import { enhancedSecurityMiddleware, validateJwtSecret } from './middleware/security-enhanced';
@@ -276,7 +277,8 @@ app.get('/api/health', (req, res) => {
       '/api/live',
       '/api/sports',
       '/api/stripe',
-      '/api/calendar-sync'
+      '/api/calendar-sync',
+      '/api/news'
     ]
   });
 });
@@ -361,6 +363,7 @@ app.use('/api/live', liveRouter);
 app.use('/api/stripe', stripeRouter);
 app.use('/api/sports', sportsRouter); // TheSportsDB API für Basketball, Hockey, Baseball, Tennis, etc.
 app.use('/api/calendar-sync', calendarSyncRouter); // Calendar Sync für Premium Nutzer
+app.use('/api/news', newsRouter); // News API für Sport-Nachrichten
 
 /**
  * PROTECTED ENDPOINT EXAMPLE

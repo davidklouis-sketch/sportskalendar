@@ -217,14 +217,17 @@ Get it: https://account.microsoft.com/security → Advanced security → App pas
 
 ---
 
-### 🔧 Optional Secrets
+### 📰 Sports News API
 
 ```
 NEWS_API_KEY
 Value: <Your API key>
-Description: News API for sports news
-Required: ❌ Optional
+Description: NewsAPI.org key for sports news and team-specific filtering
+Required: ⚠️ Optional (News portal works without it, but shows "API not configured")
 Get it: https://newsapi.org/register
+Free Tier: 1000 requests/month
+Cost: $449/month for 250,000 requests
+Features: Real-time sports news from Kicker, Sport1, ESPN, BBC Sport, etc.
 ```
 
 ```
@@ -249,8 +252,12 @@ Required: ❌ Optional (defaults to 'info')
 8. `THESPORTSDB_API_KEY` (use `3` for free)
 9. `SMTP_USER` and `SMTP_PASS` (for email functionality)
 
+### News Portal Setup (Optional but Recommended)
+10. `NEWS_API_KEY` (for personalized sports news)
+
 ### Full Setup (All Features)
 - All secrets from Minimal Setup
+- All secrets from News Portal Setup
 - `STRIPE_SECRET_KEY`
 - `STRIPE_WEBHOOK_SECRET`
 - `STRIPE_PRICE_ID`
