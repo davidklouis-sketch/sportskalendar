@@ -95,19 +95,6 @@ export function EventCountdown({ eventTitle, eventDate, sport, compact = false }
     }
   };
 
-  const getSportColor = (sport: string) => {
-    switch (sport) {
-      case 'football': return 'from-emerald-500 to-green-600';
-      case 'nfl': return 'from-orange-500 to-red-600';
-      case 'f1': return 'from-red-500 to-pink-600';
-      case 'nba': return 'from-orange-500 to-orange-600';
-      case 'nhl': return 'from-blue-500 to-cyan-600';
-      case 'mlb': return 'from-blue-600 to-indigo-600';
-      case 'tennis': return 'from-green-600 to-teal-600';
-      default: return 'from-blue-500 to-indigo-600';
-    }
-  };
-
   if (compact) {
     if (timeRemaining.isLive) {
       return (
