@@ -627,14 +627,14 @@ export function Calendar() {
         clearTimeout(debounceTimeoutRef.current);
       }
     };
-  }, [user?.selectedTeams?.length, user?.selectedTeams]); // Include both length and content for proper change detection
+  }, [user?.selectedTeams?.length]); // Only trigger when teams count changes to prevent infinite loops
 
   // Load highlights when sport selection changes - but only if we have teams
   useEffect(() => {
     if (selectedSport && localTeams.length > 0) {
       loadHighlights();
     }
-  }, [selectedSport, localTeams.length]); // Only load if sport changes AND we have teams
+  }, [selectedSport]); // Only trigger when sport changes to prevent infinite loops
 
   // Initialize selectedSportTab based on user's first team - but only once
   useEffect(() => {
