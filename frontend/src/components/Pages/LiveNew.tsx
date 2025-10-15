@@ -21,7 +21,10 @@ export const Live = memo(function Live() {
   useEffect(() => {
     if (user?.selectedTeams?.length) {
       const firstSport = user.selectedTeams[0].sport as 'football' | 'nfl' | 'f1' | 'nba' | 'nhl' | 'mlb' | 'tennis';
-      setSelectedSport(firstSport);
+      // Use setTimeout to avoid synchronous setState in effect
+      setTimeout(() => {
+        setSelectedSport(firstSport);
+      }, 0);
     }
   }, [user]);
 

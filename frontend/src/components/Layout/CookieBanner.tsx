@@ -11,7 +11,10 @@ export function CookieBanner({ onNavigate }: CookieBannerProps) {
     // Check if user has already given consent
     const consent = localStorage.getItem('cookie-consent');
     if (!consent) {
-      setIsVisible(true);
+      // Use setTimeout to avoid synchronous setState in effect
+      setTimeout(() => {
+        setIsVisible(true);
+      }, 0);
     }
   }, []);
 

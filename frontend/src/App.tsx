@@ -152,7 +152,10 @@ function AppContent() {
       // Nur navigieren wenn es sich um eine Authentifizierung handelt, nicht um normale Navigation
       const isAuthPage = currentPage === 'calendar' || currentPage === 'live' || currentPage === 'highlights' || currentPage === 'settings' || currentPage === 'calendar-sync' || currentPage === 'admin';
       if (!isAuthPage) {
-        setCurrentPage('calendar');
+        // Use setTimeout to avoid synchronous setState in effect
+        setTimeout(() => {
+          setCurrentPage('calendar');
+        }, 0);
       }
     }
   }, [isAuthenticated, user, isInitializing, authView]); // currentPage entfernt um Infinite Loop zu vermeiden
