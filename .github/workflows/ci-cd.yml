@@ -206,21 +206,6 @@ jobs:
           echo "⏳ Waiting for backend to be ready..."
           sleep 30
           
-          # Run email verification migration for existing users
-          echo "📧 Running email verification migration..."
-          echo "🔍 Checking if backend container is running..."
-          docker ps | grep sportskalendar-backend || echo "❌ Backend container not found"
-          
-          echo "🔍 Checking database connection in backend container..."
-          docker exec sportskalendar-backend node -e "
-            require('dotenv').config();
-            console.log('DATABASE_URL configured:', !!process.env.DATABASE_URL);
-            console.log('DATABASE_URL length:', process.env.DATABASE_URL ? process.env.DATABASE_URL.length : 0);
-          " || echo "❌ Database connection check failed"
-          
-          echo "🔍 Running migration script with detailed output..."
-          docker exec sportskalendar-backend npm run migrate-email-verification 2>&1 || echo "⚠️ Migration failed"
-          
           # Verify the backend container has the environment variables
           echo "🔍 Checking backend container environment:"
           docker exec sportskalendar-backend printenv | grep STRIPE || echo "❌ No STRIPE variables found in container!"
