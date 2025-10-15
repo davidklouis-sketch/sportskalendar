@@ -139,7 +139,7 @@ export function News({ className = '' }: NewsPageProps) {
   // Show message if no teams selected
   if (!user?.selectedTeams || user.selectedTeams.length === 0) {
     return (
-      <div className={`min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-800 ${className}`}>
+      <div className={`min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-800 pt-20 ${className}`}>
         <div className="max-w-7xl mx-auto px-4 py-12">
           <div className="text-center">
             <div className="text-8xl mb-6">📰</div>
@@ -165,7 +165,7 @@ export function News({ className = '' }: NewsPageProps) {
   }
 
   return (
-    <div className={`min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-800 ${className}`}>
+    <div className={`min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-800 pt-20 ${className}`}>
       {/* Header */}
       <div className="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
         <div className="max-w-7xl mx-auto px-4 py-8">
