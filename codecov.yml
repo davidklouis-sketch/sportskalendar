@@ -1,0 +1,33 @@
+coverage:
+  status:
+    project:
+      default:
+        target: 80%
+        threshold: 5%
+    patch:
+      default:
+        target: 70%
+        threshold: 5%
+
+comment:
+  layout: "header,diff,files,footer"
+  behavior: default
+  require_changes: false
+  require_base: no
+  require_head: yes
+
+github_checks:
+  annotations: true
+
+ignore:
+  - "frontend/src/stories/**"
+  - "frontend/src/test/**"
+  - "frontend/.storybook/**"
+  - "**/*.stories.tsx"
+  - "**/*.test.tsx"
+  - "**/*.test.ts"
+  - "**/__tests__/**"
+  - "**/node_modules/**"
+  - "**/dist/**"
+  - "**/build/**"
+  - "**/coverage/**"
