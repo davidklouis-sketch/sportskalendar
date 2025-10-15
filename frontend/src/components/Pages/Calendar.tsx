@@ -585,13 +585,10 @@ export function Calendar() {
         // Always update local teams state
         setLocalTeams(teams);
         
-        // Only load if teams actually changed OR if we don't have events yet
-        const hasEvents = footballEvents.length > 0 || f1Events.length > 0 || nbaEvents.length > 0 || 
-                         nflEvents.length > 0 || nhlEvents.length > 0 || mlbEvents.length > 0 || tennisEvents.length > 0;
-        
+        // Only load if teams actually changed (not on every render)
         const teamsChanged = lastTeamsLengthRef.current !== teamsLength || lastTeamsHashRef.current !== teamsHash;
         
-        if (teamsChanged || !hasEvents) {
+        if (teamsChanged) {
           console.log('[Calendar] Teams changed, loading events...');
           lastTeamsLengthRef.current = teamsLength;
           lastTeamsHashRef.current = teamsHash;
