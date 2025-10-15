@@ -5,7 +5,7 @@
  * Shows a preview of the latest sports news for selected teams.
  */
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, memo } from 'react';
 import { useAuthStore } from '../../store/useAuthStore';
 import { newsApi } from '../../lib/api';
 
@@ -27,7 +27,7 @@ interface NewsWidgetProps {
   onViewAll?: () => void;
 }
 
-export function NewsWidget({ 
+export const NewsWidget = memo(function NewsWidget({ 
   className = '', 
   maxArticles = 3, 
   showViewAll = true,
@@ -253,4 +253,4 @@ export function NewsWidget({
       </div>
     </div>
   );
-}
+});

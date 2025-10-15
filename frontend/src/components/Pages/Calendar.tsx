@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useCallback } from 'react';
+import { useState, useEffect, useRef, useCallback, memo } from 'react';
 import { useAuthStore } from '../../store/useAuthStore';
 import { calendarApi, userApi, highlightsApi, sportsApi } from '../../lib/api';
 import { format } from 'date-fns';
@@ -46,7 +46,7 @@ interface ApiTeam {
   division?: string;
 }
 
-export function Calendar() {
+export const Calendar = memo(function Calendar() {
   const { user, setUser } = useAuthStore();
   useLanguage(); // Trigger re-render on language change
   const [footballEvents, setFootballEvents] = useState<Event[]>([]);
@@ -62,6 +62,7 @@ export function Calendar() {
   const [showTeamSelector, setShowTeamSelector] = useState(false);
   const [selectedSportTab, setSelectedSportTab] = useState<'football' | 'nfl' | 'f1' | 'nba' | 'nhl' | 'mlb' | 'tennis'>('football');
   // Local teams state to ensure UI updates work
+  const debounceTimeoutRef = useRef<number | null>(null);
   const [localTeams, setLocalTeams] = useState<Array<{ sport: string; teamName: string; teamId?: string; leagueId?: number }>>([]);
   // Highlights state
   const [highlights, setHighlights] = useState<Highlight[]>([]);
@@ -80,6 +81,17 @@ export function Calendar() {
   const [nextEvent, setNextEvent] = useState<Event | null>(null);
 
   // Load all events separately for better organization
+  // Debounced version of loadAllEvents to prevent excessive API calls
+  const debouncedLoadAllEvents = useCallback((teams: Array<{ sport: string; teamName: string; teamId?: string; leagueId?: number }>) => {
+    if (debounceTimeoutRef.current) {
+      clearTimeout(debounceTimeoutRef.current);
+    }
+    
+    debounceTimeoutRef.current = setTimeout(() => {
+      loadAllEvents(teams);
+    }, 300); // 300ms debounce
+  }, []);
+
   const loadAllEvents = useCallback(async (teams: Array<{ sport: string; teamName: string; teamId?: string; leagueId?: number }>) => {
     // PERFORMANCE FIX: Prevent multiple simultaneous loads
     if (isLoadingRef.current) {
@@ -96,7 +108,7 @@ export function Calendar() {
       console.log('[Calendar] Global timeout reached, stopping load');
       isLoadingRef.current = false;
       setIsLoading(false);
-    }, 15000); // 15 second global timeout
+    }, 8000); // Reduced to 8 seconds for better performance
     
     try {
       // Reset all events first
@@ -369,11 +381,14 @@ export function Calendar() {
             // Failed to load Tennis events from sports API
           }
           
-          // PERFORMANCE FIX: Simplified filtering
-          const tourNames = tennisTeams.map(t => t.teamName.toLowerCase());
+          // PERFORMANCE FIX: Optimized filtering with early exit
+          const tourNames = new Set(tennisTeams.map(t => t.teamName.toLowerCase()));
           const filteredEvents = events.filter(event => {
             const eventTitle = event.title.toLowerCase();
-            return tourNames.some(tourName => eventTitle.includes(tourName));
+            for (const tourName of tourNames) {
+              if (eventTitle.includes(tourName)) return true;
+            }
+            return false;
           });
           
           setTennisEvents(filteredEvents);
@@ -566,7 +581,6 @@ export function Calendar() {
   // Load user teams and events on mount - with ref to prevent loops
   const lastTeamsLengthRef = useRef<number>(0);
   const lastTeamsHashRef = useRef<string>('');
-  const debounceTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   
   useEffect(() => {
     const teams = user?.selectedTeams || [];
@@ -601,7 +615,7 @@ export function Calendar() {
           }
           
           // Load events for teams
-          loadAllEvents(teams);
+          debouncedLoadAllEvents(teams);
         }
       } else {
         lastTeamsLengthRef.current = 0;
@@ -1805,4 +1819,4 @@ export function Calendar() {
       )}
     </div>
   );
-}
+});

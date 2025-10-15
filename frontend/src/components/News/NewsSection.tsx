@@ -5,7 +5,7 @@
  * Integrates with NewsAPI to provide real-time sports news.
  */
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, memo } from 'react';
 import { useAuthStore } from '../../store/useAuthStore';
 import { newsApi } from '../../lib/api';
 
@@ -27,7 +27,7 @@ interface NewsSectionProps {
   showHeader?: boolean;
 }
 
-export function NewsSection({ 
+export const NewsSection = memo(function NewsSection({ 
   className = '', 
   maxArticles = 6, 
   showHeader = true 
@@ -278,4 +278,4 @@ export function NewsSection({
       </div>
     </div>
   );
-}
+});
