@@ -44,7 +44,7 @@ jobs:
         destination_dir: storybook
     
     - name: Deploy to Chromatic (for PRs)
-      if: github.event_name == 'pull_request'
+      if: github.event_name == 'pull_request' && secrets.CHROMATIC_PROJECT_TOKEN != ''
       uses: chromaui/action@v1
       with:
         projectToken: ${{ secrets.CHROMATIC_PROJECT_TOKEN }}
