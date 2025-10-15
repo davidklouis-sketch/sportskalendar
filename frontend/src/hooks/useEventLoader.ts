@@ -52,7 +52,7 @@ export function useEventLoader(): UseEventLoaderReturn {
   
   // Refs for performance
   const isLoadingRef = useRef(false);
-  const debounceTimeoutRef = useRef<number | null>(null);
+  const debounceTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   // Debounced version of loadAllEvents to prevent excessive API calls
   const debouncedLoadAllEvents = useCallback((teams: Array<{ sport: string; teamName: string; teamId?: string; leagueId?: number }>) => {

@@ -6,6 +6,7 @@
 
 import type { Meta, StoryObj } from '@storybook/react';
 import { NewsWidget } from '../components/News/NewsWidget';
+import { vi } from 'vitest';
 
 // Mock the auth store
 const mockUser = {
@@ -18,9 +19,9 @@ const mockUser = {
 };
 
 // Mock the API
-jest.mock('../lib/api', () => ({
+vi.mock('../lib/api', () => ({
   newsApi: {
-    getNews: jest.fn().mockResolvedValue({
+    getNews: vi.fn().mockResolvedValue({
       data: {
         news: [
           {
@@ -60,7 +61,7 @@ jest.mock('../lib/api', () => ({
 }));
 
 // Mock the auth store
-jest.mock('../store/useAuthStore', () => ({
+vi.mock('../store/useAuthStore', () => ({
   useAuthStore: () => ({ user: mockUser })
 }));
 
@@ -129,10 +130,10 @@ export const WithCustomClass: Story = {
 };
 
 export const LoadingState: Story = {
-  render: async () => {
-    // Mock loading state
-    const { newsApi } = await import('../lib/api');
-    jest.mocked(newsApi.getNews).mockImplementation(
+  render: () => {
+    // Mock loading state - use require for synchronous access
+    const { newsApi } = require('../lib/api');
+    vi.mocked(newsApi.getNews).mockImplementation(
       () => new Promise(() => {}) // Never resolves to simulate loading
     );
     
@@ -141,10 +142,10 @@ export const LoadingState: Story = {
 };
 
 export const ErrorState: Story = {
-  render: async () => {
-    // Mock error state
-    const { newsApi } = await import('../lib/api');
-    jest.mocked(newsApi.getNews).mockRejectedValue(
+  render: () => {
+    // Mock error state - use require for synchronous access
+    const { newsApi } = require('../lib/api');
+    vi.mocked(newsApi.getNews).mockRejectedValue(
       new Error('API Error')
     );
     
@@ -153,10 +154,10 @@ export const ErrorState: Story = {
 };
 
 export const NoUser: Story = {
-  render: async () => {
-    // Mock no user state
-    const { useAuthStore } = await import('../store/useAuthStore');
-    jest.mocked(useAuthStore).mockReturnValue({
+  render: () => {
+    // Mock no user state - use require for synchronous access
+    const { useAuthStore } = require('../store/useAuthStore');
+    vi.mocked(useAuthStore).mockReturnValue({
       user: null
     });
     
@@ -165,10 +166,10 @@ export const NoUser: Story = {
 };
 
 export const NoTeams: Story = {
-  render: async () => {
-    // Mock user with no teams
-    const { useAuthStore } = await import('../store/useAuthStore');
-    jest.mocked(useAuthStore).mockReturnValue({
+  render: () => {
+    // Mock user with no teams - use require for synchronous access
+    const { useAuthStore } = require('../store/useAuthStore');
+    vi.mocked(useAuthStore).mockReturnValue({
       user: { ...mockUser, selectedTeams: [] }
     });
     

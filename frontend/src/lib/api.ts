@@ -19,6 +19,7 @@
  */
 
 import axios from 'axios';
+import { useAuthStore } from '../store/useAuthStore';
 
 // Request cache for deduplication
 const requestCache = new Map<string, { promise: Promise<any>; timestamp: number }>();
@@ -91,7 +92,6 @@ api.interceptors.response.use(
           localStorage.removeItem('accessToken');
           localStorage.removeItem('refreshToken');
           // User über Auth Store ausloggen - SYNCHRON um Infinite Loops zu vermeiden
-          const { useAuthStore } = await import('../store/useAuthStore');
           useAuthStore.getState().logout();
         }
         // WICHTIG: Original Request NICHT wiederholen nach fehlgeschlagenem Refresh

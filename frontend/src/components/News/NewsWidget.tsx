@@ -37,7 +37,7 @@ export const NewsWidget = memo(function NewsWidget({
   const [news, setNews] = useState<NewsArticle[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const lastLoadTime = useRef<number>(0);
-  const retryTimeoutRef = useRef<number | null>(null);
+  const retryTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   // Load news function
   const loadNews = async () => {
