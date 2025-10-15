@@ -337,7 +337,7 @@ export function useEventLoader(): UseEventLoaderReturn {
           const directData = await directResponse.json();
           events = directData.events || [];
         }
-      } catch (directError) {
+      } catch {
         // Failed to load Tennis events from sports API
       }
       

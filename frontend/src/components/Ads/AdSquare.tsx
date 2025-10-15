@@ -20,7 +20,7 @@ export function AdSquare({ slotId, style, className }: AdSquareProps) {
       if (typeof window !== 'undefined' && (window as any).adsbygoogle) {
         ((window as any).adsbygoogle = (window as any).adsbygoogle || []).push({});
       }
-    } catch (error) {
+    } catch {
       // AdSense initialization error
     }
   }, []);

@@ -26,7 +26,7 @@ export function Admin() {
     try {
       const { data } = await adminApi.getUsers();
       setUsers(data.users || []);
-    } catch (error) {
+    } catch {
       // Failed to load users
       alert('Fehler beim Laden der User-Liste');
     } finally {

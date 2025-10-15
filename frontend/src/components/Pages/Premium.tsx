@@ -9,7 +9,7 @@ interface PremiumProps {
   onNavigate: (page: 'calendar' | 'live' | 'highlights' | 'premium' | 'admin' | 'settings' | 'privacy' | 'contact') => void;
 }
 
-export function Premium({ }: PremiumProps) {
+export function Premium(_props: PremiumProps) {
   const { user, isAuthenticated } = useAuthStore();
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);

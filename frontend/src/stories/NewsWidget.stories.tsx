@@ -129,9 +129,10 @@ export const WithCustomClass: Story = {
 };
 
 export const LoadingState: Story = {
-  render: () => {
+  render: async () => {
     // Mock loading state
-    jest.mocked((await import('../lib/api')).newsApi.getNews).mockImplementation(
+    const { newsApi } = await import('../lib/api');
+    jest.mocked(newsApi.getNews).mockImplementation(
       () => new Promise(() => {}) // Never resolves to simulate loading
     );
     
@@ -140,9 +141,10 @@ export const LoadingState: Story = {
 };
 
 export const ErrorState: Story = {
-  render: () => {
+  render: async () => {
     // Mock error state
-    jest.mocked((await import('../lib/api')).newsApi.getNews).mockRejectedValue(
+    const { newsApi } = await import('../lib/api');
+    jest.mocked(newsApi.getNews).mockRejectedValue(
       new Error('API Error')
     );
     
@@ -151,9 +153,10 @@ export const ErrorState: Story = {
 };
 
 export const NoUser: Story = {
-  render: () => {
+  render: async () => {
     // Mock no user state
-    jest.mocked((await import('../store/useAuthStore')).useAuthStore).mockReturnValue({
+    const { useAuthStore } = await import('../store/useAuthStore');
+    jest.mocked(useAuthStore).mockReturnValue({
       user: null
     });
     
@@ -162,9 +165,10 @@ export const NoUser: Story = {
 };
 
 export const NoTeams: Story = {
-  render: () => {
+  render: async () => {
     // Mock user with no teams
-    jest.mocked((await import('../store/useAuthStore')).useAuthStore).mockReturnValue({
+    const { useAuthStore } = await import('../store/useAuthStore');
+    jest.mocked(useAuthStore).mockReturnValue({
       user: { ...mockUser, selectedTeams: [] }
     });
     

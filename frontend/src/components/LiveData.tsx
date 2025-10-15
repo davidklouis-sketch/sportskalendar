@@ -92,7 +92,7 @@ export function LiveData({ className = '' }: LiveDataProps) {
               });
             }
           }
-        } catch (error) {
+        } catch {
           // Failed to load live data for sport
           // Don't fail completely if one sport's live data fails
           // Continue with other sports
@@ -112,7 +112,7 @@ export function LiveData({ className = '' }: LiveDataProps) {
         setHasLiveData(false);
         setLiveData(null);
       }
-    } catch (error) {
+    } catch {
       // Failed to load live data
       setHasLiveData(false);
       setLiveData(null);

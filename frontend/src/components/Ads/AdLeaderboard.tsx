@@ -20,7 +20,7 @@ export function AdLeaderboard({ slotId, style, className }: AdLeaderboardProps) 
       if (typeof window !== 'undefined' && (window as any).adsbygoogle) {
         ((window as any).adsbygoogle = (window as any).adsbygoogle || []).push({});
       }
-    } catch (error) {
+    } catch {
       // AdSense initialization error
     }
   }, []);

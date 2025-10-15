@@ -22,7 +22,7 @@ export function AdBanner({ slotId, style, className, format = 'auto' }: AdBanner
       if (typeof window !== 'undefined' && (window as any).adsbygoogle) {
         ((window as any).adsbygoogle = (window as any).adsbygoogle || []).push({});
       }
-    } catch (error) {
+    } catch {
       // AdSense Banner initialization error
     }
   }, [slotId]);

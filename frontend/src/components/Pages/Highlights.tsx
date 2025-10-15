@@ -73,7 +73,7 @@ export function Highlights() {
       }
       
       setHighlights(allHighlights);
-    } catch (error) {
+    } catch {
       // Failed to load highlights
       setHighlights([]);
     } finally {

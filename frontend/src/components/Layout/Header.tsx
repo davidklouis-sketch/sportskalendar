@@ -22,7 +22,7 @@ export function Header({ currentPage, onNavigate, onShowLogin, onShowRegister }:
   const handleLogout = async () => {
     try {
       await authApi.logout();
-    } catch (error) {
+    } catch {
       // Logout error
     }
     logout();

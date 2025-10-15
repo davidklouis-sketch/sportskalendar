@@ -47,7 +47,7 @@ const CalendarSync: React.FC = () => {
         const testResponse = await fetch('/api/calendar-sync/test');
         await testResponse.json();
         // Test endpoint response
-      } catch (testError) {
+      } catch {
         // Test endpoint failed
       }
       
@@ -58,7 +58,6 @@ const CalendarSync: React.FC = () => {
       // Failed to load sync status
       
       const errorMessage = error instanceof Error ? error.message : 'Unbekannter Fehler';
-      // const errorResponse = error && typeof error === 'object' && 'response' in error ? (error as any).response : null;
       
       // Error details logged
       setError(`Fehler beim Laden der Kalender-Sync-Status: ${errorMessage}`);
@@ -130,9 +129,8 @@ const CalendarSync: React.FC = () => {
           button.textContent = originalText;
         }, 2000);
       }
-    } catch (error: unknown) {
+    } catch {
       // Failed to copy
-      // const errorMessage = error instanceof Error ? error.message : 'Unbekannter Fehler';
       // Copy to clipboard failed
     }
   };
