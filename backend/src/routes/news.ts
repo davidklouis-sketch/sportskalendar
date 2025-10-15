@@ -33,7 +33,16 @@ const SPORTS_DOMAINS = [
   'theguardian.com/football',
   'telegraph.co.uk/sport',
   'independent.co.uk/sport',
-  'dailymail.co.uk/sport'
+  'dailymail.co.uk/sport',
+  'sportbild.de',
+  'spox.com',
+  'ran.de',
+  'sport.de',
+  'eurosport.de',
+  'welt.de/sport',
+  'spiegel.de/sport',
+  'faz.net/sport',
+  'zeit.de/sport'
 ];
 
 /**
@@ -88,15 +97,18 @@ newsRouter.get('/', requireAuth, async (req, res) => {
       }
     });
 
-    // Combine all search terms
+    // Combine all search terms - make it more flexible
     const allSearchTerms = [...searchQueries, ...sportTerms].filter(term => term && term.trim());
     const searchQuery = allSearchTerms.join(' OR ');
+    
+    // If no specific terms, use general sports terms
+    const fallbackQuery = searchQuery || 'sport OR football OR basketball OR tennis';
 
     console.log(`[News] Fetching news for user ${user.email} with query: ${searchQuery}`);
 
     // Build NewsAPI URL
     const newsApiUrl = new URL(NEWS_API_BASE_URL);
-    newsApiUrl.searchParams.set('q', searchQuery);
+    newsApiUrl.searchParams.set('q', searchQuery || fallbackQuery);
     newsApiUrl.searchParams.set('domains', SPORTS_DOMAINS.join(','));
     newsApiUrl.searchParams.set('language', 'de,en');
     newsApiUrl.searchParams.set('sortBy', 'publishedAt');
@@ -124,8 +136,26 @@ newsRouter.get('/', requireAuth, async (req, res) => {
       });
     }
 
-    const newsData = await response.json();
+    let newsData = await response.json();
     console.log(`[News API] Received ${newsData.articles?.length || 0} articles from NewsAPI`);
+    
+    // If no articles found with specific domains, try broader search
+    if (!newsData.articles || newsData.articles.length === 0) {
+      console.log('[News API] No articles found with specific domains, trying broader search...');
+      
+      const broaderUrl = new URL(NEWS_API_BASE_URL);
+      broaderUrl.searchParams.set('q', searchQuery || fallbackQuery);
+      broaderUrl.searchParams.set('language', 'de,en');
+      broaderUrl.searchParams.set('sortBy', 'publishedAt');
+      broaderUrl.searchParams.set('pageSize', '20');
+      broaderUrl.searchParams.set('apiKey', NEWS_API_KEY);
+      
+      const broaderResponse = await fetch(broaderUrl.toString());
+      if (broaderResponse.ok) {
+        newsData = await broaderResponse.json();
+        console.log(`[News API] Broader search returned ${newsData.articles?.length || 0} articles`);
+      }
+    }
 
     // Filter and format news articles
     const formattedNews = (newsData.articles || [])
