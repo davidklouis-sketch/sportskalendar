@@ -279,36 +279,8 @@ export const Calendar = memo(function Calendar({ onNavigate }: CalendarProps = {
   };
 
   return (
-    <div className="min-h-screen hero-gradient">
-      {/* Hero Section */}
-      <div className="relative overflow-hidden">
-        <div className="absolute top-20 right-20 w-32 h-32 bg-cyan-500/10 rotate-45 rounded-lg animate-float"></div>
-        <div className="absolute bottom-20 left-20 w-24 h-24 bg-lime-500/10 rotate-45 rounded-lg animate-float" style={{animationDelay: '1s'}}></div>
-        <div className="absolute top-1/3 left-10 w-16 h-16 bg-orange-500/10 rotate-45 rounded-lg animate-float" style={{animationDelay: '2s'}}></div>
-        
-        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
-          <div className="text-center">
-            <div className="relative group mx-auto mb-8">
-              <div className="w-20 h-20 bg-white/20 backdrop-blur-sm rounded-3xl flex items-center justify-center mx-auto shadow-xl border border-cyan-400/30">
-                <svg className="w-10 h-10 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                </svg>
-              </div>
-            </div>
-            <h1 className="text-5xl font-bold heading-sport mb-6">
-              {getCurrentLanguage() === 'de' ? 'DEIN SPORTKALENDAR' : 'YOUR SPORTS CALENDAR'}
-            </h1>
-            <p className="text-xl text-cyan-100 max-w-2xl mx-auto leading-relaxed">
-              {getCurrentLanguage() === 'de' 
-                ? 'Verwalte alle Spiele deiner Lieblingsteams, verfolge Live-Events und entdecke die besten Highlights'
-                : 'Manage all games of your favorite teams, track live events and discover the best highlights'
-              }
-            </p>
-          </div>
-        </div>
-      </div>
-
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 -mt-8 relative z-10">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 pt-20">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
           
           {/* Left Sidebar */}
@@ -324,21 +296,16 @@ export const Calendar = memo(function Calendar({ onNavigate }: CalendarProps = {
             )}
             
             {/* Live Events */}
-            <div className="relative">
-              <div className="absolute -inset-1 bg-gradient-to-r from-red-500 to-pink-600 rounded-3xl blur opacity-75"></div>
-              <div className="relative bg-white dark:bg-gray-800 rounded-3xl shadow-2xl overflow-hidden">
-                <div className="p-6">
-                  <div className="flex items-center mb-4">
-                    <div className="w-3 h-3 bg-red-500 rounded-full animate-pulse mr-3"></div>
-                    <h2 className="text-xl font-bold text-gray-900 dark:text-white">{t('live')} Events</h2>
-                  </div>
-                  <div className="space-y-4">
-                    <LiveData />
-                  </div>
-                  <p className="text-xs text-gray-500 dark:text-gray-400 mt-4 text-center">
-                    {t('automaticUpdate')}
-                  </p>
+            <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700">
+              <div className="p-5">
+                <div className="flex items-center gap-2 mb-4">
+                  <div className="w-2 h-2 bg-red-500 rounded-full animate-pulse"></div>
+                  <h2 className="text-lg font-semibold text-gray-900 dark:text-white">{t('live')} Events</h2>
                 </div>
+                <LiveData />
+                <p className="text-xs text-gray-500 dark:text-gray-400 mt-3">
+                  {t('automaticUpdate')}
+                </p>
               </div>
             </div>
 
@@ -348,77 +315,66 @@ export const Calendar = memo(function Calendar({ onNavigate }: CalendarProps = {
             </div>
 
             {/* My Teams */}
-            <div className="relative group">
-              <div className="absolute -inset-1 bg-gradient-to-r from-indigo-500 to-purple-600 rounded-3xl blur opacity-75 group-hover:opacity-100 transition duration-1000"></div>
-              <div className="relative bg-white dark:bg-gray-800 rounded-3xl shadow-2xl overflow-hidden">
-                <div className="p-6">
-                  <div className="flex items-center justify-between mb-6">
-                    <div className="flex items-center">
-                      <div className="w-10 h-10 bg-gradient-to-r from-indigo-500 to-purple-600 rounded-2xl flex items-center justify-center mr-3">
-                        <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
-                        </svg>
-                      </div>
-                      <h2 className="text-xl font-bold text-gray-900 dark:text-white">{t('myTeams')}</h2>
-                    </div>
+            <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700">
+              <div className="p-5">
+                <div className="flex items-center justify-between mb-4">
+                  <div className="flex items-center gap-2">
+                    <svg className="w-5 h-5 text-blue-600 dark:text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+                    </svg>
+                    <h2 className="text-lg font-semibold text-gray-900 dark:text-white">{t('myTeams')}</h2>
+                  </div>
+                  <button
+                    onClick={exportCalendar}
+                    className="p-2 bg-blue-600 hover:bg-blue-700 rounded-lg text-white transition-colors"
+                    title="Export Calendar"
+                  >
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                    </svg>
+                  </button>
+                </div>
+
+                {localTeams.length === 0 ? (
+                  <div className="text-center py-6">
+                    <p className="text-gray-500 dark:text-gray-400 text-sm mb-3">{t('noTeamsAdded')}</p>
                     <button
-                      onClick={exportCalendar}
-                      className="p-2 bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 rounded-xl text-white transition-all duration-200 transform hover:scale-105"
+                      onClick={() => setShowTeamSelector(true)}
+                      className="bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-lg transition-colors text-sm"
                     >
-                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                      </svg>
+                      + {t('addTeam')}
                     </button>
                   </div>
-
-                  {localTeams.length === 0 ? (
-                    <div className="text-center py-8">
-                      <div className="w-16 h-16 bg-gray-100 dark:bg-gray-700 rounded-2xl flex items-center justify-center mx-auto mb-4">
-                        <svg className="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
-                        </svg>
-                      </div>
-                      <p className="text-gray-500 dark:text-gray-400 mb-4">{t('noTeamsAdded')}</p>
-                      <button
-                        onClick={() => setShowTeamSelector(true)}
-                        className="bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white font-semibold py-2 px-6 rounded-2xl transition-all duration-200 transform hover:scale-105 shadow-lg"
-                      >
-                        + {t('addTeam')}
-                      </button>
-                    </div>
-                  ) : (
-                    <div className="space-y-3">
-                      {localTeams.map((team, index) => (
-                        <div key={index} className="group/team flex items-center justify-between p-4 bg-gradient-to-r from-gray-50 to-gray-100 dark:from-gray-700/50 dark:to-gray-700 rounded-2xl hover:from-gray-100 hover:to-gray-200 dark:hover:from-gray-600 dark:hover:to-gray-600 transition-all duration-200">
-                          <div className="flex items-center">
-                            <div className="w-8 h-8 bg-gradient-to-r from-indigo-500 to-purple-600 rounded-xl flex items-center justify-center mr-3">
-                              <span className="text-sm">{getSportIcon(team.sport)}</span>
-                            </div>
-                            <div>
-                              <p className="font-medium text-gray-900 dark:text-white">{team.teamName}</p>
-                              <p className="text-xs text-gray-500 dark:text-gray-400 capitalize">{team.sport}</p>
-                            </div>
+                ) : (
+                  <div className="space-y-2">
+                    {localTeams.map((team, index) => (
+                      <div key={index} className="group/team flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-700/50 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors">
+                        <div className="flex items-center gap-3">
+                          <span className="text-lg">{getSportIcon(team.sport)}</span>
+                          <div>
+                            <p className="font-medium text-gray-900 dark:text-white text-sm">{team.teamName}</p>
+                            <p className="text-xs text-gray-500 dark:text-gray-400 capitalize">{team.sport}</p>
                           </div>
-                          <button
-                            onClick={() => handleRemoveTeam(index)}
-                            className="opacity-0 group-hover/team:opacity-100 p-1 text-red-500 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300 transition-all duration-200"
-                          >
-                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                            </svg>
-                          </button>
                         </div>
-                      ))}
+                        <button
+                          onClick={() => handleRemoveTeam(index)}
+                          className="opacity-0 group-hover/team:opacity-100 p-1 text-red-500 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300 transition-opacity"
+                        >
+                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                          </svg>
+                        </button>
+                      </div>
+                    ))}
 
-                      <button
-                        onClick={() => setShowTeamSelector(true)}
-                        className="w-full bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white font-semibold py-3 px-6 rounded-2xl transition-all duration-200 transform hover:scale-105 shadow-lg"
-                      >
-                        + {t('addTeam')}
-                      </button>
-                    </div>
-                  )}
-                </div>
+                    <button
+                      onClick={() => setShowTeamSelector(true)}
+                      className="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-lg transition-colors text-sm"
+                    >
+                      + {t('addTeam')}
+                    </button>
+                  </div>
+                )}
               </div>
             </div>
 
@@ -452,112 +408,90 @@ export const Calendar = memo(function Calendar({ onNavigate }: CalendarProps = {
 
             {/* Events Section */}
             {selectedSport && (
-              <div className="relative group">
-                <div className="absolute -inset-1 bg-gradient-to-r from-emerald-500 to-green-600 rounded-3xl blur opacity-75 group-hover:opacity-100 transition duration-1000"></div>
-                <div className="relative bg-white dark:bg-gray-800 rounded-3xl shadow-2xl overflow-hidden">
-                  <div className="p-8">
-                    <div className="flex items-center mb-6">
-                      <div className="w-12 h-12 bg-gradient-to-r from-emerald-500 to-green-600 rounded-2xl flex items-center justify-center mr-4">
-                        <span className="text-xl">{getSportIcon(selectedSport)}</span>
-                      </div>
-                      <div>
-                        <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
-                          {getSportName(selectedSport)} Events
-                        </h2>
-                        <p className="text-gray-600 dark:text-gray-400">
-                          {getEventsBySport().length} {getEventsBySport().length === 1 ? 'Event' : 'Events'}
-                        </p>
-                      </div>
-                    </div>
-                    
-                    <div className="space-y-4">
-                      <EventList
-                        events={getEventsBySport()}
-                        isLoading={isLoading}
-                        selectedSport={selectedSport}
-                        user={user}
-                        getSportIcon={getSportIcon}
-                        t={t}
-                      />
+              <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700">
+                <div className="p-5">
+                  <div className="flex items-center gap-3 mb-5">
+                    <span className="text-2xl">{getSportIcon(selectedSport)}</span>
+                    <div>
+                      <h2 className="text-xl font-semibold text-gray-900 dark:text-white">
+                        {getSportName(selectedSport)} Events
+                      </h2>
+                      <p className="text-sm text-gray-600 dark:text-gray-400">
+                        {getEventsBySport().length} {getEventsBySport().length === 1 ? 'Event' : 'Events'}
+                      </p>
                     </div>
                   </div>
+                  
+                  <EventList
+                    events={getEventsBySport()}
+                    isLoading={isLoading}
+                    selectedSport={selectedSport}
+                    user={user}
+                    getSportIcon={getSportIcon}
+                    t={t}
+                  />
                 </div>
               </div>
             )}
 
             {/* Highlights Section */}
             {selectedSport && (
-              <div className="relative group">
-                <div className="absolute -inset-1 bg-gradient-to-r from-purple-500 to-pink-600 rounded-3xl blur opacity-75 group-hover:opacity-100 transition duration-1000"></div>
-                <div className="relative bg-white dark:bg-gray-800 rounded-3xl shadow-2xl overflow-hidden">
-                  <div className="p-8">
-                    <div className="flex items-center mb-6">
-                      <div className="w-12 h-12 bg-gradient-to-r from-purple-500 to-pink-600 rounded-2xl flex items-center justify-center mr-4">
-                        <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
-                        </svg>
-                      </div>
-                      <div>
-                        <h2 className="text-2xl font-bold text-gray-900 dark:text-white">{t('highlightsNews')}</h2>
-                        <p className="text-gray-600 dark:text-gray-400">{t('currentHighlights')}</p>
-                      </div>
+              <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700">
+                <div className="p-5">
+                  <div className="flex items-center gap-3 mb-5">
+                    <svg className="w-6 h-6 text-purple-600 dark:text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                    </svg>
+                    <div>
+                      <h2 className="text-xl font-semibold text-gray-900 dark:text-white">{t('highlightsNews')}</h2>
+                      <p className="text-sm text-gray-600 dark:text-gray-400">{t('currentHighlights')}</p>
                     </div>
+                  </div>
                     
-                    {isLoadingHighlights ? (
-                      <div className="text-center py-12">
-                        <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-purple-600"></div>
-                        <p className="mt-4 text-gray-500 dark:text-gray-400">{t('loading')}</p>
-                      </div>
-                    ) : highlights.length === 0 ? (
-                      <div className="text-center py-12">
-                        <div className="w-20 h-20 bg-gray-100 dark:bg-gray-700 rounded-3xl flex items-center justify-center mx-auto mb-6">
-                          <svg className="w-10 h-10 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
-                          </svg>
-                        </div>
-                        <p className="text-gray-500 dark:text-gray-400">{t('noEventsAvailable')}</p>
-                      </div>
-                    ) : (
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        {highlights.slice(0, 4).map((highlight) => (
-                          <a
-                            key={highlight.id}
-                            href={highlight.url}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="group/highlight block p-6 bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-700/50 dark:to-gray-700 rounded-2xl hover:from-gray-100 hover:to-gray-200 dark:hover:from-gray-600 dark:hover:to-gray-600 transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-xl"
-                          >
-                            {highlight.thumbnail && (
-                              <div className="aspect-video bg-gray-200 dark:bg-gray-600 rounded-xl mb-4 overflow-hidden">
-                                <img
-                                  src={highlight.thumbnail}
-                                  alt={highlight.title}
-                                  className="w-full h-full object-cover group-hover/highlight:scale-110 transition-transform duration-500"
-                                />
+                  {isLoadingHighlights ? (
+                    <div className="text-center py-8">
+                      <div className="inline-block animate-spin rounded-full h-10 w-10 border-b-2 border-purple-600"></div>
+                      <p className="mt-3 text-gray-500 dark:text-gray-400 text-sm">{t('loading')}</p>
+                    </div>
+                  ) : highlights.length === 0 ? (
+                    <div className="text-center py-8">
+                      <p className="text-gray-500 dark:text-gray-400 text-sm">{t('noEventsAvailable')}</p>
+                    </div>
+                  ) : (
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      {highlights.slice(0, 4).map((highlight) => (
+                        <a
+                          key={highlight.id}
+                          href={highlight.url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="group/highlight block p-4 bg-gray-50 dark:bg-gray-700/50 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+                        >
+                          {highlight.thumbnail && (
+                            <div className="aspect-video bg-gray-200 dark:bg-gray-600 rounded-lg mb-3 overflow-hidden">
+                              <img
+                                src={highlight.thumbnail}
+                                alt={highlight.title}
+                                className="w-full h-full object-cover"
+                              />
                               </div>
                             )}
-                            <h3 className="font-semibold text-gray-900 dark:text-white mb-2 line-clamp-2 group-hover/highlight:text-purple-600 dark:group-hover/highlight:text-purple-400 transition-colors">
-                              {highlight.title}
-                            </h3>
-                            {highlight.description && (
-                              <p className="text-sm text-gray-600 dark:text-gray-400 mb-3 line-clamp-2">
-                                {highlight.description}
-                              </p>
+                          <h3 className="font-medium text-gray-900 dark:text-white mb-1 line-clamp-2 text-sm">
+                            {highlight.title}
+                          </h3>
+                          {highlight.description && (
+                            <p className="text-xs text-gray-600 dark:text-gray-400 mb-2 line-clamp-2">
+                              {highlight.description}
+                            </p>
+                          )}
+                          <div className="flex items-center justify-between text-xs text-gray-500 dark:text-gray-400">
+                            <span>{format(new Date(highlight.createdAt), 'dd.MM.yyyy')}</span>
+                            {highlight.views && (
+                              <span>{highlight.views >= 1000000 ? `${(highlight.views / 1000000).toFixed(1)}M` :
+                               highlight.views >= 1000 ? `${(highlight.views / 1000).toFixed(1)}K` :
+                               highlight.views.toString()} views</span>
                             )}
-                            <div className="flex items-center justify-between text-xs text-gray-500 dark:text-gray-400">
-                              <span>{format(new Date(highlight.createdAt), 'dd.MM.yyyy')}</span>
-                              {highlight.views && (
-                                <span className="flex items-center">
-                                  <svg className="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
-                                    <path d="M10 12a2 2 0 100-4 2 2 0 000 4z" />
-                                    <path fillRule="evenodd" d="M.458 10C1.732 5.943 5.522 3 10 3s8.268 2.943 9.542 7c-1.274 4.057-5.064 7-9.542 7S1.732 14.057.458 10zM14 10a4 4 0 11-8 0 4 4 0 018 0z" clipRule="evenodd" />
-                                  </svg>
-                                  {highlight.views >= 1000000 ? `${(highlight.views / 1000000).toFixed(1)}M` :
-                                   highlight.views >= 1000 ? `${(highlight.views / 1000).toFixed(1)}K` :
-                                   highlight.views.toString()}
-                                </span>
-                              )}
-                            </div>
+                          </div>
                           </a>
                         ))}
                       </div>
