@@ -29,6 +29,7 @@ import { LandingPage } from './components/Pages/LandingPage';
 const Calendar = lazy(() => import('./components/Pages/Calendar').then(m => ({ default: m.Calendar })));
 const Live = lazy(() => import('./components/Pages/Live').then(m => ({ default: m.Live })));
 const Highlights = lazy(() => import('./components/Pages/Highlights').then(m => ({ default: m.Highlights })));
+const News = lazy(() => import('./components/Pages/News').then(m => ({ default: m.News })));
 const Premium = lazy(() => import('./components/Pages/Premium').then(m => ({ default: m.Premium })));
 const Admin = lazy(() => import('./components/Pages/Admin').then(m => ({ default: m.Admin })));
 const Settings = lazy(() => import('./components/Pages/Settings').then(m => ({ default: m.Settings })));
@@ -43,7 +44,7 @@ import { ErrorBoundary } from './components/ErrorBoundary';
 
 // Type Definitions
 type AuthView = 'login' | 'register' | null; // Auth Modal Ansicht (Login, Register oder geschlossen)
-type Page = 'calendar' | 'live' | 'highlights' | 'premium' | 'admin' | 'settings' | 'calendar-sync' | 'privacy' | 'contact'; // Verfügbare Seiten
+type Page = 'calendar' | 'live' | 'highlights' | 'news' | 'premium' | 'admin' | 'settings' | 'calendar-sync' | 'privacy' | 'contact'; // Verfügbare Seiten
 
 function AppContent() {
   // Global State Management
@@ -266,13 +267,16 @@ function AppContent() {
               </div>
             }>
             {/* Calendar Page - Auth Required */}
-            {currentPage === 'calendar' && (user ? <Calendar /> : <LandingPage onShowLogin={() => setAuthView('login')} onShowRegister={() => setAuthView('register')} onNavigate={setCurrentPage} />)}
+            {currentPage === 'calendar' && (user ? <Calendar onNavigate={setCurrentPage as any} /> : <LandingPage onShowLogin={() => setAuthView('login')} onShowRegister={() => setAuthView('register')} onNavigate={setCurrentPage} />)}
             
             {/* Live Page - Auth Required */}
             {currentPage === 'live' && (user ? <Live /> : <LandingPage onShowLogin={() => setAuthView('login')} onShowRegister={() => setAuthView('register')} onNavigate={setCurrentPage} />)}
             
             {/* Highlights Page - Auth Required */}
             {currentPage === 'highlights' && (user ? <Highlights /> : <LandingPage onShowLogin={() => setAuthView('login')} onShowRegister={() => setAuthView('register')} onNavigate={setCurrentPage} />)}
+            
+            {/* News Page - Auth Required */}
+            {currentPage === 'news' && (user ? <News /> : <LandingPage onShowLogin={() => setAuthView('login')} onShowRegister={() => setAuthView('register')} onNavigate={setCurrentPage} />)}
             
             {/* Premium Page - Public */}
             {currentPage === 'premium' && <Premium onNavigate={setCurrentPage} />}

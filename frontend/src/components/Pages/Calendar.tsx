@@ -36,7 +36,11 @@ interface ApiTeam {
   division?: string;
 }
 
-export const Calendar = memo(function Calendar() {
+interface CalendarProps {
+  onNavigate?: (page: string) => void;
+}
+
+export const Calendar = memo(function Calendar({ onNavigate }: CalendarProps = {}) {
   const { user, setUser } = useAuthStore();
   useLanguage(); // Trigger re-render on language change
   
@@ -424,7 +428,9 @@ export const Calendar = memo(function Calendar() {
               maxArticles={3}
               showViewAll={true}
               onViewAll={() => {
-                console.log('Navigate to full news page');
+                if (onNavigate) {
+                  onNavigate('news');
+                }
               }}
             />
           </div>
