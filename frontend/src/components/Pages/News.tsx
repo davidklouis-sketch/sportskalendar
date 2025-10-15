@@ -114,6 +114,28 @@ export function News({ className = '' }: NewsPageProps) {
     window.open(url, '_blank', 'noopener,noreferrer');
   };
 
+  // Get source logo URL
+  const getSourceLogo = (source: string) => {
+    const logos: Record<string, string> = {
+      'kicker.de': 'https://derivates.kicker.de/image/upload/c_crop,x_0,y_12,w_3910,h_2198/w_200,q_auto/v1/rkn/kicker-applogos/kicker-logo.png',
+      'sport1.de': 'https://upload.wikimedia.org/wikipedia/commons/thumb/3/3e/Sport1_2021_logo.svg/200px-Sport1_2021_logo.svg.png',
+      'sportschau.de': 'https://upload.wikimedia.org/wikipedia/commons/thumb/4/47/ARD_Sportschau_2019_logo.svg/200px-ARD_Sportschau_2019_logo.svg.png',
+      'ran.de': 'https://upload.wikimedia.org/wikipedia/commons/thumb/e/e8/Ran_logo_2017.svg/200px-Ran_logo_2017.svg.png',
+      'bild.de': 'https://upload.wikimedia.org/wikipedia/commons/thumb/f/f4/Bild_Logo.svg/200px-Bild_Logo.svg.png',
+      'espn.com': 'https://upload.wikimedia.org/wikipedia/commons/thumb/2/2f/ESPN_wordmark.svg/200px-ESPN_wordmark.svg.png',
+      'skysport.de': 'https://upload.wikimedia.org/wikipedia/commons/thumb/c/c5/Sky_Sports_logo_2020.svg/200px-Sky_Sports_logo_2020.svg.png',
+      'default': '📰'
+    };
+    
+    const sourceLower = source.toLowerCase();
+    for (const [key, logo] of Object.entries(logos)) {
+      if (sourceLower.includes(key)) {
+        return logo;
+      }
+    }
+    return logos.default;
+  };
+
   // Show message if no teams selected
   if (!user?.selectedTeams || user.selectedTeams.length === 0) {
     return (
@@ -268,7 +290,7 @@ export function News({ className = '' }: NewsPageProps) {
                   onClick={() => handleArticleClick(article.url)}
                 >
                   {/* Article Image */}
-                  <div className="aspect-video bg-gray-200 dark:bg-gray-700 relative overflow-hidden">
+                  <div className="aspect-video bg-gradient-to-br from-blue-500 to-purple-600 relative overflow-hidden">
                     {article.imageUrl ? (
                       <img
                         src={article.imageUrl}
@@ -277,17 +299,43 @@ export function News({ className = '' }: NewsPageProps) {
                         onError={(e) => {
                           const target = e.target as HTMLImageElement;
                           target.style.display = 'none';
+                          const parent = target.parentElement;
+                          if (parent) {
+                            const fallback = document.createElement('div');
+                            fallback.className = 'w-full h-full flex items-center justify-center';
+                            fallback.innerHTML = '<span class="text-6xl text-white">📰</span>';
+                            parent.appendChild(fallback);
+                          }
                         }}
                       />
                     ) : (
                       <div className="w-full h-full flex items-center justify-center">
-                        <span className="text-5xl text-gray-400 dark:text-gray-500">📰</span>
+                        <span className="text-6xl text-white">📰</span>
                       </div>
                     )}
                     
-                    {/* Source badge */}
-                    <div className="absolute top-3 right-3 bg-black/80 text-white text-xs px-2 py-1 rounded-full">
-                      {article.source}
+                    {/* Source logo badge */}
+                    <div className="absolute top-3 left-3 bg-white dark:bg-gray-800 px-3 py-2 rounded-lg shadow-lg flex items-center gap-2">
+                      {getSourceLogo(article.source) !== '📰' ? (
+                        <img 
+                          src={getSourceLogo(article.source)} 
+                          alt={article.source}
+                          className="h-4 object-contain"
+                          onError={(e) => {
+                            const target = e.target as HTMLImageElement;
+                            target.style.display = 'none';
+                            const parent = target.parentElement;
+                            if (parent) {
+                              const fallback = document.createElement('span');
+                              fallback.textContent = '📰';
+                              parent.appendChild(fallback);
+                            }
+                          }}
+                        />
+                      ) : (
+                        <span className="text-sm">📰</span>
+                      )}
+                      <span className="text-xs font-medium text-gray-900 dark:text-white">{article.source}</span>
                     </div>
                   </div>
 
