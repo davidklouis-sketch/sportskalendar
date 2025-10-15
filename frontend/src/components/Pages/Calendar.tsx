@@ -139,54 +139,15 @@ export function Calendar() {
             events = (response.data as Event[]) || [];
           }
           
-          // Filter events for selected teams - PERFORMANCE OPTIMIZED
+          // PERFORMANCE FIX: Simplified filtering to prevent nested loops
           const teamNames = footballTeams.map(t => t.teamName.toLowerCase());
           
-          // Team name variations mapping
-          const teamVariations: Record<string, string[]> = {
-            'bayern munich': ['fc bayern', 'bayern münchen', 'fc bayern münchen', 'bayern'],
-            'borussia dortmund': ['bvb', 'borussia', 'bvb dortmund', 'dortmund'],
-            'bayer leverkusen': ['bayer 04', 'leverkusen', 'bayer', 'werkself'],
-            'rb leipzig': ['rb', 'leipzig'],
-            'vfl wolfsburg': ['wolfsburg', 'vfl'],
-            'vfb stuttgart': ['stuttgart', 'vfb'],
-            'eintracht frankfurt': ['frankfurt', 'eintracht'],
-            'borussia mönchengladbach': ['mönchengladbach', 'gladbach', 'borussia'],
-            '1. fsv mainz 05': ['mainz', 'mainz 05', 'fsv mainz'],
-            'tsg hoffenheim': ['hoffenheim', 'tsg'],
-            'sc freiburg': ['freiburg', 'sc'],
-            'fc augsburg': ['augsburg', 'fc augsburg'],
-            '1. fc köln': ['köln', 'fc köln', '1. fc köln'],
-            '1. fc union berlin': ['union berlin', 'fc union', 'union'],
-            'sv werder bremen': ['werder bremen', 'werder', 'bremen'],
-            '1. fc heidenheim 1846': ['heidenheim', 'fc heidenheim'],
-            'fc st. pauli': ['st. pauli', 'pauli', 'st pauli'],
-            'hamburger sv': ['hamburg', 'hsv', 'hamburger']
-          };
-          
-          // Create Set of all variations for O(1) lookup
-          const allVariations = new Set<string>();
-          for (const teamName of teamNames) {
-            const variations = teamVariations[teamName] || [];
-            for (const variation of variations) {
-              allVariations.add(variation);
-            }
-          }
-          
+          // Simple team name matching without complex variations
           events = events.filter(event => {
             const eventTitle = event.title.toLowerCase();
             
-            // Check direct team name matches
-            for (const teamName of teamNames) {
-              if (eventTitle.includes(teamName)) return true;
-            }
-            
-            // Check variations
-            for (const variation of allVariations) {
-              if (eventTitle.includes(variation)) return true;
-            }
-            
-            return false;
+            // Simple direct team name matching only
+            return teamNames.some(teamName => eventTitle.includes(teamName));
           });
           
           setFootballEvents(events);
@@ -216,14 +177,11 @@ export function Calendar() {
           const response = await calendarApi.getEvents('nfl', []);
           let events = (response.data as Event[]) || [];
           
-          // Filter events for selected teams
+          // PERFORMANCE FIX: Simplified filtering
           const teamNames = nflTeams.map(t => t.teamName.toLowerCase());
           events = events.filter(event => {
             const eventTitle = event.title.toLowerCase();
-            for (const teamName of teamNames) {
-              if (eventTitle.includes(teamName)) return true;
-            }
-            return false;
+            return teamNames.some(teamName => eventTitle.includes(teamName));
           });
           
           setNflEvents(events);
@@ -252,14 +210,11 @@ export function Calendar() {
             }
           }
           
-          // Filter events for selected teams
+          // PERFORMANCE FIX: Simplified filtering
           const teamNames = nbaTeams.map(t => t.teamName.toLowerCase());
           const filteredEvents = events.filter(event => {
             const eventTitle = event.title.toLowerCase();
-            for (const teamName of teamNames) {
-              if (eventTitle.includes(teamName)) return true;
-            }
-            return false;
+            return teamNames.some(teamName => eventTitle.includes(teamName));
           });
           
           setNbaEvents(filteredEvents);
@@ -414,14 +369,11 @@ export function Calendar() {
             // Failed to load Tennis events from sports API
           }
           
-          // Filter events for selected tours
+          // PERFORMANCE FIX: Simplified filtering
           const tourNames = tennisTeams.map(t => t.teamName.toLowerCase());
           const filteredEvents = events.filter(event => {
             const eventTitle = event.title.toLowerCase();
-            for (const tourName of tourNames) {
-              if (eventTitle.includes(tourName)) return true;
-            }
-            return false;
+            return tourNames.some(tourName => eventTitle.includes(tourName));
           });
           
           setTennisEvents(filteredEvents);
