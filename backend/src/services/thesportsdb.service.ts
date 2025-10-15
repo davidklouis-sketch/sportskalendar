@@ -32,9 +32,13 @@ import axios from 'axios';
 const THESPORTSDB_API_KEY = process.env.THESPORTSDB_API_KEY || '3';
 const BASE_URL = 'https://www.thesportsdb.com/api/v1/json';
 
-// Rate limiting: 1 Request pro Sekunde (TheSportsDB Limit)
+// PERFORMANCE FIX: Aggressive caching to reduce API calls
+const requestCache = new Map<string, { data: any; timestamp: number }>();
+const CACHE_DURATION = 10 * 60 * 1000; // 10 minutes cache
+
+// Rate limiting: Reduced delay and better caching
 let lastRequestTime = 0;
-const RATE_LIMIT_DELAY = 2000; // 2 Sekunden für bessere Stabilität
+const RATE_LIMIT_DELAY = 1000; // Reduced to 1 second
 
 async function delayBetweenRequests() {
   const now = Date.now();
@@ -47,6 +51,21 @@ async function delayBetweenRequests() {
   }
   
   lastRequestTime = Date.now();
+}
+
+// PERFORMANCE FIX: Check cache before making API calls
+function getCachedData(url: string): any | null {
+  const cached = requestCache.get(url);
+  if (cached && Date.now() - cached.timestamp < CACHE_DURATION) {
+    console.log(`[TheSportsDB] Using cached data for ${url}`);
+    return cached.data;
+  }
+  return null;
+}
+
+function setCachedData(url: string, data: any): void {
+  requestCache.set(url, { data, timestamp: Date.now() });
+  console.log(`[TheSportsDB] Cached data for ${url}`);
 }
 
 /**
@@ -140,13 +159,24 @@ export class TheSportsDBService {
    */
   async getTeamsByLeague(leagueId: string): Promise<TheSportsDBTeam[]> {
     try {
+      const url = `${this.baseUrl}/lookup_all_teams.php?id=${leagueId}`;
+      
+      // PERFORMANCE FIX: Check cache first
+      const cachedData = getCachedData(url);
+      if (cachedData) {
+        return cachedData;
+      }
+      
       // Rate limiting: Warte zwischen Requests
       await delayBetweenRequests();
       
-      const response = await axios.get(
-        `${this.baseUrl}/lookup_all_teams.php?id=${leagueId}`
-      );
-      return response.data.teams || [];
+      const response = await axios.get(url);
+      const teams = response.data.teams || [];
+      
+      // PERFORMANCE FIX: Cache the result
+      setCachedData(url, teams);
+      
+      return teams;
     } catch (error) {
       console.error(`Error fetching teams for league ${leagueId}:`, error);
       return [];
@@ -184,13 +214,24 @@ export class TheSportsDBService {
    */
   async getEventsBySeason(leagueId: string, season: string): Promise<TheSportsDBEvent[]> {
     try {
+      const url = `${this.baseUrl}/eventsseason.php?id=${leagueId}&s=${season}`;
+      
+      // PERFORMANCE FIX: Check cache first
+      const cachedData = getCachedData(url);
+      if (cachedData) {
+        return cachedData;
+      }
+      
       // Rate limiting: Warte zwischen Requests
       await delayBetweenRequests();
       
-      const response = await axios.get(
-        `${this.baseUrl}/eventsseason.php?id=${leagueId}&s=${season}`
-      );
-      return response.data.events || [];
+      const response = await axios.get(url);
+      const events = response.data.events || [];
+      
+      // PERFORMANCE FIX: Cache the result
+      setCachedData(url, events);
+      
+      return events;
     } catch (error) {
       console.error(`Error fetching events for league ${leagueId}, season ${season}:`, error);
       return [];
@@ -207,10 +248,24 @@ export class TheSportsDBService {
    */
   async getNextEventsByTeam(teamId: string): Promise<TheSportsDBEvent[]> {
     try {
-      const response = await axios.get(
-        `${this.baseUrl}/eventsnext.php?id=${teamId}`
-      );
-      return response.data.events || [];
+      const url = `${this.baseUrl}/eventsnext.php?id=${teamId}`;
+      
+      // PERFORMANCE FIX: Check cache first
+      const cachedData = getCachedData(url);
+      if (cachedData) {
+        return cachedData;
+      }
+      
+      // Rate limiting: Warte zwischen Requests
+      await delayBetweenRequests();
+      
+      const response = await axios.get(url);
+      const events = response.data.events || [];
+      
+      // PERFORMANCE FIX: Cache the result
+      setCachedData(url, events);
+      
+      return events;
     } catch (error) {
       console.error(`Error fetching next events for team ${teamId}:`, error);
       return [];
