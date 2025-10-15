@@ -7,8 +7,8 @@ import { t } from '../../lib/i18n';
 import { useLanguage } from '../../hooks/useLanguage';
 
 interface HeaderProps {
-  currentPage: 'calendar' | 'live' | 'highlights' | 'premium' | 'admin' | 'settings' | 'calendar-sync' | 'privacy' | 'contact';
-  onNavigate: (page: 'calendar' | 'live' | 'highlights' | 'premium' | 'admin' | 'settings' | 'calendar-sync' | 'privacy' | 'contact') => void;
+  currentPage: 'calendar' | 'live' | 'highlights' | 'news' | 'premium' | 'admin' | 'settings' | 'calendar-sync' | 'privacy' | 'contact';
+  onNavigate: (page: 'calendar' | 'live' | 'highlights' | 'news' | 'premium' | 'admin' | 'settings' | 'calendar-sync' | 'privacy' | 'contact') => void;
   onShowLogin?: () => void;
   onShowRegister?: () => void;
 }
