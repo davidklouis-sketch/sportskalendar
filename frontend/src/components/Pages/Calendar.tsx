@@ -83,11 +83,13 @@ export function Calendar() {
   const loadAllEvents = useCallback(async (teams: Array<{ sport: string; teamName: string; teamId?: string; leagueId?: number }>) => {
     // Prevent multiple simultaneous loads
     if (isLoadingRef.current) {
+      console.log('[Calendar] Already loading, skipping duplicate request');
       return;
     }
     
     isLoadingRef.current = true;
     setIsLoading(true);
+    console.log('[Calendar] Starting to load events for teams:', teams.length);
     
     try {
       // Reset all events first
@@ -99,17 +101,27 @@ export function Calendar() {
       setMlbEvents([]);
       setTennisEvents([]);
       
+      // PERFORMANCE FIX: Load events sequentially instead of parallel to prevent API overload
+      console.log('[Calendar] Loading events sequentially for better performance...');
+      
       // Load Football Events
       const footballTeams = teams.filter(t => t.sport === 'football');
       if (footballTeams.length > 0) {
+        console.log('[Calendar] Loading football events...');
         try {
           const leagues = footballTeams.map(t => t.leagueId).filter(Boolean) as number[];
           
-          // Try new sports API first (like NBA)
+          // Try new sports API first (like NBA) with timeout
           let events: Event[] = [];
           try {
             const leaguesParam = leagues.join(',');
-            const directResponse = await fetch(`/api/sports/football/events?leagues=${leaguesParam}`);
+            const controller = new AbortController();
+            const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 second timeout
+            
+            const directResponse = await fetch(`/api/sports/football/events?leagues=${leaguesParam}`, {
+              signal: controller.signal
+            });
+            clearTimeout(timeoutId);
             if (directResponse.ok) {
               const directData = await directResponse.json();
               events = directData.events || [];
@@ -591,6 +603,7 @@ export function Calendar() {
   // Load user teams and events on mount - with ref to prevent loops
   const lastTeamsLengthRef = useRef<number>(0);
   const lastTeamsHashRef = useRef<string>('');
+  const debounceTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   
   useEffect(() => {
     const teams = user?.selectedTeams || [];
@@ -599,44 +612,58 @@ export function Calendar() {
     // Create a simple hash of teams to detect actual changes
     const teamsHash = teams.map(t => `${t.sport}-${t.teamName}`).join(',');
     
-    if (teamsLength > 0) {
-      // Always update local teams state
-      setLocalTeams(teams);
-      
-      // Only load if teams actually changed OR if we don't have events yet
-      const hasEvents = footballEvents.length > 0 || f1Events.length > 0 || nbaEvents.length > 0 || 
-                       nflEvents.length > 0 || nhlEvents.length > 0 || mlbEvents.length > 0 || tennisEvents.length > 0;
-      
-      const teamsChanged = lastTeamsLengthRef.current !== teamsLength || lastTeamsHashRef.current !== teamsHash;
-      
-      if (teamsChanged || !hasEvents) {
-        lastTeamsLengthRef.current = teamsLength;
-        lastTeamsHashRef.current = teamsHash;
-        
-        // Auto-select first sport if not selected
-        if (!selectedSport) {
-          const firstSport = teams[0].sport as 'football' | 'nfl' | 'f1' | 'nba' | 'nhl' | 'mlb' | 'tennis';
-          setSelectedSport(firstSport);
-          setSelectedSportTab(firstSport);
-        }
-        
-        // Load events for teams
-        loadAllEvents(teams);
-      }
-    } else {
-      lastTeamsLengthRef.current = 0;
-      lastTeamsHashRef.current = '';
-      setLocalTeams([]);
-      // No teams = stop loading immediately
-      setIsLoading(false);
-      setFootballEvents([]);
-      setF1Events([]);
-      setNflEvents([]);
-      setNbaEvents([]);
-      setNhlEvents([]);
-      setMlbEvents([]);
-      setTennisEvents([]);
+    // PERFORMANCE FIX: Debounce team changes to prevent rapid API calls
+    if (debounceTimeoutRef.current) {
+      clearTimeout(debounceTimeoutRef.current);
     }
+    
+    debounceTimeoutRef.current = setTimeout(() => {
+      if (teamsLength > 0) {
+        // Always update local teams state
+        setLocalTeams(teams);
+        
+        // Only load if teams actually changed OR if we don't have events yet
+        const hasEvents = footballEvents.length > 0 || f1Events.length > 0 || nbaEvents.length > 0 || 
+                         nflEvents.length > 0 || nhlEvents.length > 0 || mlbEvents.length > 0 || tennisEvents.length > 0;
+        
+        const teamsChanged = lastTeamsLengthRef.current !== teamsLength || lastTeamsHashRef.current !== teamsHash;
+        
+        if (teamsChanged || !hasEvents) {
+          console.log('[Calendar] Teams changed, loading events...');
+          lastTeamsLengthRef.current = teamsLength;
+          lastTeamsHashRef.current = teamsHash;
+          
+          // Auto-select first sport if not selected
+          if (!selectedSport) {
+            const firstSport = teams[0].sport as 'football' | 'nfl' | 'f1' | 'nba' | 'nhl' | 'mlb' | 'tennis';
+            setSelectedSport(firstSport);
+            setSelectedSportTab(firstSport);
+          }
+          
+          // Load events for teams
+          loadAllEvents(teams);
+        }
+      } else {
+        lastTeamsLengthRef.current = 0;
+        lastTeamsHashRef.current = '';
+        setLocalTeams([]);
+        // No teams = stop loading immediately
+        setIsLoading(false);
+        setFootballEvents([]);
+        setF1Events([]);
+        setNflEvents([]);
+        setNbaEvents([]);
+        setNhlEvents([]);
+        setMlbEvents([]);
+        setTennisEvents([]);
+      }
+    }, 300); // 300ms debounce
+    
+    return () => {
+      if (debounceTimeoutRef.current) {
+        clearTimeout(debounceTimeoutRef.current);
+      }
+    };
   }, [user?.selectedTeams?.length, user?.selectedTeams]); // Include both length and content for proper change detection
 
   // Load highlights when sport selection changes - but only if we have teams

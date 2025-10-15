@@ -123,13 +123,14 @@ export function LiveData({ className = '' }: LiveDataProps) {
   useEffect(() => {
     loadLiveData();
     
-    // Auto-refresh every 10 minutes (further reduced to prevent rate limiting)
+    // PERFORMANCE FIX: Increase interval to 30 minutes to reduce server load
     const interval = setInterval(() => {
+      console.log('[LiveData] Auto-refreshing live data...');
       loadLiveData();
-    }, 600000); // 10 minutes to avoid rate limiting
+    }, 1800000); // 30 minutes to reduce server load
     
     return () => clearInterval(interval);
-  }, [user?.selectedTeams]); // Only depend on selectedTeams, not loadLiveData function
+  }, [user?.selectedTeams?.length]); // Only depend on teams count, not full object
 
   // Don't render if no live data or no teams selected
   if (!hasLiveData || !user?.selectedTeams?.length) {

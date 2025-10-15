@@ -47,7 +47,15 @@ export function NewsWidget({
       setIsLoading(true);
 
       try {
-        const response = await newsApi.getNews(user.selectedTeams);
+        // Add timeout to prevent hanging
+        const timeoutPromise = new Promise((_, reject) => {
+          setTimeout(() => reject(new Error('News request timeout')), 8000);
+        });
+        
+        const response = await Promise.race([
+          newsApi.getNews(user.selectedTeams),
+          timeoutPromise
+        ]);
         const newsData = response.data.news || [];
         setNews(newsData.slice(0, maxArticles));
       } catch (error) {
